@@ -22,11 +22,17 @@ jobs:
       - name: Setup Processing
         run: |
           wget -q https://github.com/processing/processing4/releases/download/processing-1313-4.5.2/processing-4.5.2-linux-x64-portable.zip
-          unzip -q processing-4.5.2-linux-x64-portable.zip
-          # Rename whatever top-level directory was extracted
-          mv $(ls -d processing*/ | head -1) processing
+          mkdir -p processing
+          unzip -q processing-4.5.2-linux-x64-portable.zip -d processing
+          # Debug: show what was extracted
+          echo "Top-level contents:" && ls processing/
           # Locate core library directory for the build
           CORE_DIR=$(find processing -path "*/core/library/core*.jar" -not -name "*natives*" -exec dirname {} \; | head -1)
+          if [ -z "$CORE_DIR" ]; then
+            echo "ERROR: Could not find core JAR. Full tree:"
+            find processing -name "core*.jar" | head -20
+            exit 1
+          fi
           echo "PROCESSING_CORE_DIR=$CORE_DIR" >> "$GITHUB_ENV"
           echo "Found Processing core at: $CORE_DIR"
           ls "$CORE_DIR"
