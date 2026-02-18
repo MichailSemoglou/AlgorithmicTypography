@@ -1,0 +1,35 @@
+# Build artifacts
+build/
+dist/
+*.jar
+
+# Processing
+*.class
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Library output (created during build)
+library/
+
+# Generated documentation (created during build)
+reference/
+
+# Frames output (user generated)
+frames/
+
+# Test results
+test-results/

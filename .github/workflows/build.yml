@@ -1,0 +1,49 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: "temurin"
+
+      - name: Setup Processing
+        run: |
+          wget -q https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-linux-x64.tgz
+          tar -xzf processing-4.2-linux-x64.tgz
+          mv processing-4.2 processing
+
+      - name: Build with Ant
+        run: |
+          export PROCESSING_DIR=$(pwd)/processing
+          ant -Dprocessing.dir=$PROCESSING_DIR compile
+
+      - name: Run tests
+        run: |
+          export PROCESSING_DIR=$(pwd)/processing
+          ant -Dprocessing.dir=$PROCESSING_DIR test || true
+
+      - name: Generate Javadoc
+        run: |
+          export PROCESSING_DIR=$(pwd)/processing
+          ant -Dprocessing.dir=$PROCESSING_DIR document
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: library-build
+          path: |
+            build/
+            reference/

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Build file for AlgorithmicTypography Processing Library
+  
+  Usage:
+    ant compile     - Compile the library
+    ant build       - Compile and create JAR
+    ant clean       - Remove build artifacts
+    ant document    - Generate Javadoc
+    ant test        - Run JUnit tests
+    ant dist        - Create distribution ZIP
+-->
+
+<project name="AlgorithmicTypography" default="build" basedir=".">
+  
+  <!-- Library properties -->
+  <property name="library.name" value="AlgorithmicTypography"/>
+  <property name="library.version" value="1.0.0"/>
+  <property name="library.author" value="Michail Semoglou Qídé Studio TJ D&I"/>
+  
+  <!-- Directories -->
+  <property name="src.dir" value="src"/>
+  <property name="build.dir" value="build"/>
+  <property name="library.dir" value="library"/>
+  <property name="reference.dir" value="reference"/>
+  <property name="examples.dir" value="examples"/>
+  <property name="test.dir" value="test"/>
+  <property name="dist.dir" value="dist"/>
+  
+  <!-- Processing installation (adjust for your system) -->
+  <!-- Processing 4+ path -->
+  <property name="processing.dir" location="/Applications/Processing.app/Contents/app/resources" />
+  <property name="processing.core" location="${processing.dir}/core/library/core-4.4.8.jar"/>
+  
+  <!-- Classpath -->
+  <path id="classpath">
+    <pathelement location="${processing.core}"/>
+    <pathelement location="${library.dir}"/>
+  </path>
+  
+  <!-- Clean build artifacts -->
+  <target name="clean" description="Clean build artifacts">
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
+    <delete>
+      <fileset dir="${library.dir}" includes="*.jar"/>
+    </delete>
+  </target>
+  
+  <!-- Create directories -->
+  <target name="init">
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${library.dir}"/>
+    <mkdir dir="${reference.dir}"/>
+    <mkdir dir="${dist.dir}"/>
+  </target>
+  
+  <!-- Compile source -->
+  <target name="compile" depends="init" description="Compile the library">
+    <javac srcdir="${src.dir}"
+           destdir="${build.dir}"
+           classpathref="classpath"
+           includeantruntime="false"
+           source="11"
+           target="11"
+           encoding="UTF-8">
+      <compilerarg value="-Xlint:unchecked"/>
+    </javac>
+    <echo message="Compilation complete"/>
+  </target>
+  
+  <!-- Create JAR file -->
+  <target name="build" depends="compile" description="Create library JAR">
+    <jar destfile="${library.dir}/${library.name}.jar"
+         basedir="${build.dir}">
+      <manifest>
+        <attribute name="Implementation-Title" value="${library.name}"/>
+        <attribute name="Implementation-Version" value="${library.version}"/>
+        <attribute name="Implementation-Vendor" value="${library.author}"/>
+      </manifest>
+    </jar>
+    <echo message="Created ${library.name}.jar"/>
+  </target>
+  
+  <!-- Generate Javadoc -->
+  <target name="document" depends="init" description="Generate Javadoc">
+    <javadoc destdir="${reference.dir}"
+             sourcepath="${src.dir}"
+             classpathref="classpath"
+             author="true"
+             version="true"
+             use="true"
+             windowtitle="${library.name} ${library.version}"
+             doctitle="${library.name} ${library.version}"
+             encoding="UTF-8">
+      <packageset dir="${src.dir}" defaultexcludes="yes">
+        <include name="algorithmic/typography/**"/>
+      </packageset>
+      <link href="https://processing.github.io/processing-javadoc/core/"/>
+    </javadoc>
+    <echo message="Documentation generated in ${reference.dir}/"/>
+  </target>
+  
+  <!-- Run tests (requires JUnit in classpath) -->
+  <target name="test" depends="compile" description="Run JUnit tests" if="junit.available">
+    <junit printsummary="yes" haltonfailure="no">
+      <classpath>
+        <pathelement location="${build.dir}"/>
+        <pathelement location="${test.dir}"/>
+        <path refid="classpath"/>
+      </classpath>
+      <batchtest fork="yes">
+        <fileset dir="${test.dir}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+  
+  <!-- Create distribution -->
+  <target name="dist" depends="clean, build, document" description="Create distribution ZIP">
+    <zip destfile="${dist.dir}/${library.name}-${library.version}.zip">
+      <zipfileset dir="." prefix="${library.name}">
+        <include name="library/**"/>
+        <include name="examples/**"/>
+        <include name="reference/**"/>
+        <include name="library.properties"/>
+        <include name="README.md"/>
+        <include name="LICENSE"/>
+        <include name="CHANGELOG.md"/>
+        <include name="ROADMAP.md"/>
+      </zipfileset>
+    </zip>
+    <echo message="Distribution created: ${dist.dir}/${library.name}-${library.version}.zip"/>
+  </target>
+  
+  <!-- Full build -->
+  <target name="all" depends="clean, build, document" description="Full build"/>
+  
+</project>

@@ -1,0 +1,33 @@
+{
+  "canvas": {
+    "width": 800,
+    "height": 800
+  },
+  "animation": {
+    "duration": 30,
+    "fps": 30,
+    "changeTime": 15000,
+    "character": "A",
+    "textScale": 0.7,
+    "saveFrames": false,
+    "waveSpeed": 1.0,
+    "waveMultiplierMin": 0.5,
+    "waveMultiplierMax": 2.5
+  },
+  "grid": {
+    "initialTilesX": 32,
+    "initialTilesY": 32,
+    "changedTilesX": 16,
+    "changedTilesY": 16
+  },
+  "colors": {
+    "brightnessMin": 30,
+    "brightnessMax": 240,
+    "saturationMin": 0,
+    "saturationMax": 0,
+    "hueMin": 0,
+    "hueMax": 0,
+    "waveAmplitudeMin": -180,
+    "waveAmplitudeMax": 180
+  }
+}
