@@ -23,22 +23,29 @@ jobs:
         run: |
           wget -q https://github.com/processing/processing4/releases/download/processing-1313-4.5.2/processing-4.5.2-linux-x64-portable.zip
           unzip -q processing-4.5.2-linux-x64-portable.zip
-          mv processing-4.5.2 processing
+          # Rename whatever top-level directory was extracted
+          mv $(ls -d processing*/ | head -1) processing
+          # Locate core library directory for the build
+          CORE_DIR=$(find processing -path "*/core/library/core*.jar" -not -name "*natives*" -exec dirname {} \; | head -1)
+          echo "PROCESSING_CORE_DIR=$CORE_DIR" >> "$GITHUB_ENV"
+          echo "Found Processing core at: $CORE_DIR"
+          ls "$CORE_DIR"
 
       - name: Build with Ant
         run: |
-          export PROCESSING_DIR=$(pwd)/processing
-          ant -Dprocessing.dir=$PROCESSING_DIR compile
+          # Resolve the resources dir (parent of core/)
+          PROCESSING_DIR=$(dirname $(dirname "$PROCESSING_CORE_DIR"))
+          ant -Dprocessing.dir="$PROCESSING_DIR" compile
 
       - name: Run tests
         run: |
-          export PROCESSING_DIR=$(pwd)/processing
-          ant -Dprocessing.dir=$PROCESSING_DIR test || true
+          PROCESSING_DIR=$(dirname $(dirname "$PROCESSING_CORE_DIR"))
+          ant -Dprocessing.dir="$PROCESSING_DIR" test || true
 
       - name: Generate Javadoc
         run: |
-          export PROCESSING_DIR=$(pwd)/processing
-          ant -Dprocessing.dir=$PROCESSING_DIR document
+          PROCESSING_DIR=$(dirname $(dirname "$PROCESSING_CORE_DIR"))
+          ant -Dprocessing.dir="$PROCESSING_DIR" document
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

@@ -34,7 +34,10 @@
   
   <!-- Classpath -->
   <path id="classpath">
-    <pathelement location="${processing.core}"/>
+    <fileset dir="${processing.dir}/core/library">
+      <include name="core*.jar"/>
+      <exclude name="*natives*"/>
+    </fileset>
     <pathelement location="${library.dir}"/>
   </path>
   
