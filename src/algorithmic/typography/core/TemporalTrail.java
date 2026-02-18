@@ -176,14 +176,13 @@ public class TemporalTrail {
     int[] counts = new int[cells];
 
     for (int t = 0; t < len && t < filled; t++) {
-      float age = (float) t / Math.max(1, len - 1);  // 0=newest, 1=oldest
       float weight = (float) Math.pow(fadeDecay, t);
-      int bufIdx = ((head - 1 - t) + maxLength * 2) % maxLength;
 
       for (int c = 0; c < cells; c++) {
         int offset = useTemporalWave ? temporalOffset(c, t) : 0;
-        int srcIdx = ((head - 1 - t - offset) + maxLength * 2) % maxLength;
-        if (srcIdx < 0 || t + offset >= filled) continue;
+        int effectiveT = t + offset;
+        if (effectiveT < 0 || effectiveT >= filled) continue;
+        int srcIdx = ((head - 1 - effectiveT) + maxLength * 2) % maxLength;
 
         float val = buffer[srcIdx][c] * weight;
 
@@ -232,12 +231,12 @@ public class TemporalTrail {
 
     for (int t = 0; t < len && t < filled; t++) {
       float weight = (float) Math.pow(fadeDecay, t);
-      int bufIdx = ((head - 1 - t) + maxLength * 2) % maxLength;
 
       for (int c = 0; c < cells; c++) {
         int offset = useTemporalWave ? temporalOffset(c, t) : 0;
-        int srcIdx = ((head - 1 - t - offset) + maxLength * 2) % maxLength;
-        if (t + offset >= filled) continue;
+        int effectiveT = t + offset;
+        if (effectiveT < 0 || effectiveT >= filled) continue;
+        int srcIdx = ((head - 1 - effectiveT) + maxLength * 2) % maxLength;
 
         hAccum[c] += hueBuffer[srcIdx][c] * weight;
         sAccum[c] += satBuffer[srcIdx][c] * weight;

@@ -16,7 +16,7 @@
   <!-- Library properties -->
   <property name="library.name" value="AlgorithmicTypography"/>
   <property name="library.version" value="1.0.0"/>
-  <property name="library.author" value="Michail Semoglou Qídé Studio TJ D&I"/>
+  <property name="library.author" value="Michail Semoglou, Qide Studio, TJ DI"/>
   
   <!-- Directories -->
   <property name="src.dir" value="src"/>
@@ -61,8 +61,8 @@
            destdir="${build.dir}"
            classpathref="classpath"
            includeantruntime="false"
-           source="11"
-           target="11"
+           source="17"
+           target="17"
            encoding="UTF-8">
       <compilerarg value="-Xlint:unchecked"/>
     </javac>
@@ -128,7 +128,7 @@
         <include name="README.md"/>
         <include name="LICENSE"/>
         <include name="CHANGELOG.md"/>
-        <include name="ROADMAP.md"/>
+
       </zipfileset>
     </zip>
     <echo message="Distribution created: ${dist.dir}/${library.name}-${library.version}.zip"/>

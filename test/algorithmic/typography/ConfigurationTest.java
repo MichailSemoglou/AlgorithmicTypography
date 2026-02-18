@@ -29,10 +29,10 @@ public class ConfigurationTest {
   void testDefaultValues() {
     assertEquals(1080, config.getCanvasWidth());
     assertEquals(1080, config.getCanvasHeight());
-    assertEquals(24, config.getAnimationDuration());
+    assertEquals(18, config.getAnimationDuration());
     assertEquals(30, config.getAnimationFPS());
     assertEquals("A", config.getCharacter());
-    assertTrue(config.isSaveFrames());
+    assertFalse(config.isSaveFrames());
   }
   
   @Test

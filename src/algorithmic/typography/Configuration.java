@@ -1133,7 +1133,7 @@ public class Configuration {
      * @return this builder for method chaining
      */
     public Builder gridSize(int tiles) {
-      return gridSize(tiles, tiles, tiles / 2, tiles / 2);
+      return gridSize(tiles, tiles, Math.max(1, tiles / 2), Math.max(1, tiles / 2));
     }
     
     /**

@@ -15,6 +15,8 @@ package algorithmic.typography;
 import processing.core.*;
 import algorithmic.typography.core.*;
 import algorithmic.typography.render.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * HeadlessRenderer for batch mode rendering.
@@ -148,12 +150,15 @@ public class HeadlessRenderer {
     int successCount = 0;
     int failCount = 0;
     
+    // Convert Processing-style #### padding to String.format %0Nd
+    String formatPattern = Pattern.compile("#{2,}").matcher(outputPath)
+        .replaceAll(m -> "%0" + m.group().length() + "d");
+    
     for (int i = 0; i < totalFrames; i++) {
       try {
         PGraphics frame = renderFrame(i);
         
-        // Save frame
-        String filename = String.format(outputPath, i);
+        String filename = String.format(formatPattern, i);
         frame.save(filename);
         successCount++;
         

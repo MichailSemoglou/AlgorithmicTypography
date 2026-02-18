@@ -91,7 +91,8 @@ public class GridRenderer {
     float textSz = Math.min(tileW, tileH) * config.getTextScale();
     String ch = config.getCharacter();
     
-    target.beginDraw();
+    boolean offscreen = (useBuffer && buffer != null);
+    if (offscreen) target.beginDraw();
     target.background(0);
     target.noStroke();
     target.textSize(textSz);
@@ -120,7 +121,7 @@ public class GridRenderer {
     if (useHSB) {
       target.colorMode(PApplet.RGB, 255);
     }
-    target.endDraw();
+    if (offscreen) target.endDraw();
   }
   
   /**
