@@ -21,9 +21,9 @@ jobs:
 
       - name: Setup Processing
         run: |
-          wget -q https://github.com/processing/processing4/releases/download/processing-1293-4.3.2/processing-4.3.2-linux-x64.tgz
-          tar -xzf processing-4.3.2-linux-x64.tgz
-          mv processing-4.3.2 processing
+          wget -q https://github.com/processing/processing4/releases/download/processing-1313-4.5.2/processing-4.5.2-linux-x64-portable.zip
+          unzip -q processing-4.5.2-linux-x64-portable.zip
+          mv processing-4.5.2 processing
 
       - name: Build with Ant
         run: |
