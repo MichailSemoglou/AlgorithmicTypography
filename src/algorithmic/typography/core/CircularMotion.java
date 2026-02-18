@@ -74,7 +74,8 @@ public class CircularMotion extends CellMotion {
   /** Set rotation direction. */
   public void setClockwise(boolean cw) { this.clockwise = cw; }
 
-  /** @return {@code true} if clockwise */
+  /** Returns whether the rotation direction is clockwise.
+   *  @return {@code true} if clockwise */
   public boolean isClockwise() { return clockwise; }
 
   /**

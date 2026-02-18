@@ -1,0 +1,27 @@
+{
+  "name": "algorithmic-typography-p5",
+  "version": "1.0.0",
+  "description": "Web-based AlgorithmicTypography for p5.js — wave-driven typographic animations in the browser",
+  "main": "dist/algorithmic-typography.min.js",
+  "module": "src/index.js",
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "p5js",
+    "typography",
+    "animation",
+    "wave",
+    "creative-coding"
+  ],
+  "author": "Michail Semoglou",
+  "license": "MIT",
+  "peerDependencies": {
+    "p5": ">=1.4.0"
+  }
+}

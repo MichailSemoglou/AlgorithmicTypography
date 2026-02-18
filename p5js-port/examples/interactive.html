@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Algorithmic Typography – Colourful Wave Types</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+      }
+      canvas {
+        display: block;
+      }
+      #info {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        color: #aaa;
+        font: 13px/1.4 monospace;
+        pointer-events: none;
+        z-index: 10;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+    <script src="../src/Configuration.js"></script>
+    <script src="../src/WavePresets.js"></script>
+    <script src="../src/WaveEngine.js"></script>
+    <script src="../src/AlgorithmicTypography.js"></script>
+  </head>
+  <body>
+    <div id="info">
+      Press 1-5 to switch wave type &middot; Click to randomise colours
+    </div>
+    <script src="interactive.js"></script>
+  </body>
+</html>

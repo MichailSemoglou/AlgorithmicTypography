@@ -166,6 +166,7 @@ public class ControlPanel {
   }
 
   /**
+   * Displays help information on the canvas.
    * @deprecated Use {@link #draw()} instead. Kept for backward compatibility.
    */
   @Deprecated
@@ -297,6 +298,7 @@ public class ControlPanel {
   }
 
   /**
+   * Updates the control panel state.
    * @deprecated No longer needed — ControlP5 dependency removed.
    */
   @Deprecated

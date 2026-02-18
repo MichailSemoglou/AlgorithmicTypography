@@ -130,88 +130,116 @@ public class Configuration {
   // Getters
   // ============================================================
   
-  /** @return the canvas width in pixels */
+  /** Returns the canvas width.
+   *  @return the canvas width in pixels */
   public int getCanvasWidth() { return canvasWidth; }
   
-  /** @return the canvas height in pixels */
+  /** Returns the canvas height.
+   *  @return the canvas height in pixels */
   public int getCanvasHeight() { return canvasHeight; }
   
-  /** @return the animation duration in seconds */
+  /** Returns the animation duration.
+   *  @return the animation duration in seconds */
   public int getAnimationDuration() { return animationDuration; }
   
-  /** @return the animation frames per second */
+  /** Returns the animation frame rate.
+   *  @return the animation frames per second */
   public int getAnimationFPS() { return animationFPS; }
   
-  /** @return the time in milliseconds when grid layout changes */
+  /** Returns when the grid layout first changes.
+   *  @return the time in milliseconds when grid layout changes */
   public int getChangeTime() { return changeTime; }
   
-  /** @return the time in milliseconds for the second grid change (0 = disabled) */
+  /** Returns when the grid layout changes a second time.
+   *  @return the time in milliseconds for the second grid change (0 = disabled) */
   public int getSecondChangeTime() { return secondChangeTime; }
   
-  /** @return the fade transition duration in milliseconds */
+  /** Returns the fade transition duration.
+   *  @return the fade transition duration in milliseconds */
   public int getFadeDuration() { return fadeDuration; }
   
-  /** @return the character(s) displayed in the grid */
+  /** Returns the character(s) displayed in the grid.
+   *  @return the character(s) displayed in the grid */
   public String getCharacter() { return character; }
   
-  /** @return the text scale factor (0.0 to 1.0) */
+  /** Returns the text scale factor.
+   *  @return the text scale factor (0.0 to 1.0) */
   public float getTextScale() { return textScale; }
   
-  /** @return true if frame saving is enabled */
+  /** Returns whether frame saving is enabled.
+   *  @return true if frame saving is enabled */
   public boolean isSaveFrames() { return saveFrames; }
   
-  /** @return the wave animation speed multiplier */
+  /** Returns the wave animation speed multiplier.
+   *  @return the wave animation speed multiplier */
   public float getWaveSpeed() { return waveSpeed; }
   
-  /** @return the wave propagation angle in degrees (0-360) */
+  /** Returns the wave propagation angle.
+   *  @return the wave propagation angle in degrees (0-360) */
   public float getWaveAngle() { return waveAngle; }
   
-  /** @return the minimum wave multiplier value */
+  /** Returns the minimum wave multiplier.
+   *  @return the minimum wave multiplier value */
   public float getWaveMultiplierMin() { return waveMultiplierMin; }
   
-  /** @return the maximum wave multiplier value */
+  /** Returns the maximum wave multiplier.
+   *  @return the maximum wave multiplier value */
   public float getWaveMultiplierMax() { return waveMultiplierMax; }
   
-  /** @return the initial horizontal tile count */
+  /** Returns the initial horizontal tile count.
+   *  @return the initial horizontal tile count */
   public int getInitialTilesX() { return initialTilesX; }
   
-  /** @return the initial vertical tile count */
+  /** Returns the initial vertical tile count.
+   *  @return the initial vertical tile count */
   public int getInitialTilesY() { return initialTilesY; }
   
-  /** @return the changed horizontal tile count */
+  /** Returns the changed horizontal tile count.
+   *  @return the changed horizontal tile count */
   public int getChangedTilesX() { return changedTilesX; }
   
-  /** @return the changed vertical tile count */
+  /** Returns the changed vertical tile count.
+   *  @return the changed vertical tile count */
   public int getChangedTilesY() { return changedTilesY; }
   
-  /** @return the final horizontal tile count */
+  /** Returns the final horizontal tile count.
+   *  @return the final horizontal tile count */
   public int getFinalTilesX() { return finalTilesX; }
   
-  /** @return the final vertical tile count */
+  /** Returns the final vertical tile count.
+   *  @return the final vertical tile count */
   public int getFinalTilesY() { return finalTilesY; }
   
-  /** @return the minimum hue value (0-360) */
+  /** Returns the minimum hue value.
+   *  @return the minimum hue value (0-360) */
   public float getHueMin() { return hueMin; }
   
-  /** @return the maximum hue value (0-360) */
+  /** Returns the maximum hue value.
+   *  @return the maximum hue value (0-360) */
   public float getHueMax() { return hueMax; }
   
-  /** @return the minimum saturation value (0-255) */
+  /** Returns the minimum saturation value.
+   *  @return the minimum saturation value (0-255) */
   public float getSaturationMin() { return saturationMin; }
   
-  /** @return the maximum saturation value (0-255) */
+  /** Returns the maximum saturation value.
+   *  @return the maximum saturation value (0-255) */
   public float getSaturationMax() { return saturationMax; }
   
-  /** @return the minimum brightness value (0-255) */
+  /** Returns the minimum brightness value.
+   *  @return the minimum brightness value (0-255) */
   public float getBrightnessMin() { return brightnessMin; }
   
-  /** @return the maximum brightness value (0-255) */
+  /** Returns the maximum brightness value.
+   *  @return the maximum brightness value (0-255) */
   public float getBrightnessMax() { return brightnessMax; }
   
-  /** @return the minimum wave amplitude value */
+  /** Returns the minimum wave amplitude.
+   *  @return the minimum wave amplitude value */
   public float getWaveAmplitudeMin() { return waveAmplitudeMin; }
   
-  /** @return the maximum wave amplitude value */
+  /** Returns the maximum wave amplitude.
+   *  @return the maximum wave amplitude value */
   public float getWaveAmplitudeMax() { return waveAmplitudeMax; }
   
   // ============================================================

@@ -55,7 +55,8 @@ public abstract class CellMotion {
    */
   public void setRadius(float r) { this.radius = Math.max(0, r); }
 
-  /** @return the current radius */
+  /** Returns the current displacement radius.
+   *  @return the current radius */
   public float getRadius() { return radius; }
 
   /**
@@ -65,6 +66,7 @@ public abstract class CellMotion {
    */
   public void setSpeed(float s) { this.speed = s; }
 
-  /** @return the current speed multiplier */
+  /** Returns the current animation speed multiplier.
+   *  @return the current speed multiplier */
   public float getSpeed() { return speed; }
 }

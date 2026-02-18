@@ -19,7 +19,15 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
+      - name: Cache Processing SDK
+        id: cache-processing
+        uses: actions/cache@v4
+        with:
+          path: processing
+          key: processing-4.5.2-linux-x64
+
       - name: Setup Processing
+        if: steps.cache-processing.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/processing/processing4/releases/download/processing-1313-4.5.2/processing-4.5.2-linux-x64-portable.zip
           mkdir -p processing
