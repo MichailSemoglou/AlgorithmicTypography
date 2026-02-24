@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/Version-1.0.0-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
 > [!WARNING]
-> **This library is currently not functional.** Known errors and bugs are being actively investigated and fixed. Please do not use this release in projects yet — an updated version will be published once all issues are resolved. Thank you for your patience.
+> **This library is a work in progress and is not yet ready for production use.** Known errors and bugs are being actively investigated and fixed. The **PerformanceMode** and **CulturalStyles** examples have been temporarily removed from the examples folder and may be reintroduced in a later release. Please do not use this release in projects yet — an updated version will be published once all issues are resolved. Thank you for your patience.
 
 ## Overview
 
@@ -90,7 +90,7 @@ algorithmic.typography
 ├── core/
 │   ├── WaveEngine                 Wave calculation engine
 │   ├── WaveFunction               Plugin interface for custom waves
-│   ├── WavePresets                 Built-in wave types (Sine, Tangent, Square, Triangle, Sawtooth, Perlin)
+│   ├── WavePresets                Built-in wave types (Sine, Tangent, Square, Triangle, Sawtooth, Perlin)
 │   ├── TemporalTrail              Delay/trail compositing buffer
 │   ├── CellMotion                 Abstract base for per-cell glyph movement
 │   ├── CircularMotion             Clockwise / counter-clockwise orbital motion
@@ -204,7 +204,7 @@ Controls the wave propagation angle (0–360°) with UI sliders and keyboard pre
 
 ### CulturalStyles
 
-Switches between cultural design-system presets (Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, Deconstruct, Brutalist, Memphis).
+> **Temporarily removed.** This example is currently being revised and will be reintroduced in a later release.
 
 ### VibeCoding
 
@@ -220,7 +220,7 @@ Runs two typography instances side by side with independent configurations.
 
 ### PerformanceMode
 
-Live-performance setup with preset switching and mouse-driven parameter morphing.
+> **Temporarily removed.** This example is currently being revised and will be reintroduced in a later release.
 
 ### AudioReactive
 
@@ -250,7 +250,7 @@ Assigns a different photograph to each grid cell. Place `photo-01.png` … `phot
 
 Extracts glyph outlines as vertices with five display modes: filled, points, deformed, contours, and a 4×4 tiled grid.
 
-### GlyphPhysicsExample
+### GlyphDynamics
 
 Particle-based physics — each glyph vertex becomes a particle with mouse repulsion and spring-back forces.
 
