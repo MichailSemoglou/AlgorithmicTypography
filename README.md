@@ -6,6 +6,9 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0.0-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
+> [!WARNING]
+> **This library is currently not functional.** Known errors and bugs are being actively investigated and fixed. Please do not use this release in projects yet — an updated version will be published once all issues are resolved. Thank you for your patience.
+
 ## Overview
 
 AlgorithmicTypography is a Processing library that enables designers, researchers, and artists to explore **parametric typography systems**. It generates animated grids of typographic characters whose colours, positions, and arrangements are driven by mathematical wave functions — with support for glyph extraction, physics simulation, cell motion, audio reactivity, and cultural design presets.
