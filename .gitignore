@@ -33,3 +33,5 @@ frames/
 
 # Test results
 test-results/
+# Examples excluded from release (work in progress)
+examples/PerformanceMode/
