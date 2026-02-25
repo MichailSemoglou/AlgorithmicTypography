@@ -36,3 +36,6 @@ test-results/
 # Examples excluded from release (work in progress)
 examples/PerformanceMode/
 examples/CulturalStyles/
+
+# Local-only docs
+CHANGELOG.md
