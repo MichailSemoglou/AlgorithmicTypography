@@ -202,9 +202,9 @@ Cycles through system fonts (Helvetica, Georgia, Courier, Futura, Didot) to comp
 
 Controls the wave propagation angle (0–360°) with UI sliders and keyboard presets.
 
-### CulturalStyles
+### CulturalStyles _(temporarily unavailable)_
 
-Applies parameter sets inspired by typographic traditions across different cultural and historical design movements — Swiss International Style, Bauhaus, Chinese ink calligraphy, Arabic Kufic geometry, Japanese minimalism, and others.
+Applies parameter sets inspired by typographic traditions across different cultural and historical design movements — Swiss International Style, Bauhaus, Chinese ink calligraphy, Arabic Kufic geometry, Japanese minimalism, and others. The underlying `DesignSystem` API is fully functional; the example sketch will be reintroduced in a later release.
 
 > **Editorial note:** The cultural and mood presets in this library — including `DesignSystem` and `VibePreset` — are the author's artistic interpretation, informed by 30+ years of professional practice in the design industry. They are expressive starting points for creative exploration, not ethnographic, anthropological, or perceptual science models. Parameter choices (grid density, wave speed, colour range, angle) reflect aesthetic sensibility and accumulated design intuition, and should not be treated as culturally definitive or scientifically validated representations of the traditions they reference.
 
@@ -222,9 +222,9 @@ Real-time parameter adjustment with GUI sliders, keyboard shortcuts, and optiona
 
 Runs two typography instances side by side with independent configurations.
 
-### PerformanceMode
+### PerformanceMode _(temporarily unavailable)_
 
-Optimised rendering path for high-resolution grids — demonstrates frame-rate management, reduced draw calls, and export-compatible output at large tile counts.
+Optimised rendering path for high-resolution grids — demonstrates frame-rate management, reduced draw calls, and export-compatible output at large tile counts. The example sketch will be reintroduced in a later release.
 
 ### AudioReactive
 
