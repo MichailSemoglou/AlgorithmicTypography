@@ -34,12 +34,14 @@ AlgorithmicTypography is a Processing library that enables designers, researcher
 
 ### Manual Installation
 
-1. Download the latest release
-2. Extract to your Processing libraries folder:
+1. Go to the [Releases page](https://github.com/MichailSemoglou/AlgorithmicTypography/releases) and download **`AlgorithmicTypography.zip`** — this is the pre-built library package. Do **not** download "Source code (zip)" or "Source code (tar.gz)", as those do not include the compiled library.
+2. Unzip the file — you will get an `AlgorithmicTypography` folder.
+3. Move that folder into your Processing libraries directory:
    - **macOS:** `~/Documents/Processing/libraries/`
-   - **Windows:** `Documents/Processing/libraries/`
+   - **Windows:** `Documents\Processing\libraries\`
    - **Linux:** `~/sketchbook/libraries/`
-3. Restart Processing IDE
+4. Restart Processing IDE.
+5. Verify the installation via **Sketch → Import Library** — you should see *AlgorithmicTypography* listed.
 
 ### Building from Source
 
