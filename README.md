@@ -6,8 +6,8 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.1.1-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
-> [!WARNING]
-> **This library is a work in progress and is not yet ready for production use.** Known errors and bugs are being actively investigated and fixed. The **PerformanceMode** and **CulturalStyles** examples have been temporarily removed from the examples folder and may be reintroduced in a later release. Please do not use this release in projects yet — an updated version will be published once all issues are resolved. Thank you for your patience.
+> [!NOTE]
+> **Version 1.1.1 resolves all known issues.** The library is stable and ready for use. If you encounter a bug or unexpected behaviour, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues).
 
 ## Overview
 
@@ -224,7 +224,7 @@ Runs two typography instances side by side with independent configurations.
 
 ### PerformanceMode
 
-> **Temporarily removed.** This example is currently being revised and will be reintroduced in a later release.
+Optimised rendering path for high-resolution grids — demonstrates frame-rate management, reduced draw calls, and export-compatible output at large tile counts.
 
 ### AudioReactive
 
