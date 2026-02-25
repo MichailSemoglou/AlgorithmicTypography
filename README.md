@@ -41,7 +41,7 @@ AlgorithmicTypography is a Processing library that enables designers, researcher
    - **Windows:** `Documents\Processing\libraries\`
    - **Linux:** `~/sketchbook/libraries/`
 4. Restart Processing IDE.
-5. Verify the installation via **Sketch → Import Library** — you should see *AlgorithmicTypography* listed.
+5. Verify the installation via **Sketch → Import Library** — you should see _AlgorithmicTypography_ listed.
 
 ### Building from Source
 
