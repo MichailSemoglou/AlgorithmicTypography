@@ -238,6 +238,13 @@
         font-size: 0.8rem;
         line-height: 1.25;
       }
+      .example-card.inactive {
+        opacity: 0.35;
+        border-style: dashed;
+      }
+      .example-card.inactive .name {
+        color: var(--text-dim);
+      }
     </style>
   </head>
   <body>
@@ -248,7 +255,7 @@
       <div class="page-header">
         <h1>AlgorithmicTypography — Cheat Sheet</h1>
         <span class="sub"
-          >Processing Library v1.0.0 &nbsp;|&nbsp; Page 1 / 4</span
+          >Processing Library v1.1.1 &nbsp;|&nbsp; Page 1 / 4</span
         >
       </div>
 
@@ -486,6 +493,15 @@ at.<span class="fn">initialize</span>();
             <pre><code>at.<span class="fn">setVibe</span>(<span class="str">"calm ocean waves"</span>);
 at.<span class="fn">setVibe</span>(<span class="str">"chaotic energy"</span>);
 at.<span class="fn">setVibe</span>(<span class="str">"geometric minimal"</span>);
+</code></pre>
+
+            <p style="margin-top: 5px">Glyph motion (v1.1.1)</p>
+            <pre><code><span class="cm">// Perlin noise wander</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">PerlinMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>));
+<span class="cm">// Circular orbital (CW / CCW)</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">CircularMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>, <span class="kw">true</span>));
+<span class="cm">// Disable</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">null</span>);
 </code></pre>
           </div>
         </div>
@@ -874,7 +890,7 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         >
       </div>
 
-      <div class="section-title">Examples Gallery — 19 Sketches</div>
+      <div class="section-title">Examples Gallery — 20 Sketches</div>
 
       <div class="cols-4" style="margin-bottom: 6px">
         <div class="example-card">
@@ -895,10 +911,11 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
             Minimal grid with JSON config — the "hello world" sketch.
           </div>
         </div>
-        <div class="example-card">
+        <div class="example-card inactive">
           <div class="name">CulturalStyles</div>
           <div class="desc">
             Switch between built-in design systems (Swiss, Bauhaus …).
+            <em>Work in progress.</em>
           </div>
         </div>
         <div class="example-card">
@@ -910,14 +927,22 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
           <div class="desc">Provide a lambda for a custom wave function.</div>
         </div>
         <div class="example-card">
+          <div class="name">GlyphDynamics</div>
+          <div class="desc">
+            Particle-based physics simulation on glyph outlines.
+          </div>
+        </div>
+        <div class="example-card">
           <div class="name">GlyphPath</div>
           <div class="desc">
             Access individual glyph outlines as PShape paths.
           </div>
         </div>
         <div class="example-card">
-          <div class="name">GlyphPhysicsExample</div>
-          <div class="desc">Apply physics simulation to glyph shapes.</div>
+          <div class="name">GlyphWander</div>
+          <div class="desc">
+            Cycle Perlin / Circular / no motion per cell (CellMotion API).
+          </div>
         </div>
         <div class="example-card">
           <div class="name">LiveControls</div>
@@ -935,10 +960,11 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
             Run several AlgorithmicTypography instances side by side.
           </div>
         </div>
-        <div class="example-card">
+        <div class="example-card inactive">
           <div class="name">PerformanceMode</div>
           <div class="desc">
             Optimised rendering path for high-resolution grids.
+            <em>Work in progress.</em>
           </div>
         </div>
         <div class="example-card">
@@ -1123,7 +1149,7 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
       </div>
 
       <div class="page-footer">
-        Page 4 / 4 &nbsp;·&nbsp; AlgorithmicTypography v1.0.0 &nbsp;·&nbsp;
+        Page 4 / 4 &nbsp;·&nbsp; AlgorithmicTypography v1.1.1 &nbsp;·&nbsp;
         Processing 4+
       </div>
     </div>

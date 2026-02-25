@@ -118,6 +118,11 @@ void draw() {
 
   // ── Overlay the typography grid ───────────────────────
   at.renderAt(0, 0, width, height);
+
+  // ── Save frame if enabled (renderAt doesn't auto-save) ──
+  if (cfg.isSaveFrames()) {
+    saveFrame("frames/frame-####.png");
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────
@@ -151,13 +156,13 @@ PImage createPlaceholder(int w, int h, int index) {
   PImage img = createImage(w, h, RGB);
   img.loadPixels();
 
-  float hueBase = (index * 137.508) % 360;   // golden-angle spread
+  float hueBase = (index * 137.508f) % 360;   // golden-angle spread
 
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      float hue = (hueBase + x * 0.5 + y * 0.3) % 360;
-      float sat = 180 + sin(x * 0.05) * 50;
-      float bri = 160 + cos(y * 0.08 + index) * 60;
+      float hue = (hueBase + x * 0.5f + y * 0.3f) % 360;
+      float sat = 180 + sin(x * 0.05f) * 50;
+      float bri = 160 + cos(y * 0.08f + index) * 60;
       colorMode(HSB, 360, 255, 255);
       img.pixels[y * w + x] = color(hue, sat, bri);
     }

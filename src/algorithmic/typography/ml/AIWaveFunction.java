@@ -11,7 +11,7 @@
  * - HTTP bridge to Python-based models (TensorFlow, PyTorch)
  * 
  * @author Michail Semoglou
- * @version 1.0.0
+ * @version 1.1.1
  */
 
 package algorithmic.typography.ml;

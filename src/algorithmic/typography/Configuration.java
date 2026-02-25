@@ -6,13 +6,14 @@
  * settings.
  *
  * @author Michail Semoglou
- * @version 1.0.0
+ * @version 1.1.1
  * @since 1.0.0
  */
 
 package algorithmic.typography;
 
 import processing.data.*;
+import algorithmic.typography.core.CellMotion;
 
 /**
  * Configuration holds all parameters for the AlgorithmicTypography system.
@@ -118,6 +119,9 @@ public class Configuration {
   
   /** Maximum wave amplitude value. Default: 200 */
   private float waveAmplitudeMax = 200.0f;
+
+  /** Optional per-glyph motion applied during rendering. Null = no motion. */
+  private CellMotion cellMotion = null;
   
   /**
    * Creates a new Configuration with default values.
@@ -172,6 +176,10 @@ public class Configuration {
   
   /** Returns the wave animation speed multiplier.
    *  @return the wave animation speed multiplier */
+  /** Returns the optional per-glyph cell motion, or null if none is set.
+   *  @return the CellMotion instance, or null */
+  public CellMotion getCellMotion() { return cellMotion; }
+
   public float getWaveSpeed() { return waveSpeed; }
   
   /** Returns the wave propagation angle.
@@ -767,6 +775,18 @@ public class Configuration {
   public Configuration setWaveAmplitudeRange(float min, float max) {
     setWaveAmplitudeMin(min);
     setWaveAmplitudeMax(max);
+    return this;
+  }
+
+  /**
+   * Sets the per-glyph cell motion used during rendering.
+   * Pass {@code null} to disable motion.
+   *
+   * @param motion the CellMotion instance, or null for no motion
+   * @return this instance for method chaining
+   */
+  public Configuration setCellMotion(CellMotion motion) {
+    this.cellMotion = motion;
     return this;
   }
   

@@ -2,7 +2,7 @@
  * TrailEffect
  *
  * Glyphs move within their grid cells and leave fading
- * trails behind them.  The trail is created by drawing a
+ * trails behind them. The trail is created by drawing a
  * semi-transparent black overlay each frame instead of
  * clearing the background — so previous positions bleed
  * through and gradually fade out.
@@ -44,8 +44,8 @@ void setup() {
   config = new Configuration();
   config.setCanvasSize(width, height);
   config.setGridSize(tilesX, tilesY);
-  config.setTextScale(0.55);
-  config.setWaveSpeed(1.8);
+  config.setTextScale(0.55f);
+  config.setWaveSpeed(1.8f);
   config.setWaveAngle(angles[angleIdx]);
   config.setBrightnessRange(120, 255);
   config.setHueRange(180, 330);       // cyan → pink
@@ -56,9 +56,9 @@ void setup() {
   wave = new WaveEngine(config);
 
   // Motion presets
-  cwMotion     = new CircularMotion(12, 1.0, true);
-  ccwMotion    = new CircularMotion(12, 1.0, false);
-  perlinMotion = new PerlinMotion(14, 1.0);
+  cwMotion     = new CircularMotion(12, 1.0f, true);
+  ccwMotion    = new CircularMotion(12, 1.0f, false);
+  perlinMotion = new PerlinMotion(14, 1.0f);
 
   // Start with Perlin
   motion = perlinMotion;

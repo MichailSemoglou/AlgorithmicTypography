@@ -6,7 +6,8 @@
   "animation": {
     "duration": 60,
     "fps": 30,
-    "changeTime": 30000,
+    "changeTime": 999999,
+    "secondChangeTime": 1999999,
     "character": "A",
     "textScale": 0.75,
     "saveFrames": false,

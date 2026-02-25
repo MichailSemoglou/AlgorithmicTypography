@@ -77,6 +77,7 @@ void setup() {
 }
 
 void draw() {
+  textFont(fonts[currentFont]);   // assert before render so the library uses it
   at.render();
 
   // ── HUD overlay ─────────────────────────────────────────────────

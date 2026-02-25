@@ -5,7 +5,7 @@
  * a background photograph. Uses renderAt() instead of
  * render() so the canvas is not cleared each frame.
  *
- * Place your image as "background.jpg" in the data/ folder.
+ * Place your image as "background.png" in the data/ folder.
  * The image is resized to fill the canvas.
  *
  *   Stage 1 (0-6s)    — 16x16 grid
@@ -23,6 +23,7 @@ import algorithmic.typography.*;
 
 AlgorithmicTypography at;
 PImage bg;
+Configuration cfg;
 
 void setup() {
   size(800, 800);
@@ -34,6 +35,7 @@ void setup() {
   at.loadConfiguration("config.json");
   at.setAutoRender(false);
   at.initialize();
+  cfg = at.getConfiguration();
 
   println("BackgroundImage — press R to restart, S to toggle saving");
 }
@@ -41,6 +43,11 @@ void setup() {
 void draw() {
   image(bg, 0, 0);
   at.renderAt(0, 0, width, height);
+
+  // Save frame if enabled (renderAt doesn't auto-save)
+  if (cfg.isSaveFrames()) {
+    saveFrame("frames/frame-####.png");
+  }
 }
 
 void keyPressed() {

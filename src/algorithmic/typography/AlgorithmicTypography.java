@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 1.0.0
+ * @version 1.1.1
  * @since 1.0.0
  */
 
@@ -14,6 +14,7 @@ package algorithmic.typography;
 
 import processing.core.*;
 import processing.data.*;
+import algorithmic.typography.core.CellMotion;
 import algorithmic.typography.core.WaveEngine;
 import algorithmic.typography.core.WaveFunction;
 import algorithmic.typography.core.WavePresets;
@@ -76,7 +77,7 @@ import algorithmic.typography.system.VibePreset;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 1.0.0
+ * @version 1.1.1
  * @see Configuration
  * @see WaveEngine
  */
@@ -476,6 +477,7 @@ public class AlgorithmicTypography {
     String ch = config.getCharacter();
     
     float clampedAlpha = Math.max(0, Math.min(255, alpha));
+    CellMotion motion = config.getCellMotion();
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
@@ -483,7 +485,14 @@ public class AlgorithmicTypography {
         float s = waveEngine.calculateSaturation(parent.frameCount, x, y, tilesX, tilesY);
         float b = waveEngine.calculateColorCustom(parent.frameCount, x, y, tilesX, tilesY);
         parent.fill(h, s, b, clampedAlpha);
-        parent.text(ch, x * tileW + tileW / 2, y * tileH + tileH / 2);
+        float cx = x * tileW + tileW / 2;
+        float cy = y * tileH + tileH / 2;
+        if (motion != null) {
+          PVector off = motion.getOffset(x, y, parent.frameCount);
+          cx += off.x;
+          cy += off.y;
+        }
+        parent.text(ch, cx, cy);
       }
     }
     
@@ -514,6 +523,7 @@ public class AlgorithmicTypography {
     String ch = config.getCharacter();
     
     float clampedAlpha = Math.max(0, Math.min(255, alpha));
+    CellMotion motion = config.getCellMotion();
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
@@ -521,7 +531,14 @@ public class AlgorithmicTypography {
         float sat = waveEngine.calculateSaturation(parent.frameCount, x, y, tilesX, tilesY);
         float bri = waveEngine.calculateColorCustom(parent.frameCount, x, y, tilesX, tilesY);
         parent.fill(hue, sat, bri, clampedAlpha);
-        parent.text(ch, ox + x * tileW + tileW / 2, oy + y * tileH + tileH / 2);
+        float cx = ox + x * tileW + tileW / 2;
+        float cy = oy + y * tileH + tileH / 2;
+        if (motion != null) {
+          PVector off = motion.getOffset(x, y, parent.frameCount);
+          cx += off.x;
+          cy += off.y;
+        }
+        parent.text(ch, cx, cy);
       }
     }
     

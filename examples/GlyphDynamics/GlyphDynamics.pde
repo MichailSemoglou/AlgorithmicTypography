@@ -1,5 +1,5 @@
 /*
- * GlyphPhysicsExample
+ * GlyphDynamics
  *
  * Demonstrates the GlyphPhysics class — particle-based
  * physics for glyph outlines.
@@ -27,21 +27,21 @@ int     modeIdx    = 0;
 String[] modes     = {"Points", "Lines", "Filled"};
 char[]  chars      = {'A', 'B', 'R', 'W', 'g', '&', '@', '%'};
 int     charIdx    = 0;
-float   strength   = -3.0;   // negative = repel from cursor
-float   radius     = 200.0;
+float   strength   = -3.0f;   // negative = repel from cursor
+float   radius     = 200.0f;
 boolean rainbow    = true;
 
 void setup() {
   size(1080, 1080);
 
   glyph = new GlyphExtractor(this, "Helvetica", 72);
-  glyph.setFlatness(0.4);
+  glyph.setFlatness(0.4f);
 
   physics = new GlyphPhysics(this, glyph);
   physics.setMouseAttraction(strength);
   physics.setMouseRadius(radius);
-  physics.setSpring(0.04);
-  physics.setDamping(0.88);
+  physics.setSpring(0.04f);
+  physics.setDamping(0.88f);
   physics.setPointSize(3);
   physics.setRainbow(rainbow);
 
@@ -91,11 +91,11 @@ void keyPressed() {
   if (key == 'r' || key == 'R') physics.reset();
 
   if (keyCode == UP) {
-    strength -= 0.5;
+    strength -= 0.5f;
     physics.setMouseAttraction(strength);
   }
   if (keyCode == DOWN) {
-    strength += 0.5;
+    strength += 0.5f;
     physics.setMouseAttraction(strength);
   }
 

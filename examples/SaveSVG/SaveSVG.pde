@@ -30,8 +30,8 @@ void setup() {
   config = new Configuration();
   config.setCanvasSize(width, height);
   config.setGridSize(16, 16);
-  config.setTextScale(0.55);
-  config.setWaveSpeed(1.5);
+  config.setTextScale(0.55f);
+  config.setWaveSpeed(1.5f);
   config.setWaveAngle(angles[angleIdx]);
   config.setBrightnessRange(120, 255);
   config.setHueRange(180, 320);            // cyan → magenta
@@ -111,10 +111,10 @@ void keyPressed() {
     config.setWaveAngle(angles[angleIdx]);
     println("Wave angle: " + (int)angles[angleIdx] + "°");
   } else if (keyCode == UP) {
-    config.setWaveSpeed(min(config.getWaveSpeed() + 0.2, 6.0));
+    config.setWaveSpeed(min(config.getWaveSpeed() + 0.2f, 6.0f));
     println("Speed: " + nf(config.getWaveSpeed(), 1, 1));
   } else if (keyCode == DOWN) {
-    config.setWaveSpeed(max(config.getWaveSpeed() - 0.2, 0.2));
+    config.setWaveSpeed(max(config.getWaveSpeed() - 0.2f, 0.2f));
     println("Speed: " + nf(config.getWaveSpeed(), 1, 1));
   }
 }

@@ -91,19 +91,26 @@ private void drawGrid(float tilesX, float tilesY) {
 
 #### Priority Areas
 
-- [ ] **GUI Controls**: Integration with ControlP5 for live parameter adjustment
-- [ ] **OSC Support**: Open Sound Control for external controller integration
-- [ ] **Vector Export**: SVG/PDF export functionality
-- [ ] **Performance**: GPU acceleration with P2D/P3D renderers
 - [ ] **Documentation**: Tutorials, examples, video guides
+
+#### New Motion Types
+
+The `CellMotion` base class makes it straightforward to add new per-glyph movement strategies. Ideas:
+
+- **`SpringMotion`** — glyphs pulled toward a target point with damping
+- **`GravityMotion`** — glyphs fall and bounce within their cells
+- **`MagneticMotion`** — glyphs repel/attract based on mouse position
+- **`LissajousMotion`** — figure-8 and knot-shaped orbits
+
+To add one, extend `CellMotion`, implement `getOffset(col, row, frameCount)`, and it works immediately with `config.setCellMotion()` and the full `VibePreset` pipeline.
 
 #### Other Ideas
 
-- New wave functions (Perlin noise, custom equations)
+- New wave functions (custom equations, reaction-diffusion)
 - Additional export formats (TIFF with metadata, MP4 via FFmpeg)
 - WebSocket server for browser-based control
-- p5.js port
-- Machine learning integration
+- Machine learning integration (style transfer, generative text selection)
+- Expanded p5.js port (motion types, audio reactivity)
 
 ### Submitting Pull Requests
 
@@ -156,7 +163,7 @@ ant test
 ## Questions?
 
 - Join discussions in [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions)
-- Contact maintainers: [email@example.com](mailto:email@example.com)
+- Contact maintainers: [Michail Semoglou](mailto:m.semoglou@tongji.edu.cn)
 
 ## Code of Conduct
 

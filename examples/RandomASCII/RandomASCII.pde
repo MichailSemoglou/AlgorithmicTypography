@@ -34,7 +34,7 @@ void setup() {
 
   config = new Configuration();
   config.setGridSize(cols, rows);
-  config.setWaveSpeed(2.0);
+  config.setWaveSpeed(2.0f);
   config.setBrightnessRange(80, 255);
   config.setSaveFrames(false);
   at.setConfiguration(config);

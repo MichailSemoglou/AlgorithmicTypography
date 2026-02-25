@@ -4,7 +4,7 @@
 
 [![Processing](https://img.shields.io/badge/Processing-4.x-blue)](https://processing.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+[![Version](https://img.shields.io/badge/Version-1.1.1-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
 > [!WARNING]
 > **This library is a work in progress and is not yet ready for production use.** Known errors and bugs are being actively investigated and fixed. The **PerformanceMode** and **CulturalStyles** examples have been temporarily removed from the examples folder and may be reintroduced in a later release. Please do not use this release in projects yet — an updated version will be published once all issues are resolved. Thank you for your patience.
@@ -23,8 +23,8 @@ AlgorithmicTypography is a Processing library that enables designers, researcher
 - **Cell motion** — Clockwise, counter-clockwise, and Perlin noise movement within grid cells
 - **Trail effects** — Semi-transparent overlay trails with temporal displacement
 - **Audio reactivity** — Map bass, mid, treble, and beat detection to animation parameters
-- **Cultural design presets** — Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, and more
-- **Vibe presets** — Natural-language mood mapping (e.g. "calm", "techno", "ocean")
+- **Cultural design presets** — Parameter sets inspired by Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, and related typographic traditions (see [editorial note](#editorial-note))
+- **Vibe presets** — Natural-language mood mapping (e.g. "calm", "techno", "ocean") (see [editorial note](#editorial-note))
 - **SVG/PDF export** — Vector export with full colour preservation
 - **JSON configuration** — Customise behaviour without touching code
 - **Live controls** — GUI sliders, keyboard shortcuts, and OSC input
@@ -204,11 +204,15 @@ Controls the wave propagation angle (0–360°) with UI sliders and keyboard pre
 
 ### CulturalStyles
 
-> **Temporarily removed.** This example is currently being revised and will be reintroduced in a later release.
+Applies parameter sets inspired by typographic traditions across different cultural and historical design movements — Swiss International Style, Bauhaus, Chinese ink calligraphy, Arabic Kufic geometry, Japanese minimalism, and others.
+
+> **Editorial note:** The cultural and mood presets in this library — including `DesignSystem` and `VibePreset` — are the author's artistic interpretation, informed by 30+ years of professional practice in the design industry. They are expressive starting points for creative exploration, not ethnographic, anthropological, or perceptual science models. Parameter choices (grid density, wave speed, colour range, angle) reflect aesthetic sensibility and accumulated design intuition, and should not be treated as culturally definitive or scientifically validated representations of the traditions they reference.
 
 ### VibeCoding
 
-Natural-language configuration — press a key to set a mood (calm, techno, melancholic, chaotic, ocean) and the library adjusts all parameters automatically.
+Natural-language configuration — press a key to set a mood (calm, techno, melancholic, chaotic, ocean) and the library adjusts wave speed, colour, grid density, and cell motion automatically.
+
+> **Editorial note:** The mood-to-parameter mappings in `VibePreset` are the author's artistic interpretation based on 30+ years in the design industry. They are not grounded in psychoacoustics, affective computing research, or colour psychology literature. The labels (e.g. "calm", "techno", "ocean") serve as expressive shorthand for creative workflows, not as scientifically validated mood or emotion models.
 
 ### LiveControls
 
@@ -385,6 +389,17 @@ ffmpeg -framerate 30 -i frames/*/frame_%04d.png -c:v libx264 output.mp4
 | Audio not working              | Install the Sound library (bundled with Processing 4)           |
 | Performance issues             | Reduce grid size, disable frame saving, or use P2D renderer     |
 
+## Editorial Note
+
+The **`DesignSystem`** (cultural presets) and **`VibePreset`** (natural-language mood mapping) components of this library are the author's artistic interpretation, developed from 30+ years of professional practice in the design industry. The parameter mappings — grid proportions, wave speed, colour ranges, animation angle — reflect accumulated design intuition and aesthetic sensibility, not empirical research.
+
+Specifically:
+
+- **Cultural presets** (Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, etc.) are expressive starting points inspired by broad typographic traditions. They do not claim ethnographic, anthropological, or historical accuracy, and should not be cited as culturally definitive representations.
+- **Vibe presets** (calm, techno, melancholic, chaotic, ocean, etc.) are qualitative mood anchors for creative workflows. They are not derived from psychoacoustic research, affective computing models, or colour psychology studies.
+
+Users who require culturally or scientifically rigorous representations are encouraged to define their own parameter sets using the `Configuration` API and `CellMotion` extension points.
+
 ## Citation
 
 ```bibtex
@@ -393,15 +408,14 @@ ffmpeg -framerate 30 -i frames/*/frame_%04d.png -c:v libx264 output.mp4
                for Parametric Typography Animation},
   author    = {Semoglou, Michail},
   year      = {2026},
-  version   = {1.0.0},
+  version   = {1.1.1},
   url       = {https://github.com/MichailSemoglou/AlgorithmicTypography}
 }
 ```
 
 ## Author
 
-**Michail Semoglou**
-m.semoglou@tongji.edu.cn
+[Michail Semoglou](mailto:m.semoglou@tongji.edu.cn)
 
 ## License
 

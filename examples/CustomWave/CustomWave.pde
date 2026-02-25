@@ -91,17 +91,14 @@ void setup() {
 void draw() {
   at.render();
 
-  // HUD pill
-  fill(255);
-  noStroke();
+  // HUD label
   String label = (currentWave + 1) + "/" + waveNames.length
                + "  " + waveNames[currentWave];
-  float tw = textWidth(label) + 24;
-  rect(14, 14, tw, 28, 6);
-  fill(0);
+  fill(255);
+  noStroke();
   textAlign(LEFT, CENTER);
   textSize(14);
-  text(label, 26, 28);
+  text(label, 20, 28);
 }
 
 void selectWave(int index) {

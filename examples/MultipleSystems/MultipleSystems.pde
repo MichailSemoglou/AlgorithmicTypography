@@ -22,10 +22,11 @@ void setup() {
   Configuration config1 = new Configuration();
   config1.setCharacter("A");
   config1.setGridSize(32, 32);
-  config1.setWaveSpeed(1.5);
+  config1.setWaveSpeed(1.5f);
   config1.setBrightnessRange(100, 255);
   config1.setSaveFrames(false);
   at1.setConfiguration(config1);
+  at1.initialize();
 
   // System 2 — numbers
   at2 = new AlgorithmicTypography(this);
@@ -33,10 +34,11 @@ void setup() {
   Configuration config2 = new Configuration();
   config2.setCharacter("1");
   config2.setGridSize(32, 32);
-  config2.setWaveSpeed(2.5);
+  config2.setWaveSpeed(2.5f);
   config2.setBrightnessRange(50, 200);
   config2.setSaveFrames(false);
   at2.setConfiguration(config2);
+  at2.initialize();
 
   println("MultipleSystems — two grids side by side");
 }

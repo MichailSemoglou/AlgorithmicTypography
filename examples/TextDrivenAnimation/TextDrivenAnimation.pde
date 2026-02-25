@@ -34,7 +34,7 @@ void setup() {
   config = new ObservableConfiguration();
   config.setCanvasSize(width, height);
   config.setGridSize(12, 8);
-  config.setTextScale(0.5);
+  config.setTextScale(0.5f);
   config.setSaveFrames(false);
 
   at = new AlgorithmicTypography(this);
@@ -72,7 +72,7 @@ void renderWordGrid() {
   colorMode(HSB, 360, 255, 255);
 
   int wi = 0;
-  float t = frameCount * 0.03;   // time factor for animation
+  float t = frameCount * 0.03f;   // time factor for animation
 
   for (int x = 0; x < tilesX; x++) {
     for (int y = 0; y < tilesY; y++) {
@@ -81,9 +81,9 @@ void renderWordGrid() {
       String word = gridWords[wi];
 
       // Wave-driven colour: hue cycles with position + time
-      float hue = (sin(t + x * 0.4 + y * 0.3) * 0.5 + 0.5) * 360;
-      float sat = 180 + sin(t * 0.7 + wi * 0.1) * 75;
-      float bri = 180 + cos(t + (x + y) * 0.5) * 75;
+      float hue = (sin(t + x * 0.4f + y * 0.3f) * 0.5f + 0.5f) * 360;
+      float sat = 180 + sin(t * 0.7f + wi * 0.1f) * 75;
+      float bri = 180 + cos(t + (x + y) * 0.5f) * 75;
 
       fill(hue, sat, bri);
       pushMatrix();

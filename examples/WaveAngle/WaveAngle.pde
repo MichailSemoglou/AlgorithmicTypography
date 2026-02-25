@@ -83,7 +83,7 @@ void draw() {
 void buildSliders() {
   float tw = panelW - pad * 2 - 140;   // track width
 
-  speedSlider  = mkSlider("Wave Speed",  0.1, 10,  config.getWaveSpeed(),  tw, 1);
+  speedSlider  = mkSlider("Wave Speed",  0.1f, 10, config.getWaveSpeed(),  tw, 1);
   angleSlider  = mkSlider("Wave Angle",    0, 360, config.getWaveAngle(),  tw, 0).setSuffix("°");
   hueMinSlider = mkSlider("Hue Min",       0, 360, config.getHueMin(),     tw, 0).setSuffix("°");
   hueMaxSlider = mkSlider("Hue Max",       0, 360, config.getHueMax(),     tw, 0).setSuffix("°");

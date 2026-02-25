@@ -31,13 +31,14 @@
  * </table>
  * 
  * @author Michail Semoglou
- * @version 1.0.0
+ * @version 1.1.1
  * @since 1.0.0
  */
 
 package algorithmic.typography.system;
 
 import algorithmic.typography.Configuration;
+import algorithmic.typography.core.PerlinMotion;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,13 +78,15 @@ public class VibePreset {
     VIBE_MAP.put("nostalgic", new VibeParams(0.9f, 20, 80, 1.5f, 12, 12));
     
     // Chaotic vibes — full-spectrum rainbow, extreme angle
-    VIBE_MAP.put("chaos",   new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
+    VIBE_MAP.put("chaos",    new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
                                              200f, 0f, 360f, 180f, 255f));
-    VIBE_MAP.put("glitch",  new VibeParams(7.0f, 80, 255, 10.0f, 64, 48,
+    VIBE_MAP.put("chaotic",  new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
+                                             200f, 0f, 360f, 180f, 255f));
+    VIBE_MAP.put("glitch",   new VibeParams(7.0f, 80, 255, 10.0f, 64, 48,
                                              225f, 80f, 200f, 150f, 255f));
-    VIBE_MAP.put("noise",   new VibeParams(5.5f, 120, 255, 7.0f, 40, 40,
+    VIBE_MAP.put("noise",    new VibeParams(5.5f, 120, 255, 7.0f, 40, 40,
                                              180f, 30f, 360f, 160f, 255f));
-    VIBE_MAP.put("digital", new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
+    VIBE_MAP.put("digital",  new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
                                              210f, 150f, 270f, 180f, 255f));
     
     // Ocean vibes — 90° wave angle for horizontal rolling waves
@@ -164,12 +167,18 @@ public class VibePreset {
     }
     if (vibe == null || vibe.trim().isEmpty()) {
       applyBalanced(config);
+      config.setCellMotion(null);
       return;
     }
     
     String[] words = vibe.toLowerCase().split("\\s+");
     applyCompound(config, words);
   }
+  
+  // Chaotic vibe keywords that trigger Perlin motion
+  private static final java.util.Set<String> CHAOTIC_WORDS = new java.util.HashSet<>(java.util.Arrays.asList(
+    "chaos", "chaotic", "glitch", "noise", "digital"
+  ));
   
   /**
    * Applies multiple vibes by blending their parameters.
@@ -214,6 +223,7 @@ public class VibePreset {
     if (matchedCount == 0) {
       // No recognized vibes - use balanced default
       applyBalanced(config);
+      config.setCellMotion(null);
       return;
     }
     
@@ -239,6 +249,16 @@ public class VibePreset {
       config.setSaturationMax(0);
     }
     
+    // If any matched word is chaotic, use Perlin noise motion; otherwise clear it
+    boolean usesPerlin = false;
+    for (String word : words) {
+      if (CHAOTIC_WORDS.contains(word)) {
+        usesPerlin = true;
+        break;
+      }
+    }
+    config.setCellMotion(usesPerlin ? new PerlinMotion(14, 1.5f) : null);
+    
     // Set changed tiles to be different from initial
     config.setChangedTilesX(Math.max(4, config.getInitialTilesX() / 2));
     config.setChangedTilesY(Math.max(4, config.getInitialTilesY() / 2));
@@ -260,6 +280,7 @@ public class VibePreset {
     config.setHueRange(0, 0);
     config.setSaturationMin(0);
     config.setSaturationMax(0);
+    config.setCellMotion(null);
   }
   
   /**
@@ -278,6 +299,7 @@ public class VibePreset {
     config.setHueRange(270f, 330f);
     config.setSaturationMin(200f);
     config.setSaturationMax(255f);
+    config.setCellMotion(null);
   }
   
   /**
@@ -296,6 +318,7 @@ public class VibePreset {
     config.setHueRange(0, 0);
     config.setSaturationMin(0);
     config.setSaturationMax(0);
+    config.setCellMotion(null);
   }
   
   /**
@@ -314,6 +337,7 @@ public class VibePreset {
     config.setHueRange(0f, 360f);
     config.setSaturationMin(180f);
     config.setSaturationMax(255f);
+    config.setCellMotion(new PerlinMotion(14, 1.5f));
   }
   
   /**
@@ -332,6 +356,7 @@ public class VibePreset {
     config.setHueRange(0, 0);
     config.setSaturationMin(0);
     config.setSaturationMax(0);
+    config.setCellMotion(null);
   }
   
   /**
@@ -350,6 +375,7 @@ public class VibePreset {
     config.setHueRange(0, 0);
     config.setSaturationMin(0);
     config.setSaturationMax(0);
+    config.setCellMotion(null);
   }
   
   /**
@@ -391,5 +417,6 @@ public class VibePreset {
     config.setGridSize(tiles, tiles);
     config.setChangedTilesX(tiles / 2);
     config.setChangedTilesY(tiles / 2);
+    config.setCellMotion(intensity > 0.7f ? new PerlinMotion(6 + (int)(intensity * 12), 1.0f + intensity * 0.5f) : null);
   }
 }
