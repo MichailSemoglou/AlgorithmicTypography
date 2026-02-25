@@ -32,9 +32,10 @@ jobs:
           wget -q https://github.com/processing/processing4/releases/download/processing-1313-4.5.2/processing-4.5.2-linux-x64-portable.zip
           mkdir -p processing
           unzip -q processing-4.5.2-linux-x64-portable.zip -d processing
-          # Debug: show what was extracted
           echo "Top-level contents:" && ls processing/
-          # Locate core library directory for the build
+
+      - name: Resolve Processing core path
+        run: |
           CORE_DIR=$(find processing -path "*/core/library/core*.jar" -not -name "*natives*" -exec dirname {} \; | head -1)
           if [ -z "$CORE_DIR" ]; then
             echo "ERROR: Could not find core JAR. Full tree:"
