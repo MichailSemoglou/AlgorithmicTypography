@@ -130,7 +130,6 @@
         <include name="library.properties"/>
         <include name="README.md"/>
         <include name="LICENSE"/>
-        <include name="CHANGELOG.md"/>
 
       </zipfileset>
     </zip>
