@@ -10,6 +10,8 @@
  *   1  Perlin         — organic, noise-driven wandering
  *   2  Circular CW    — clockwise orbits with per-cell phase offset
  *   3  Circular CCW   — counter-clockwise orbits
+ *   4  Lissajous      — figure-8 and knot-shaped orbits
+ *   5  Spring         — spring-damped glyphs pulled toward a drifting target
  *
  * Controls:
  *   M / click   Cycle motion mode
@@ -22,24 +24,28 @@ import algorithmic.typography.*;
 import algorithmic.typography.core.CellMotion;
 import algorithmic.typography.core.PerlinMotion;
 import algorithmic.typography.core.CircularMotion;
+import algorithmic.typography.core.LissajousMotion;
+import algorithmic.typography.core.SpringMotion;
 
 AlgorithmicTypography at;
 Configuration        config;
 
 // Motion instances (reused across keypresses so radius/speed edits stick)
-PerlinMotion    perlin = new PerlinMotion(12, 1.0);
-CircularMotion  cwMotion  = new CircularMotion(12, 1.0, true);
-CircularMotion  ccwMotion = new CircularMotion(12, 1.0, false);
+PerlinMotion    perlin       = new PerlinMotion(12, 1.0);
+CircularMotion  cwMotion     = new CircularMotion(12, 1.0, true);
+CircularMotion  ccwMotion    = new CircularMotion(12, 1.0, false);
+LissajousMotion lissajous      = new LissajousMotion(12, 1.0);   // figure-8 default
+SpringMotion    springMotion   = new SpringMotion(12, 1.0);       // spring-damped
 
 int      motionIdx = 1;   // start on Perlin
-String[] motionLabels = {"None", "Perlin", "Circular CW", "Circular CCW"};
+String[] motionLabels = {"None", "Perlin", "Circular CW", "Circular CCW", "Lissajous", "Spring"};
 
 void setup() {
   size(1080, 1080);
 
   config = new Configuration();
   config.setCanvasSize(width, height);
-  config.setGridSize(24, 24, 12, 12);
+  config.setGridSize(24, 24, 12, 12, 6, 6);
   config.setCharacter("A");
   config.setTextScale(0.65);
   config.setWaveSpeed(1.6);
@@ -71,10 +77,12 @@ void draw() {
 
 void applyMotion(int idx) {
   switch (idx) {
-    case 0: config.setCellMotion(null);      break;
-    case 1: config.setCellMotion(perlin);    break;
-    case 2: config.setCellMotion(cwMotion);  break;
-    case 3: config.setCellMotion(ccwMotion); break;
+    case 0: config.setCellMotion(null);         break;
+    case 1: config.setCellMotion(perlin);        break;
+    case 2: config.setCellMotion(cwMotion);      break;
+    case 3: config.setCellMotion(ccwMotion);     break;
+    case 4: config.setCellMotion(lissajous);     break;
+    case 5: config.setCellMotion(springMotion);   break;
   }
 }
 
@@ -84,6 +92,8 @@ CellMotion activeMotion() {
     case 1: return perlin;
     case 2: return cwMotion;
     case 3: return ccwMotion;
+    case 4: return lissajous;
+    case 5: return springMotion;
     default: return null;
   }
 }

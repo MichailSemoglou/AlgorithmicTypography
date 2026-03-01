@@ -19,7 +19,7 @@
  * at.initialize();
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  */
 package algorithmic.typography;

@@ -12,9 +12,13 @@
  * - {@link CellMotion}: Abstract base for per-cell glyph movement
  * - {@link CircularMotion}: Clockwise / counter-clockwise orbital motion
  * - {@link PerlinMotion}: Perlin-noise organic wandering
+ * - {@link LissajousMotion}: Figure-8 and knot-shaped Lissajous orbits
+ * - {@link SpringMotion}: Spring-damped glyphs pulled toward a drifting target
+ * - {@link GravityMotion}: Gravity-driven fall and bounce within a cell
+ * - {@link MagneticMotion}: Mouse-driven repel / attract field
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  */
 package algorithmic.typography.core;

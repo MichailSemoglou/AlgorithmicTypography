@@ -102,4 +102,49 @@ public class ConfigurationTest {
     // Should still validate
     assertDoesNotThrow(() -> config.validate());
   }
+
+  @Test
+  @DisplayName("setBackgroundColor(gray) sets all channels equally")
+  void testBackgroundColorGray() {
+    config.setBackgroundColor(128);
+    assertEquals(128, config.getBackgroundRed());
+    assertEquals(128, config.getBackgroundGreen());
+    assertEquals(128, config.getBackgroundBlue());
+  }
+
+  @Test
+  @DisplayName("setBackgroundColor(r,g,b) sets channels independently")
+  void testBackgroundColorRGB() {
+    config.setBackgroundColor(10, 20, 30);
+    assertEquals(10, config.getBackgroundRed());
+    assertEquals(20, config.getBackgroundGreen());
+    assertEquals(30, config.getBackgroundBlue());
+  }
+
+  @Test
+  @DisplayName("setBackgroundColor rejects out-of-range values")
+  void testBackgroundColorOutOfRange() {
+    assertThrows(IllegalArgumentException.class, () -> config.setBackgroundColor(-1));
+    assertThrows(IllegalArgumentException.class, () -> config.setBackgroundColor(256));
+    assertThrows(IllegalArgumentException.class, () -> config.setBackgroundColor(0, 0, 256));
+  }
+
+  @Test
+  @DisplayName("Background colour defaults to black")
+  void testBackgroundColorDefault() {
+    Configuration fresh = new Configuration();
+    assertEquals(0, fresh.getBackgroundRed());
+    assertEquals(0, fresh.getBackgroundGreen());
+    assertEquals(0, fresh.getBackgroundBlue());
+  }
+
+  @Test
+  @DisplayName("copy() preserves background colour")
+  void testBackgroundColorCopy() {
+    config.setBackgroundColor(50, 100, 150);
+    Configuration copy = config.copy();
+    assertEquals(50,  copy.getBackgroundRed());
+    assertEquals(100, copy.getBackgroundGreen());
+    assertEquals(150, copy.getBackgroundBlue());
+  }
 }

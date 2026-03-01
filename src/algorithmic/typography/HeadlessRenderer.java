@@ -6,7 +6,7 @@
  * Uses offscreen PGraphics for pure software rendering.
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  */
 
@@ -102,7 +102,7 @@ public class HeadlessRenderer {
     }
     
     buffer.beginDraw();
-    buffer.background(0);
+    buffer.background(config.getBackgroundRed(), config.getBackgroundGreen(), config.getBackgroundBlue());
     
     float tilesX = config.getInitialTilesX();
     float tilesY = config.getInitialTilesY();

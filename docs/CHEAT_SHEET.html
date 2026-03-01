@@ -255,7 +255,7 @@
       <div class="page-header">
         <h1>AlgorithmicTypography — Cheat Sheet</h1>
         <span class="sub"
-          >Processing Library v1.1.1 &nbsp;|&nbsp; Page 1 / 4</span
+          >Processing Library v0.2.2 &nbsp;|&nbsp; Page 1 / 4</span
         >
       </div>
 
@@ -440,7 +440,10 @@ at.<span class="fn">initialize</span>();
     <span class="key">"brightnessMin"</span>: <span class="num">50</span>,
     <span class="key">"brightnessMax"</span>: <span class="num">255</span>,
     <span class="key">"waveAmplitudeMin"</span>: <span class="num">-200</span>,
-    <span class="key">"waveAmplitudeMax"</span>: <span class="num">200</span>
+    <span class="key">"waveAmplitudeMax"</span>: <span class="num">200</span>,
+    <span class="key">"backgroundR"</span>: <span class="num">0</span>,
+    <span class="key">"backgroundG"</span>: <span class="num">0</span>,
+    <span class="key">"backgroundB"</span>: <span class="num">0</span>
   }
 }
 </code></pre>
@@ -491,15 +494,23 @@ at.<span class="fn">initialize</span>();
 
             <p style="margin-top: 5px">Vibe coding — natural language</p>
             <pre><code>at.<span class="fn">setVibe</span>(<span class="str">"calm ocean waves"</span>);
-at.<span class="fn">setVibe</span>(<span class="str">"chaotic energy"</span>);
+at.<span class="fn">setVibe</span>(<span class="str">"chaos energy"</span>);
 at.<span class="fn">setVibe</span>(<span class="str">"geometric minimal"</span>);
 </code></pre>
 
-            <p style="margin-top: 5px">Glyph motion (v1.1.1)</p>
+            <p style="margin-top: 5px">Glyph motion (v0.2.1)</p>
             <pre><code><span class="cm">// Perlin noise wander</span>
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">PerlinMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>));
 <span class="cm">// Circular orbital (CW / CCW)</span>
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">CircularMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>, <span class="kw">true</span>));
+<span class="cm">// Lissajous figure-8 (1:2) or knot (3:2)</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">LissajousMotion</span>(<span class="num">10</span>, <span class="num">1.0f</span>));
+<span class="cm">// Spring-damped glyphs</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">SpringMotion</span>(<span class="num">0.35f</span>, <span class="num">0.12f</span>));
+<span class="cm">// Gravity + bounce  (kick() for impulse)</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">GravityMotion</span>(<span class="num">0.4f</span>, <span class="num">0.7f</span>));
+<span class="cm">// Mouse repel/attract field</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">MagneticMotion</span>(<span class="kw">this</span>));
 <span class="cm">// Disable</span>
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">null</span>);
 </code></pre>
@@ -691,6 +702,11 @@ cfg.<span class="fn">getFadeDuration</span>();    <span class="cm">// crossfade 
                 <td>-200 / 200</td>
               </tr>
               <tr>
+                <td>getBackgroundRed/Green/Blue()</td>
+                <td>int</td>
+                <td>0</td>
+              </tr>
+              <tr>
                 <td>isSaveFrames()</td>
                 <td>boolean</td>
                 <td>false</td>
@@ -777,6 +793,12 @@ at.<span class="fn">setFrameSaving</span>(<span class="num">true</span>);
 <span class="fn">println</span>(at.<span class="fn">getFramesDirectory</span>());
 </code></pre>
 
+            <p style="margin-top: 5px">
+              <span class="tag">HSB</span> Colours render correctly in PDF &amp;
+              SVG — the library switches <code>colorMode(HSB)</code> before
+              every draw call and restores <code>RGB</code> after. Hue-driven
+              palettes look identical on screen and in export.
+            </p>
             <p style="margin-top: 5px">Save vector SVG</p>
             <pre><code><span class="kw">import</span> processing.svg.*;
 
@@ -890,7 +912,7 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         >
       </div>
 
-      <div class="section-title">Examples Gallery — 20 Sketches</div>
+      <div class="section-title">Examples Gallery — 23 Sketches</div>
 
       <div class="cols-4" style="margin-bottom: 6px">
         <div class="example-card">
@@ -933,6 +955,13 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
           </div>
         </div>
         <div class="example-card">
+          <div class="name">GlyphDesign</div>
+          <div class="desc">
+            fillWithPoints, distributeAlongOutline, getOuterContour /
+            getInnerContours — geometric glyph analysis (v0.2.2).
+          </div>
+        </div>
+        <div class="example-card">
           <div class="name">GlyphPath</div>
           <div class="desc">
             Access individual glyph outlines as PShape paths.
@@ -941,12 +970,26 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         <div class="example-card">
           <div class="name">GlyphWander</div>
           <div class="desc">
-            Cycle Perlin / Circular / no motion per cell (CellMotion API).
+            Cycle all 6 motion types: Perlin, Circular, Lissajous, Spring,
+            Gravity, Magnetic (+ no motion).
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GravityDynamics</div>
+          <div class="desc">
+            Glyphs fall and bounce with live sliders; SPACE triggers an upward
+            kick impulse.
           </div>
         </div>
         <div class="example-card">
           <div class="name">LiveControls</div>
           <div class="desc">Adjust parameters live via WebSocket UI.</div>
+        </div>
+        <div class="example-card">
+          <div class="name">MagneticDynamics</div>
+          <div class="desc">
+            Mouse-driven repel/attract field; SPACE toggles polarity; 3 presets.
+          </div>
         </div>
         <div class="example-card">
           <div class="name">MultiPhoto</div>
@@ -989,12 +1032,15 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         </div>
         <div class="example-card">
           <div class="name">TrailEffect</div>
-          <div class="desc">Motion trail / ghosting effect on the grid.</div>
+          <div class="desc">
+            Motion trail / ghosting across all 6 CellMotion types.
+          </div>
         </div>
         <div class="example-card">
           <div class="name">VibeCoding</div>
           <div class="desc">
-            Natural-language vibe strings control the aesthetic.
+            All 26 vibe keywords across 7 groups; ←/→ cycle, SPACE random
+            compound.
           </div>
         </div>
         <div class="example-card">
@@ -1006,7 +1052,7 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
       </div>
 
       <!-- ── Row 2 ──────────────────────────────────────── -->
-      <div class="cols-2">
+      <div class="cols-3">
         <!-- ── PACKAGE STRUCTURE ──────────────────────────── -->
         <div class="card">
           <div class="card-header">Package Structure</div>
@@ -1059,6 +1105,66 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
                 <td>UI components for live controls</td>
               </tr>
             </table>
+          </div>
+        </div>
+
+        <!-- ── GLYPH EXTRACTOR ────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">GlyphExtractor API (v0.2.2)</div>
+          <div class="card-body">
+            <p>Designer-oriented glyph geometry access</p>
+            <pre><code><span class="kw">import</span> <span class="ty">algorithmic.typography.render.GlyphExtractor</span>;
+<span class="kw">import</span> <span class="ty">java.util.List</span>;
+
+<span class="ty">GlyphExtractor</span> g = <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Helvetica"</span>, <span class="num">72</span>);
+g.<span class="fn">setFlatness</span>(<span class="num">0.3</span>); <span class="cm">// curve resolution</span>
+</code></pre>
+            <table class="vtop" style="margin-top: 4px">
+              <tr>
+                <th>Method</th>
+                <th>Returns</th>
+              </tr>
+              <tr>
+                <td>fillWithPoints(ch, size, n)</td>
+                <td>PVector[]</td>
+              </tr>
+              <tr>
+                <td>distributeAlongOutline(ch, size, n)</td>
+                <td>PVector[]</td>
+              </tr>
+              <tr>
+                <td>getOuterContour(ch, size)</td>
+                <td>PVector[]</td>
+              </tr>
+              <tr>
+                <td>getInnerContours(ch, size)</td>
+                <td>List&lt;PVector[]&gt;</td>
+              </tr>
+              <tr>
+                <td>getContours(ch, size)</td>
+                <td>List&lt;PVector[]&gt;</td>
+              </tr>
+              <tr>
+                <td>resample(pts, n)</td>
+                <td>PVector[]</td>
+              </tr>
+              <tr>
+                <td>getBounds(ch, size)</td>
+                <td>float[4]</td>
+              </tr>
+              <tr>
+                <td>extractChar(ch, size)</td>
+                <td>PShape</td>
+              </tr>
+              <tr>
+                <td>extractDeformed(ch, size, …)</td>
+                <td>PShape</td>
+              </tr>
+            </table>
+            <p style="margin-top: 4px">
+              <span class="tag">String overloads</span> available for all four
+              v0.2.2 methods. See <span class="tag">GlyphDesign</span> example.
+            </p>
           </div>
         </div>
 
@@ -1149,7 +1255,7 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
       </div>
 
       <div class="page-footer">
-        Page 4 / 4 &nbsp;·&nbsp; AlgorithmicTypography v1.1.1 &nbsp;·&nbsp;
+        Page 4 / 4 &nbsp;·&nbsp; AlgorithmicTypography v0.2.2 &nbsp;·&nbsp;
         Processing 4+
       </div>
     </div>

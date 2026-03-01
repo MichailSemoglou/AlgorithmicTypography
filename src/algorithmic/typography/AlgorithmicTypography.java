@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  */
 
@@ -77,7 +77,7 @@ import algorithmic.typography.system.VibePreset;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @see Configuration
  * @see WaveEngine
  */
@@ -320,7 +320,7 @@ public class AlgorithmicTypography {
       return;
     }
     
-    parent.background(0);
+    parent.background(config.getBackgroundRed(), config.getBackgroundGreen(), config.getBackgroundBlue());
     
     // Update wave engine once per frame (before any grid drawing)
     waveEngine.update(parent.frameCount, config.getWaveSpeed());

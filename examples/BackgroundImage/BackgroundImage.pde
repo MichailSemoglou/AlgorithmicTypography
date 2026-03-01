@@ -24,6 +24,7 @@ import algorithmic.typography.*;
 AlgorithmicTypography at;
 PImage bg;
 Configuration cfg;
+String framesDir;
 
 void setup() {
   size(800, 800);
@@ -37,6 +38,7 @@ void setup() {
   at.initialize();
   cfg = at.getConfiguration();
 
+  framesDir = "frames/" + nf(year(),4) + nf(month(),2) + nf(day(),2) + "_" + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
   println("BackgroundImage — press R to restart, S to toggle saving");
 }
 
@@ -46,7 +48,7 @@ void draw() {
 
   // Save frame if enabled (renderAt doesn't auto-save)
   if (cfg.isSaveFrames()) {
-    saveFrame("frames/frame-####.png");
+    saveFrame(framesDir + "/frame_####.png");
   }
 }
 

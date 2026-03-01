@@ -17,6 +17,9 @@
  *   <li>Access raw contour vertices for custom deformation</li>
  *   <li>Wave-driven vertex displacement using WaveEngine</li>
  *   <li>PShape output for easy rendering and SVG export</li>
+ *   <li>Fill letterform interiors with scattered points ({@code fillWithPoints})</li>
+ *   <li>Evenly distribute points along the perimeter by arc length ({@code distributeAlongOutline})</li>
+ *   <li>Separate outer boundary from inner counter-forms ({@code getOuterContour} / {@code getInnerContours})</li>
  * </ul>
  * 
  * <h2>Example Usage</h2>
@@ -30,7 +33,7 @@
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.2
  * @since 1.0.0
  */
 
@@ -379,6 +382,104 @@ public class GlyphExtractor {
                        (float) r.getWidth(), (float) r.getHeight()};
   }
   
+  // ── Designer utilities (v0.2.2) ────────────────────────────────
+  
+  /**
+   * Fills a character outline with randomly distributed interior points.
+   *
+   * <p>Uses the AWT shape's built-in containment test so every returned
+   * point is guaranteed to lie inside the closed letterform. Counter-forms
+   * (e.g. the hole in 'O') are correctly excluded.</p>
+   *
+   * @param ch       the character to fill
+   * @param fontSize the font size
+   * @param count    the target number of interior points
+   * @return array of PVector points scattered inside the letterform
+   */
+  public PVector[] fillWithPoints(char ch, float fontSize, int count) {
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
+    return sampleInteriorPoints(gv.getOutline(), count);
+  }
+  
+  /**
+   * Fills a string outline with randomly distributed interior points.
+   *
+   * @param text     the text string
+   * @param fontSize the font size
+   * @param count    the target number of interior points
+   * @return array of PVector points scattered inside the letterforms
+   */
+  public PVector[] fillWithPoints(String text, float fontSize, int count) {
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, text);
+    return sampleInteriorPoints(gv.getOutline(), count);
+  }
+  
+  /**
+   * Distributes N points evenly by arc length along the full perimeter.
+   *
+   * <p>Unlike {@link #getContourPoints(char, float)}, which returns raw
+   * tessellation vertices (non-uniform spacing), this method resamples
+   * by arc length so every neighbouring point is exactly
+   * {@code totalPerimeter/count} apart. Useful for necklace-of-dots
+   * effects, flow-field seeding, and stroke-based rendering.</p>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @param count    the number of evenly spaced perimeter points
+   * @return array of evenly distributed PVector points along the outline
+   */
+  public PVector[] distributeAlongOutline(char ch, float fontSize, int count) {
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
+    return resamplePerContour(extractContours(gv.getOutline()), count);
+  }
+  
+  /**
+   * Distributes N points evenly by arc length along a string's full perimeter.
+   *
+   * @param text     the text string
+   * @param fontSize the font size
+   * @param count    the number of evenly spaced perimeter points
+   * @return array of evenly distributed PVector points along the outline
+   */
+  public PVector[] distributeAlongOutline(String text, float fontSize, int count) {
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, text);
+    return resamplePerContour(extractContours(gv.getOutline()), count);
+  }
+  
+  /**
+   * Returns only the outer boundary contour of a character.
+   *
+   * <p>For letters with counter-forms (e.g. 'O', 'B', 'P', 'R'), this
+   * returns the outermost closed path, identified as the contour with the
+   * largest enclosed area via the shoelace formula. Inner holes are excluded.</p>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @return the outer contour as an array of PVectors, or an empty array
+   */
+  public PVector[] getOuterContour(char ch, float fontSize) {
+    return largestContour(getContours(ch, fontSize));
+  }
+  
+  /**
+   * Returns the inner contours (counter-forms, holes) of a character.
+   *
+   * <p>The inner contours are all closed paths except the one with the
+   * largest enclosed area. For letters without counters (e.g. 'L', 'V'),
+   * this returns an empty list.</p>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @return list of inner contours, each as an array of PVectors
+   */
+  public List<PVector[]> getInnerContours(char ch, float fontSize) {
+    return allButLargest(getContours(ch, fontSize));
+  }
+  
   // ── Internal conversion ────────────────────────────────────────
   
   /**
@@ -525,5 +626,123 @@ public class GlyphExtractor {
     }
     
     return group;
+  }
+  
+  /**
+   * Samples random points inside an AWT shape using rejection sampling.
+   * Uses the shape's built-in containment test; counters are excluded automatically.
+   */
+  private PVector[] sampleInteriorPoints(Shape shape, int count) {
+    java.awt.geom.Rectangle2D bounds = shape.getBounds2D();
+    float bx = (float) bounds.getX();
+    float by = (float) bounds.getY();
+    float bw = (float) bounds.getWidth();
+    float bh = (float) bounds.getHeight();
+    
+    List<PVector> result = new ArrayList<>(count);
+    int maxAttempts = count * 50; // guard against infinite loop on narrow glyphs
+    int attempts = 0;
+    
+    while (result.size() < count && attempts < maxAttempts) {
+      float x = bx + parent.random(bw);
+      float y = by + parent.random(bh);
+      if (shape.contains(x, y)) {
+        result.add(new PVector(x, y));
+      }
+      attempts++;
+    }
+    
+    return result.toArray(new PVector[0]);
+  }
+  
+  /**
+   * Resamples each contour independently, allocating points proportionally
+   * by arc length, then concatenates all results. This prevents phantom
+   * straight lines between separate contours (outer boundary and counters).
+   */
+  private PVector[] resamplePerContour(List<PVector[]> contours, int totalCount) {
+    if (contours.isEmpty()) return new PVector[0];
+
+    // Compute arc length of each contour
+    float totalLen = 0;
+    float[] lengths = new float[contours.size()];
+    for (int i = 0; i < contours.size(); i++) {
+      PVector[] c = contours.get(i);
+      float len = 0;
+      for (int j = 1; j < c.length; j++) {
+        len += PVector.dist(c[j - 1], c[j]);
+      }
+      // Also close the loop: last point → first
+      if (c.length > 1) len += PVector.dist(c[c.length - 1], c[0]);
+      lengths[i] = len;
+      totalLen += len;
+    }
+
+    // Allocate count proportionally; guarantee at least 2 per contour
+    List<PVector> result = new ArrayList<>(totalCount);
+    for (int i = 0; i < contours.size(); i++) {
+      int n = Math.max(2, Math.round(totalCount * lengths[i] / totalLen));
+      // Close the contour before resampling so the arc back to [0] is covered.
+      // resample(n+1) gives n evenly-spaced points + a duplicate of [0] at the
+      // tail; we keep only the first n so there is no repeated start point.
+      PVector[] c = contours.get(i);
+      PVector[] closed = new PVector[c.length + 1];
+      System.arraycopy(c, 0, closed, 0, c.length);
+      closed[c.length] = c[0].copy();
+      PVector[] resampled = resample(closed, n + 1);
+      for (int j = 0; j < n; j++) result.add(resampled[j]);
+    }
+    return result.toArray(new PVector[0]);
+  }
+
+  /**
+   * Computes the signed area of a contour via the shoelace formula.
+   * Positive = clockwise in screen coords (Y-down); negative = counter-clockwise.
+   */
+  private float signedArea(PVector[] pts) {
+    float area = 0;
+    int n = pts.length;
+    for (int i = 0; i < n; i++) {
+      PVector a = pts[i];
+      PVector b = pts[(i + 1) % n];
+      area += (a.x * b.y) - (b.x * a.y);
+    }
+    return area * 0.5f;
+  }
+  
+  /**
+   * Returns the contour with the largest absolute area (the outer boundary).
+   */
+  private PVector[] largestContour(List<PVector[]> contours) {
+    if (contours.isEmpty()) return new PVector[0];
+    PVector[] best = contours.get(0);
+    float bestArea = Math.abs(signedArea(best));
+    for (int i = 1; i < contours.size(); i++) {
+      float a = Math.abs(signedArea(contours.get(i)));
+      if (a > bestArea) {
+        bestArea = a;
+        best = contours.get(i);
+      }
+    }
+    return best;
+  }
+  
+  /**
+   * Returns all contours except the one with the largest absolute area (the inner holes).
+   */
+  private List<PVector[]> allButLargest(List<PVector[]> contours) {
+    if (contours.size() <= 1) return new ArrayList<>();
+    int largestIdx = 0;
+    float bestArea = Math.abs(signedArea(contours.get(0)));
+    for (int i = 1; i < contours.size(); i++) {
+      float a = Math.abs(signedArea(contours.get(i)));
+      if (a > bestArea) {
+        bestArea = a;
+        largestIdx = i;
+      }
+    }
+    List<PVector[]> result = new ArrayList<>(contours);
+    result.remove(largestIdx);
+    return result;
   }
 }

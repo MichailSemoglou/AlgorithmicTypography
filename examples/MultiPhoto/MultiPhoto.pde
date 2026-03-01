@@ -24,6 +24,7 @@ import algorithmic.typography.*;
 
 AlgorithmicTypography at;
 Configuration cfg;
+String framesDir;
 
 // Maximum grid dimension across all stages
 final int MAX_CELLS = 16;
@@ -77,6 +78,7 @@ void setup() {
   cfg = at.getConfiguration();
   startTime = millis();
 
+  framesDir = "frames/" + nf(year(),4) + nf(month(),2) + nf(day(),2) + "_" + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
   println("MultiPhoto — press R to restart, S to toggle saving");
 }
 
@@ -121,7 +123,7 @@ void draw() {
 
   // ── Save frame if enabled (renderAt doesn't auto-save) ──
   if (cfg.isSaveFrames()) {
-    saveFrame("frames/frame-####.png");
+    saveFrame(framesDir + "/frame_####.png");
   }
 }
 

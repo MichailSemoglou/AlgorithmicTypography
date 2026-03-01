@@ -6,7 +6,7 @@
  * changes in real-time.
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  */
 
 package algorithmic.typography;

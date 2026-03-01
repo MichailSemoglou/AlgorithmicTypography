@@ -15,10 +15,14 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  * @see CircularMotion
  * @see PerlinMotion
+ * @see LissajousMotion
+ * @see SpringMotion
+ * @see GravityMotion
+ * @see MagneticMotion
  */
 
 package algorithmic.typography.core;

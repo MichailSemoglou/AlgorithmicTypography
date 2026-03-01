@@ -6,7 +6,7 @@
  * multiple output formats including raster and vector.
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  */
 
 package algorithmic.typography.render;
@@ -93,7 +93,7 @@ public class GridRenderer {
     
     boolean offscreen = (useBuffer && buffer != null);
     if (offscreen) target.beginDraw();
-    target.background(0);
+    target.background(config.getBackgroundRed(), config.getBackgroundGreen(), config.getBackgroundBlue());
     target.noStroke();
     target.textSize(textSz);
     target.textAlign(PApplet.CENTER, PApplet.CENTER);
@@ -145,7 +145,7 @@ public class GridRenderer {
     String ch = config.getCharacter();
     
     target.beginDraw();
-    target.background(0);
+    target.background(config.getBackgroundRed(), config.getBackgroundGreen(), config.getBackgroundBlue());
     target.noStroke();
     target.textSize(textSz);
     target.textAlign(PApplet.CENTER, PApplet.CENTER);

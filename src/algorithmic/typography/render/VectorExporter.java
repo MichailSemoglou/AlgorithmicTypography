@@ -7,7 +7,7 @@
  * quality loss and includes embedded metadata.
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  */
 
 package algorithmic.typography.render;
@@ -247,7 +247,7 @@ public class VectorExporter {
     float tileW = (float)width / tilesX;
     float tileH = (float)height / tilesY;
     
-    parent.background(0);
+    parent.background(config.getBackgroundRed(), config.getBackgroundGreen(), config.getBackgroundBlue());
     parent.noStroke();
     
     waveEngine.update(parent.frameCount, config.getWaveSpeed());

@@ -31,7 +31,7 @@
  * </table>
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  */
 
@@ -55,11 +55,15 @@ public class VibePreset {
   private static final Map<String, VibeParams> VIBE_MAP = new HashMap<>();
   
   static {
-    // Calm vibes
-    VIBE_MAP.put("calm", new VibeParams(0.5f, 20, 100, 1.0f, 8, 8));
-    VIBE_MAP.put("zen", new VibeParams(0.5f, 20, 100, 1.0f, 8, 8));
-    VIBE_MAP.put("peaceful", new VibeParams(0.6f, 30, 120, 1.2f, 10, 10));
-    VIBE_MAP.put("serene", new VibeParams(0.4f, 15, 80, 0.8f, 6, 6));
+    // Calm vibes — distinct pastel palettes, horizontal wave (0°), slow, long fade
+    VIBE_MAP.put("calm",     new VibeParams(0.25f, 100, 210, 1.0f, 8, 8,
+                                              0f, 240f, 270f, 20f, 60f, 3500));
+    VIBE_MAP.put("zen",      new VibeParams(0.0f,  90, 200, 0.9f, 8, 8,
+                                              0f, 100f, 140f, 15f, 50f, 4000));
+    VIBE_MAP.put("peaceful", new VibeParams(0.3f, 100, 215, 1.2f, 10, 10,
+                                              0f,  15f,  45f, 20f, 55f, 3000));
+    VIBE_MAP.put("serene",   new VibeParams(0.15f,  80, 195, 0.8f, 6, 6,
+                                              0f, 195f, 225f, 12f, 40f, 4500));
     
     // Energetic vibes — neon magenta-cyan palette, steep wave angle
     VIBE_MAP.put("energy", new VibeParams(4.0f, 150, 255, 5.0f, 32, 24,
@@ -71,45 +75,64 @@ public class VibePreset {
     VIBE_MAP.put("hype",   new VibeParams(4.0f, 150, 255, 5.0f, 32, 24,
                                            90f, 280f, 350f, 200f, 255f));
     
-    // Melancholic vibes
-    VIBE_MAP.put("melancholy", new VibeParams(0.8f, 0, 60, 2.0f, 16, 12));
-    VIBE_MAP.put("rain", new VibeParams(0.8f, 0, 60, 2.0f, 16, 12));
-    VIBE_MAP.put("sad", new VibeParams(0.7f, 0, 50, 1.8f, 14, 10));
-    VIBE_MAP.put("nostalgic", new VibeParams(0.9f, 20, 80, 1.5f, 12, 12));
+    // Melancholic vibes — greyscale, asymmetric grids, distinct wave angles
+    VIBE_MAP.put("melancholy", new VibeParams(0.4f,  10,  90, 2.0f, 18,  8,
+                                               45f, 0f, 0f, 0f, 0f, 2000));
+    VIBE_MAP.put("rain",       new VibeParams(0.6f,  20, 130, 2.5f,  8, 20,
+                                              270f, 0f, 0f, 0f, 0f, 2000));
+    VIBE_MAP.put("sad",        new VibeParams(0.2f,   0,  50, 1.5f,  6,  6,
+                                              180f, 0f, 0f, 0f, 0f, 2000));
+    VIBE_MAP.put("nostalgic",  new VibeParams(0.35f, 40, 160, 1.8f, 14, 10,
+                                               45f, 0f, 0f, 0f, 0f, 2000));
     
-    // Chaotic vibes — full-spectrum rainbow, extreme angle
-    VIBE_MAP.put("chaos",    new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
-                                             200f, 0f, 360f, 180f, 255f));
-    VIBE_MAP.put("chaotic",  new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
-                                             200f, 0f, 360f, 180f, 255f));
-    VIBE_MAP.put("glitch",   new VibeParams(7.0f, 80, 255, 10.0f, 64, 48,
-                                             225f, 80f, 200f, 150f, 255f));
-    VIBE_MAP.put("noise",    new VibeParams(5.5f, 120, 255, 7.0f, 40, 40,
-                                             180f, 30f, 360f, 160f, 255f));
-    VIBE_MAP.put("digital",  new VibeParams(6.0f, 100, 255, 8.0f, 48, 48,
-                                             210f, 150f, 270f, 180f, 255f));
+    // Chaotic vibes — each with a distinct grid shape, angle and palette
+    VIBE_MAP.put("chaos",   new VibeParams(6.0f,  80, 255,  8.0f, 48, 32,
+                                             135f, 0f, 360f, 180f, 255f));  // full-spectrum, wide sweep
+    VIBE_MAP.put("glitch",  new VibeParams(8.0f,   0, 255, 12.0f, 12, 48,
+                                             270f, 160f, 320f, 200f, 255f)); // scan-line columns, cyan-magenta
+    VIBE_MAP.put("noise",   new VibeParams(4.0f,  50, 255,  6.0f, 36, 36,
+                                              45f,   0f,   0f,   0f,   0f)); // greyscale static, dense square
+    VIBE_MAP.put("digital", new VibeParams(5.0f,  20, 255,  7.0f, 24, 16,
+                                               0f, 100f, 140f, 200f, 255f)); // neon green terminal, horizontal
     
-    // Ocean vibes — 90° wave angle for horizontal rolling waves
-    VIBE_MAP.put("ocean", new VibeParams(0.7f, 80, 200, 2.0f, 24, 16,
-                                          90f, 0f, 0f, 0f, 0f));
-    VIBE_MAP.put("flow",  new VibeParams(0.7f, 80, 200, 2.0f, 24, 16,
-                                          90f, 0f, 0f, 0f, 0f));
-    VIBE_MAP.put("wave",  new VibeParams(0.9f, 90, 220, 2.5f, 28, 18,
-                                          90f, 0f, 0f, 0f, 0f));
-    VIBE_MAP.put("water", new VibeParams(0.8f, 70, 180, 2.2f, 22, 16,
-                                          90f, 0f, 0f, 0f, 0f));
+    // Ocean vibes — each keyword has a distinct grid, angle, speed, blue/magenta/purple palette, and dark background
+    VIBE_MAP.put("ocean", new VibeParams(0.55f, 80, 210, 2.0f, 28, 14,
+                                           90f, 190f, 220f, 150f, 220f, 2000,
+                                             0,   8,  35)); // wide cinematic, horizontal swells, cyan-blue on deep navy
+    VIBE_MAP.put("flow",  new VibeParams(0.4f,  70, 190, 1.5f, 18, 18,
+                                          135f, 210f, 255f, 100f, 180f, 2000,
+                                             5,   0,  28)); // square grid, diagonal drift, blue-indigo on dark indigo
+    VIBE_MAP.put("wave",  new VibeParams(1.1f,  90, 235, 3.0f, 10, 28,
+                                          270f, 170f, 310f, 180f, 255f, 2000,
+                                             0,  12,  22)); // tall columns, fast, cyan-to-magenta on dark teal
+    VIBE_MAP.put("water", new VibeParams(0.3f,  60, 180, 1.2f, 32, 10,
+                                          315f, 220f, 270f,  80f, 160f, 2000,
+                                             3,   0,  40)); // wide shallow, very slow, blue-purple on midnight
     
-    // Minimal vibes
-    VIBE_MAP.put("minimal", new VibeParams(0.6f, 30, 100, 1.0f, 6, 6));
-    VIBE_MAP.put("sparse", new VibeParams(0.5f, 20, 80, 0.8f, 5, 5));
-    VIBE_MAP.put("simple", new VibeParams(0.7f, 40, 120, 1.2f, 8, 8));
+    // Minimal vibes — greyscale, no wave (multiplier=0), 1s fade, three distinct static grids
+    VIBE_MAP.put("minimal", new VibeParams(0.4f,  80, 200, 0.0f,  6,  6,
+                                             0f, 0f, 0f, 0f, 0f, 1000)); // tight 6×6, classic contrast
+    VIBE_MAP.put("sparse",  new VibeParams(0.2f,  20, 240, 0.0f,  3,  3,
+                                             0f, 0f, 0f, 0f, 0f, 1000)); // very open 3×3, high contrast, near-still
+    VIBE_MAP.put("simple",  new VibeParams(0.6f,  60, 180, 0.0f, 12, 10,
+                                             0f, 0f, 0f, 0f, 0f, 1000)); // wide 12×10, gentle character cycling
     
-    // Light/dark vibes
-    VIBE_MAP.put("dark", new VibeParams(0.8f, 0, 40, 1.5f, 16, 16));
-    VIBE_MAP.put("night", new VibeParams(0.7f, 0, 50, 1.3f, 14, 14));
-    VIBE_MAP.put("bright", new VibeParams(2.0f, 100, 255, 2.5f, 20, 20));
-    VIBE_MAP.put("day", new VibeParams(2.0f, 100, 255, 2.5f, 20, 20));
-    VIBE_MAP.put("light", new VibeParams(1.8f, 90, 255, 2.3f, 18, 18));
+    // Light/dark vibes — distinct grids, angles, brightness ranges, and backgrounds
+    VIBE_MAP.put("dark",   new VibeParams(0.7f,   0,  35, 1.5f, 16, 16,
+                                           45f, 0f, 0f, 0f, 0f, 2000,
+                                             0,   0,   0)); // pure dark, square grid, classic 45°
+    VIBE_MAP.put("night",  new VibeParams(0.4f,   0,  60, 1.2f, 10, 20,
+                                          270f, 0f, 0f, 0f, 0f, 2000,
+                                             3,   3,  18)); // tall columns, vertical drift, cool near-black blue
+    VIBE_MAP.put("bright", new VibeParams(2.5f, 180, 255, 2.5f, 24, 24,
+                                           45f, 0f, 0f, 0f, 0f, 2000,
+                                           255, 252, 240)); // fine grid, dark glyphs on warm white bg
+    VIBE_MAP.put("day",    new VibeParams(1.8f, 140, 240, 2.0f, 20, 14,
+                                           90f, 0f, 0f, 0f, 0f, 2000,
+                                           245, 240, 220)); // wide landscape, horizontal sweep, cream bg
+    VIBE_MAP.put("light",  new VibeParams(1.2f, 100, 210, 1.5f, 14,  8,
+                                          135f, 0f, 0f, 0f, 0f, 2000,
+                                          240, 238, 230)); // wide shallow tiles, diagonal, off-white bg
   }
   
   /**
@@ -127,15 +150,32 @@ public class VibePreset {
     final float hueMax;
     final float satMin;
     final float satMax;
+    final int fadeDuration;
+    final int bgR;
+    final int bgG;
+    final int bgB;
     
-    /** Greyscale preset (no color). */
+    /** Greyscale preset (no color), default 2000ms fade, black background. */
     VibeParams(float waveSpeed, int briMin, int briMax, float waveMultiplierMax, int tilesX, int tilesY) {
-      this(waveSpeed, briMin, briMax, waveMultiplierMax, tilesX, tilesY, 45f, 0f, 0f, 0f, 0f);
+      this(waveSpeed, briMin, briMax, waveMultiplierMax, tilesX, tilesY, 45f, 0f, 0f, 0f, 0f, 2000, 0, 0, 0);
     }
     
-    /** Full preset with color, saturation and wave angle. */
+    /** Full preset with color, saturation and wave angle, default 2000ms fade, black background. */
     VibeParams(float waveSpeed, int briMin, int briMax, float waveMultiplierMax, int tilesX, int tilesY,
               float waveAngle, float hueMin, float hueMax, float satMin, float satMax) {
+      this(waveSpeed, briMin, briMax, waveMultiplierMax, tilesX, tilesY, waveAngle, hueMin, hueMax, satMin, satMax, 2000, 0, 0, 0);
+    }
+    
+    /** Full preset with color, saturation, wave angle, and explicit fade duration, black background. */
+    VibeParams(float waveSpeed, int briMin, int briMax, float waveMultiplierMax, int tilesX, int tilesY,
+              float waveAngle, float hueMin, float hueMax, float satMin, float satMax, int fadeDuration) {
+      this(waveSpeed, briMin, briMax, waveMultiplierMax, tilesX, tilesY, waveAngle, hueMin, hueMax, satMin, satMax, fadeDuration, 0, 0, 0);
+    }
+    
+    /** Full preset with color, saturation, wave angle, explicit fade duration, and custom background color. */
+    VibeParams(float waveSpeed, int briMin, int briMax, float waveMultiplierMax, int tilesX, int tilesY,
+              float waveAngle, float hueMin, float hueMax, float satMin, float satMax, int fadeDuration,
+              int bgR, int bgG, int bgB) {
       this.waveSpeed = waveSpeed;
       this.briMin = briMin;
       this.briMax = briMax;
@@ -147,6 +187,10 @@ public class VibePreset {
       this.hueMax = hueMax;
       this.satMin = satMin;
       this.satMax = satMax;
+      this.fadeDuration = fadeDuration;
+      this.bgR = bgR;
+      this.bgG = bgG;
+      this.bgB = bgB;
     }
   }
   
@@ -177,7 +221,7 @@ public class VibePreset {
   
   // Chaotic vibe keywords that trigger Perlin motion
   private static final java.util.Set<String> CHAOTIC_WORDS = new java.util.HashSet<>(java.util.Arrays.asList(
-    "chaos", "chaotic", "glitch", "noise", "digital"
+    "chaos", "glitch", "noise", "digital"
   ));
   
   /**
@@ -199,6 +243,10 @@ public class VibePreset {
     float hueMaxSum = 0;
     float satMinSum = 0;
     float satMaxSum = 0;
+    float fadeDurationSum = 0;
+    float bgRSum = 0;
+    float bgGSum = 0;
+    float bgBSum = 0;
     int matchedCount = 0;
     
     for (String word : words) {
@@ -216,6 +264,10 @@ public class VibePreset {
         hueMaxSum += params.hueMax;
         satMinSum += params.satMin;
         satMaxSum += params.satMax;
+        fadeDurationSum += params.fadeDuration;
+        bgRSum += params.bgR;
+        bgGSum += params.bgG;
+        bgBSum += params.bgB;
         matchedCount++;
       }
     }
@@ -234,6 +286,10 @@ public class VibePreset {
     config.setInitialTilesX(Math.round(tilesXSum / matchedCount));
     config.setInitialTilesY(Math.round(tilesYSum / matchedCount));
     config.setWaveAngle(waveAngleSum / matchedCount);
+    config.setFadeDuration(Math.round(fadeDurationSum / matchedCount));
+    config.setBackgroundColor(Math.round(bgRSum / matchedCount),
+                              Math.round(bgGSum / matchedCount),
+                              Math.round(bgBSum / matchedCount));
     
     // Apply color (hue/saturation) — only when at least one vibe defines a hue range
     float avgHueMin = hueMinSum / matchedCount;
@@ -270,16 +326,17 @@ public class VibePreset {
    * @param config the configuration to modify
    */
   public static void applyCalm(Configuration config) {
-    config.setWaveSpeed(0.5f);
-    config.setBrightnessRange(20, 100);
+    config.setWaveSpeed(0.25f);
+    config.setBrightnessRange(100, 210);
     config.setWaveMultiplierMax(1.0f);
     config.setGridSize(8, 8);
     config.setChangedTilesX(4);
     config.setChangedTilesY(4);
-    config.setWaveAngle(45f);
-    config.setHueRange(0, 0);
-    config.setSaturationMin(0);
-    config.setSaturationMax(0);
+    config.setWaveAngle(0f);
+    config.setHueRange(240f, 270f);
+    config.setSaturationMin(20f);
+    config.setSaturationMax(60f);
+    config.setFadeDuration(3500);
     config.setCellMotion(null);
   }
   
@@ -308,16 +365,17 @@ public class VibePreset {
    * @param config the configuration to modify
    */
   public static void applyMelancholic(Configuration config) {
-    config.setWaveSpeed(0.8f);
-    config.setBrightnessRange(0, 60);
+    config.setWaveSpeed(0.4f);
+    config.setBrightnessRange(10, 90);
     config.setWaveMultiplierMax(2.0f);
-    config.setGridSize(16, 12);
-    config.setChangedTilesX(8);
-    config.setChangedTilesY(6);
+    config.setGridSize(18, 8);
+    config.setChangedTilesX(9);
+    config.setChangedTilesY(4);
     config.setWaveAngle(45f);
     config.setHueRange(0, 0);
     config.setSaturationMin(0);
     config.setSaturationMax(0);
+    config.setFadeDuration(2000);
     config.setCellMotion(null);
   }
   
@@ -346,16 +404,17 @@ public class VibePreset {
    * @param config the configuration to modify
    */
   public static void applyOcean(Configuration config) {
-    config.setWaveSpeed(0.7f);
-    config.setBrightnessRange(80, 200);
+    config.setWaveSpeed(0.55f);
+    config.setBrightnessRange(80, 210);
     config.setWaveMultiplierMax(2.0f);
-    config.setGridSize(24, 16);
-    config.setChangedTilesX(12);
-    config.setChangedTilesY(8);
+    config.setGridSize(28, 14);
+    config.setChangedTilesX(14);
+    config.setChangedTilesY(7);
     config.setWaveAngle(90f);
-    config.setHueRange(0, 0);
-    config.setSaturationMin(0);
-    config.setSaturationMax(0);
+    config.setHueRange(190, 220);
+    config.setSaturationMin(150);
+    config.setSaturationMax(220);
+    config.setBackgroundColor(0, 8, 35);
     config.setCellMotion(null);
   }
   

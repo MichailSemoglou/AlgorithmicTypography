@@ -8,7 +8,7 @@
  * through and gradually fade out.
  *
  * Controls:
- *   M           Cycle motion: CW → CCW → Perlin
+ *   M           Cycle motion: CW → CCW → Perlin → Lissajous → Spring → Gravity → Magnetic
  *   UP/DOWN     Trail length (overlay opacity)
  *   +/-         Motion radius
  *   SPACE       Toggle wave angle (0 / 45 / 90 / 135)
@@ -18,18 +18,26 @@ import algorithmic.typography.*;
 import algorithmic.typography.core.WaveEngine;
 import algorithmic.typography.core.CellMotion;
 import algorithmic.typography.core.CircularMotion;
+import algorithmic.typography.core.LissajousMotion;
 import algorithmic.typography.core.PerlinMotion;
+import algorithmic.typography.core.SpringMotion;
+import algorithmic.typography.core.GravityMotion;
+import algorithmic.typography.core.MagneticMotion;
 
 Configuration  config;
 WaveEngine     wave;
 
 // Motion
 CellMotion      motion;
-int             motionIdx = 2;   // 0=CW 1=CCW 2=Perlin
-String[]        motionNames = {"Clockwise", "Counter-CW", "Perlin"};
+int             motionIdx = 2;   // 0=CW 1=CCW 2=Perlin 3=Lissajous 4=Spring 5=Gravity 6=Magnetic
+String[]        motionNames = {"Clockwise", "Counter-CW", "Perlin", "Lissajous", "Spring", "Gravity", "Magnetic"};
 CircularMotion  cwMotion;
 CircularMotion  ccwMotion;
 PerlinMotion    perlinMotion;
+LissajousMotion lissajousMotion;
+SpringMotion    springMotion;
+GravityMotion   gravityMotion;
+MagneticMotion  magneticMotion;
 
 int   tilesX    = 20;
 int   tilesY    = 20;
@@ -56,9 +64,15 @@ void setup() {
   wave = new WaveEngine(config);
 
   // Motion presets
-  cwMotion     = new CircularMotion(12, 1.0f, true);
-  ccwMotion    = new CircularMotion(12, 1.0f, false);
-  perlinMotion = new PerlinMotion(14, 1.0f);
+  cwMotion        = new CircularMotion(12, 1.0f, true);
+  ccwMotion       = new CircularMotion(12, 1.0f, false);
+  perlinMotion    = new PerlinMotion(14, 1.0f);
+  lissajousMotion = new LissajousMotion(12, 1.0f);   // figure-8 default
+  springMotion    = new SpringMotion(12, 1.0f);       // spring-damped
+  gravityMotion   = new GravityMotion(12, 0.18f);     // gravity + bounce
+  magneticMotion  = new MagneticMotion(this);         // mouse-driven
+  magneticMotion.setTileGrid(width, height, tilesX, tilesY);
+  magneticMotion.setRadius(20);
 
   // Start with Perlin
   motion = perlinMotion;
@@ -145,11 +159,15 @@ void keyPressed() {
 
   // Motion cycling
   if (key == 'm' || key == 'M') {
-    motionIdx = (motionIdx + 1) % 3;
+    motionIdx = (motionIdx + 1) % motionNames.length;
     switch (motionIdx) {
-      case 0: motion = cwMotion;      break;
-      case 1: motion = ccwMotion;     break;
-      case 2: motion = perlinMotion;  break;
+      case 0: motion = cwMotion;        break;
+      case 1: motion = ccwMotion;       break;
+      case 2: motion = perlinMotion;    break;
+      case 3: motion = lissajousMotion; break;
+      case 4: motion = springMotion;    break;
+      case 5: motion = gravityMotion;   break;
+      case 6: motion = magneticMotion;  break;
     }
     background(0);  // clear old trails on mode switch
     println("Motion: " + motionNames[motionIdx]);

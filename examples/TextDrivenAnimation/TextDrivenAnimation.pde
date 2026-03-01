@@ -23,6 +23,7 @@ import algorithmic.typography.text.*;
 AlgorithmicTypography at;
 ObservableConfiguration config;
 RitaBridge rita;
+String framesDir;
 
 String[] gridWords;
 boolean useMarkov = true;
@@ -42,6 +43,7 @@ void setup() {
   at.setConfiguration(config);
   at.initialize();
 
+  framesDir = "frames/" + nf(year(),4) + nf(month(),2) + nf(day(),2) + "_" + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
   rita = new RitaBridge(this);
 
   if (rita.isAvailable()) {
@@ -176,6 +178,6 @@ void keyPressed() {
   } else if (key == 'r' || key == 'R') {
     at.restart();
   } else if (key == 's' || key == 'S') {
-    saveFrame("text-driven-####.png");
+    saveFrame(framesDir + "/frame_####.png");
   }
 }

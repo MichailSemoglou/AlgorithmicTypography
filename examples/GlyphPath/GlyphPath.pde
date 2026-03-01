@@ -4,11 +4,18 @@
  * Demonstrates the GlyphExtractor — our built-in
  * alternative to the Geomerative library.
  *
- * Extract glyph outlines as vertices and apply
- * real-time wave deformation to letterforms.
+ * Extract glyph outlines as vertices, apply real-time wave
+ * deformation to letterforms, and explore the designer-oriented
+ * v0.2.2 API:
+ *
+ *   fillWithPoints()         — scattered points inside the letterform interior
+ *   distributeAlongOutline() — evenly spaced points along the full perimeter
+ *   getOuterContour()        — the outer boundary contour only
+ *   getInnerContours()       — counter-forms only (holes in 'B', 'O', 'P', 'R')
  *
  * Controls:
- *   1-5    Switch display mode
+ *   1-5    Switch display mode (outline/deformation modes)
+ *   6-8    Switch display mode (v0.2.2 designer modes)
  *   UP     Increase deformation amplitude
  *   DOWN   Decrease deformation amplitude
  *   LEFT   Decrease point density (higher flatness)
@@ -20,11 +27,13 @@
 import processing.svg.*;
 import algorithmic.typography.*;
 import algorithmic.typography.render.GlyphExtractor;
+import java.util.List;
 
 GlyphExtractor glyph;
 
 int     modeIdx  = 0;
-String[] modes   = {"Filled", "Points", "Deformed", "Contours", "Grid 4x4"};
+String[] modes   = {"Filled", "Lines", "Deformed", "Contours", "Grid 4x4",
+                    "Fill Points", "Outer", "Outer+Inner"};
 char[]  chars    = {'A', 'B', 'R', 'W', 'g', '&', '@', '%'};
 int     charIdx  = 0;
 float   amp      = 6.0f;     // deformation amplitude
@@ -36,7 +45,7 @@ void setup() {
   glyph = new GlyphExtractor(this, "Helvetica", 72);
   glyph.setFlatness(0.5f);
 
-  println("GlyphPath — 1-5=mode  SPACE=char  UP/DOWN=amplitude");
+  println("GlyphPath — 1-8=mode  SPACE=char  UP/DOWN=amplitude");
 }
 
 void draw() {
@@ -49,11 +58,14 @@ void draw() {
   char ch = chars[charIdx];
 
   switch (modeIdx) {
-    case 0: drawFilled(ch);   break;
-    case 1: drawPoints(ch);   break;
-    case 2: drawDeformed(ch); break;
-    case 3: drawContours(ch); break;
-    case 4: drawGrid(ch);     break;
+    case 0: drawFilled(ch);      break;
+    case 1: drawPoints(ch);      break;
+    case 2: drawDeformed(ch);    break;
+    case 3: drawContours(ch);    break;
+    case 4: drawGrid(ch);        break;
+    case 5: drawFillPoints(ch);  break;
+    case 6: drawOuter(ch);       break;
+    case 7: drawOuterInner(ch);  break;
   }
 
   if (saveSVG) {
@@ -77,26 +89,31 @@ void drawFilled(char ch) {
   popMatrix();
 }
 
-// ── Mode 2: contour points as dots ───────────────────────────
+// ── Mode 2: perimeter diagonal lines (distributeAlongOutline) ─
+// Uses arc-length resampling so every line is equally spaced
+// around the full outline — unlike getContourPoints() whose
+// vertex density varies with curve curvature.
 void drawPoints(char ch) {
-  PVector[] pts = glyph.getContourPoints(ch, 600);
+  PVector[] pts = glyph.distributeAlongOutline(ch, 600, 600);
   float[] b = glyph.getBounds(ch, 600);
   float ox = width / 2 - b[0] - b[2] / 2;
   float oy = height / 2 - b[1] - b[3] / 2;
 
   float t = frameCount * 0.04f;
 
-  colorMode(HSB, 360, 255, 255);
-  noStroke();
+  noFill();
+  stroke(255);
+  strokeWeight(1.2f);
 
   for (int i = 0; i < pts.length; i++) {
-    float hue = map(i, 0, pts.length, 0, 360);
-    float sz  = 3 + sin(t + i * 0.05f) * 2;
-    fill(hue, 220, 255);
-    ellipse(ox + pts[i].x, oy + pts[i].y, sz, sz);
+    float phase = (float) i / pts.length;
+    float len   = 6 + sin(t * 2 + phase * TWO_PI * 4) * 3.0f;
+    float cx = ox + pts[i].x;
+    float cy = oy + pts[i].y;
+    line(cx - len / 2, cy - len / 2, cx + len / 2, cy + len / 2);
   }
 
-  colorMode(RGB, 255);
+  noStroke();
 }
 
 // ── Mode 3: wave-deformed outline ────────────────────────────
@@ -194,21 +211,97 @@ void drawGrid(char ch) {
   colorMode(RGB, 255);
 }
 
+// ── Mode 6: fillWithPoints ──────────────────────────────────
+void drawFillPoints(char ch) {
+  PVector[] pts = glyph.fillWithPoints(ch, 600, 800);
+  float[] b = glyph.getBounds(ch, 600);
+  float ox = width / 2 - b[0] - b[2] / 2;
+  float oy = height / 2 - b[1] - b[3] / 2;
+
+  float t = frameCount * 0.04f;
+
+  colorMode(HSB, 360, 255, 255);
+  noStroke();
+
+  for (int i = 0; i < pts.length; i++) {
+    float hue = (map(i, 0, pts.length, 180, 300) + t * 20) % 360;
+    float sz  = 2.5f + sin(t + i * 0.07f) * 1.2f;
+    fill(hue, 200, 255, 220);
+    ellipse(ox + pts[i].x, oy + pts[i].y, sz, sz);
+  }
+
+  colorMode(RGB, 255);
+}
+
+// ── Mode 7: getOuterContour ─────────────────────────────────
+void drawOuter(char ch) {
+  PVector[] outer = glyph.getOuterContour(ch, 600);
+  float[] b = glyph.getBounds(ch, 600);
+  float ox = width / 2 - b[0] - b[2] / 2;
+  float oy = height / 2 - b[1] - b[3] / 2;
+
+  float t = frameCount * 0.03f;
+
+  colorMode(HSB, 360, 255, 255);
+  noFill();
+  strokeWeight(2);
+  stroke((200 + t * 30) % 360, 200, 255);
+
+  beginShape();
+  for (PVector p : outer) vertex(ox + p.x, oy + p.y);
+  endShape(CLOSE);
+
+  colorMode(RGB, 255);
+  noStroke();
+}
+
+// ── Mode 8: getOuterContour + getInnerContours ──────────────
+void drawOuterInner(char ch) {
+  PVector[] outer       = glyph.getOuterContour(ch, 600);
+  List<PVector[]> inner = glyph.getInnerContours(ch, 600);
+  float[] b = glyph.getBounds(ch, 600);
+  float ox = width / 2 - b[0] - b[2] / 2;
+  float oy = height / 2 - b[1] - b[3] / 2;
+
+  float t = frameCount * 0.03f;
+
+  colorMode(HSB, 360, 255, 255);
+  noFill();
+  strokeWeight(2);
+
+  // Outer boundary — cyan-blue
+  stroke((200 + t * 30) % 360, 200, 255);
+  beginShape();
+  for (PVector p : outer) vertex(ox + p.x, oy + p.y);
+  endShape(CLOSE);
+
+  // Inner contours (counter-forms) — warm orange
+  stroke((25 + t * 20) % 360, 220, 255);
+  for (PVector[] contour : inner) {
+    beginShape();
+    for (PVector p : contour) vertex(ox + p.x, oy + p.y);
+    endShape(CLOSE);
+  }
+
+  colorMode(RGB, 255);
+  noStroke();
+}
+
 // ── HUD ──────────────────────────────────────────────────────
 void drawHUD(char ch) {
   fill(255);
   textAlign(LEFT, TOP);
   textSize(14);
   int y = 20;
-  text("Mode: " + modes[modeIdx], 20, y);            y += 20;
-  text("Char: " + ch, 20, y);                         y += 20;
-  text("Amplitude: " + nf(amp, 1, 1), 20, y);         y += 20;
+  text("Mode: " + modes[modeIdx], 20, y);           y += 20;
+  text("Char: " + ch, 20, y);                       y += 20;
+  text("Amplitude: " + nf(amp, 1, 1), 20, y);       y += 20;
   text("Flatness: " + nf(glyph.getFlatness(), 1, 2), 20, y);
 }
 
 // ── Input ────────────────────────────────────────────────────
 void keyPressed() {
-  if (key >= '1' && key <= '5') {
+  if (key >= '1' && key <= '8') {
     modeIdx = key - '1';
   } else if (key == ' ') {
     charIdx = (charIdx + 1) % chars.length;

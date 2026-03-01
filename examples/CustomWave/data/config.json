@@ -28,6 +28,9 @@
     "hueMin": 0,
     "hueMax": 0,
     "waveAmplitudeMin": -180,
-    "waveAmplitudeMax": 180
+    "waveAmplitudeMax": 180,
+    "backgroundR": 0,
+    "backgroundG": 0,
+    "backgroundB": 0
   }
 }

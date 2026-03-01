@@ -2,7 +2,7 @@
  * ProgrammaticConfig
  *
  * Configure the typography system in code instead of a JSON file.
- * Each restart generates a random configuration.
+ * Each restart generates a random configuration — including background colour.
  *
  * Controls:
  *   R - New random configuration
@@ -58,9 +58,22 @@ Configuration randomConfig() {
   c.setAnimationFPS(30);
   c.setSaveFrames(false);
 
+  // Random background colour from a curated dark palette
+  int[][] bgPalette = {
+    {  0,   0,   0},   // black
+    { 10,  10,  30},   // deep navy
+    { 20,   0,  30},   // dark violet
+    { 30,  10,   0},   // near-black warm
+    {  0,  20,  20},   // dark teal
+    { 15,  15,  15}    // dark grey
+  };
+  int[] bg = bgPalette[int(random(bgPalette.length))];
+  c.setBackgroundColor(bg[0], bg[1], bg[2]);
+
   println("New config  char=" + c.getCharacter()
     + "  grid=" + c.getInitialTilesX() + "x" + c.getInitialTilesY()
-    + "  speed=" + nf(c.getWaveSpeed(), 1, 2));
+    + "  speed=" + nf(c.getWaveSpeed(), 1, 2)
+    + "  bg=(" + bg[0] + "," + bg[1] + "," + bg[2] + ")");
 
   return c;
 }

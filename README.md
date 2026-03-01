@@ -1,17 +1,31 @@
 # Algorithmic Typography
 
-> A Processing library for creating algorithmic typography animations using mathematical wave functions.
+> A Processing library for graphic designers and typographers, covering wave-driven glyph animation, per-cell physics, live UI controls, and audio reactivity.
 
 [![Processing](https://img.shields.io/badge/Processing-4.x-blue)](https://processing.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.1.1-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+[![Version](https://img.shields.io/badge/Version-0.2.2-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+
+![AlgorithmicTypography showcase](docs/showcase.gif)
 
 > [!NOTE]
-> **Version 1.1.1 resolves all known issues.** The library is stable and ready for use. If you encounter a bug or unexpected behaviour, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues).
+> **Version 0.2.2** adds three designer-oriented `GlyphExtractor` methods: `fillWithPoints()` (scatter points inside a closed letterform, counters excluded), `distributeAlongOutline()` (N points evenly spaced by arc length around the full perimeter), and `getOuterContour()` / `getInnerContours()` (separating the outer boundary from counter-forms such as the holes in B, O, and P). A new `GlyphDesign` example demonstrates all three across three interactive modes. This release also introduces four new `CellMotion` types: `LissajousMotion` (figure-8 and knot-shaped Lissajous orbits), `SpringMotion` (spring-damped glyphs that chase a drifting target), `GravityMotion` (glyphs fall and bounce, with a `kick()` method to re-energise them), and `MagneticMotion` (mouse-driven repel/attract field). Dedicated showcase examples (`GravityDynamics` and `MagneticDynamics`) provide full live-control UIs. This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. The previous GitHub release was tagged `1.1.1` under a different versioning scheme; at the Processing community's request, the version number was reset to `0.x` to better reflect the library's work-in-progress status. Despite the lower number, 0.2.2 is substantially more capable than 1.1.1. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
 
 ## Overview
 
-AlgorithmicTypography is a Processing library that enables designers, researchers, and artists to explore **parametric typography systems**. It generates animated grids of typographic characters whose colours, positions, and arrangements are driven by mathematical wave functions — with support for glyph extraction, physics simulation, cell motion, audio reactivity, and cultural design presets.
+AlgorithmicTypography is built mainly for **graphic designers and typographers**. It generates animated grids of glyphs whose colours, positions, and motion are driven by mathematical wave functions and a growing suite of per-cell physics engines, with live UI controls, audio reactivity, glyph physics, and vector export.
+
+It is expressive enough for complex typographic systems and approachable enough for a designer's first generative sketch.
+
+The library is also well suited to **design education**. Its layered API — from one-line vibe presets and JSON configuration to custom wave functions and per-cell physics engines — makes it a practical tool for generative typography courses. Students can start with immediate visual results and progressively engage with the underlying parameters, using the library to explore the relationship between code, form, and typographic expression.
+
+### Why AlgorithmicTypography?
+
+What makes this library distinctive is that it was designed from the ground up with **designers in mind**, not programmers. You do not need to understand signal processing to create a wave-driven animation, manage threads to export frames, or parse font internals to extract glyph outlines — the library handles all of that. The result is a tool that feels at home in a design workflow while remaining fully open to code-level customisation.
+
+**For newcomers,** it is one of the most accessible entry points into generative typography in the Processing ecosystem. A working sketch requires just four lines of code; a JSON file handles the rest. From there, the API grows with you — every new concept (physics, audio, custom waves) builds on the same foundation rather than requiring a fresh start.
+
+**As an alternative to Geomerative,** AlgorithmicTypography already covers the core use cases — outline extraction, contour separation, interior point distribution, and arc-length-spaced perimeter sampling — without requiring an external dependency. Even at this early `0.x` stage, it offers capabilities that go well beyond glyph geometry: per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in. Version 1.0.0 is expected to consolidate these systems into a significantly more powerful and stable release.
 
 ## Features
 
@@ -20,12 +34,12 @@ AlgorithmicTypography is a Processing library that enables designers, researcher
 - **Wave angle** — Control the propagation direction of the colour wave (0–360°)
 - **Glyph extraction** — Extract glyph outlines as vertices (built-in alternative to Geomerative)
 - **Glyph physics** — Treat glyph vertices as particles with mouse attraction/repulsion
-- **Cell motion** — Clockwise, counter-clockwise, and Perlin noise movement within grid cells
+- **Cell motion** — Six built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), and Mouse-magnetic (repel/attract)
 - **Trail effects** — Semi-transparent overlay trails with temporal displacement
 - **Audio reactivity** — Map bass, mid, treble, and beat detection to animation parameters
 - **Cultural design presets** — Parameter sets inspired by Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, and related typographic traditions (see [editorial note](#editorial-note))
 - **Vibe presets** — Natural-language mood mapping (e.g. "calm", "techno", "ocean") (see [editorial note](#editorial-note))
-- **SVG/PDF export** — Vector export with full colour preservation
+- **SVG/PDF export** — HSB-correct colour rendering; unlike raw Processing sketches, the library explicitly switches colour mode before every draw call, so hue-driven palettes look identical on screen and in exported PDF/SVG files
 - **JSON configuration** — Customise behaviour without touching code
 - **Live controls** — GUI sliders, keyboard shortcuts, and OSC input
 - **Programmatic API** — Build configurations dynamically in code
@@ -35,7 +49,7 @@ AlgorithmicTypography is a Processing library that enables designers, researcher
 ### Manual Installation
 
 1. Go to the [Releases page](https://github.com/MichailSemoglou/AlgorithmicTypography/releases) and download **`AlgorithmicTypography.zip`** — this is the pre-built library package. Do **not** download "Source code (zip)" or "Source code (tar.gz)", as those do not include the compiled library.
-2. Unzip the file — you will get an `AlgorithmicTypography` folder.
+2. Unzip the file. A folder named `AlgorithmicTypography` will be created.
 3. Move that folder into your Processing libraries directory:
    - **macOS:** `~/Documents/Processing/libraries/`
    - **Windows:** `Documents\Processing\libraries\`
@@ -96,7 +110,11 @@ algorithmic.typography
 │   ├── TemporalTrail              Delay/trail compositing buffer
 │   ├── CellMotion                 Abstract base for per-cell glyph movement
 │   ├── CircularMotion             Clockwise / counter-clockwise orbital motion
-│   └── PerlinMotion               Perlin-noise organic wandering
+│   ├── PerlinMotion               Perlin-noise organic wandering
+│   ├── LissajousMotion            Figure-8 and knot-shaped Lissajous orbits
+│   ├── SpringMotion               Spring-damped glyphs chasing a drifting target
+│   ├── GravityMotion              Gravity, bounce, and kick() impulse physics
+│   └── MagneticMotion             Mouse-driven repel / attract field
 │
 ├── render/
 │   ├── GridRenderer               Offscreen PGraphics rendering
@@ -142,43 +160,95 @@ Create a `config.json` file in your sketch's `data/` folder:
     "height": 1080
   },
   "animation": {
-    "duration": 24,
+    "duration": 18,
     "fps": 30,
     "character": "A",
     "textScale": 0.8,
     "saveFrames": false,
-    "waveSpeed": 2.0,
-    "waveAngle": 45
+    "waveSpeed": 1.0,
+    "waveAngle": 45,
+    "waveMultiplierMin": 0.0,
+    "waveMultiplierMax": 2.0,
+    "changeTime": 6000,
+    "secondChangeTime": 12000,
+    "fadeDuration": 2000
   },
   "grid": {
-    "initialTilesX": 32,
-    "initialTilesY": 32
+    "initialTilesX": 16,
+    "initialTilesY": 16,
+    "changedTilesX": 8,
+    "changedTilesY": 8,
+    "finalTilesX": 4,
+    "finalTilesY": 4
   },
   "colors": {
-    "brightnessMin": 120,
+    "brightnessMin": 50,
     "brightnessMax": 255,
     "saturationMin": 0,
-    "saturationMax": 255,
+    "saturationMax": 0,
     "hueMin": 0,
-    "hueMax": 0
+    "hueMax": 0,
+    "waveAmplitudeMin": -200,
+    "waveAmplitudeMax": 200,
+    "backgroundR": 0,
+    "backgroundG": 0,
+    "backgroundB": 0
   }
 }
 ```
 
+> **Note:** The example above shows all available parameters with their default values. You do not need to include every key — any parameter you omit will fall back to its default. A minimal config can be as short as a single `character` entry.
+
 ### Key Parameters
 
-| Parameter       | Type    | Description                                    | Default |
-| --------------- | ------- | ---------------------------------------------- | ------- |
-| `character`     | String  | Character to render in the grid                | `"A"`   |
-| `textScale`     | float   | Text size relative to tile (0–1)               | 0.8     |
-| `waveSpeed`     | float   | Wave animation speed                           | 2.0     |
-| `waveAngle`     | float   | Wave propagation direction in degrees          | 45      |
-| `brightnessMin` | float   | Minimum brightness (0–255)                     | 0       |
-| `brightnessMax` | float   | Maximum brightness (0–255)                     | 255     |
-| `hueMin/Max`    | float   | Hue range (0–360); set both to 0 for greyscale | 0       |
-| `saveFrames`    | boolean | Auto-save frames as PNG                        | true    |
-| `initialTilesX` | int     | Grid columns                                   | 32      |
-| `initialTilesY` | int     | Grid rows                                      | 32      |
+**canvas**
+
+| Parameter | Type | Description             | Default |
+| --------- | ---- | ----------------------- | ------- |
+| `width`   | int  | Canvas width in pixels  | 1080    |
+| `height`  | int  | Canvas height in pixels | 1080    |
+
+**animation**
+
+| Parameter           | Type    | Description                                                             | Default |
+| ------------------- | ------- | ----------------------------------------------------------------------- | ------- |
+| `character`         | String  | Character to render in the grid                                         | `"A"`   |
+| `textScale`         | float   | Text size relative to tile (0–1)                                        | 0.8     |
+| `duration`          | int     | Animation duration in seconds                                           | 18      |
+| `fps`               | int     | Frames per second                                                       | 30      |
+| `saveFrames`        | boolean | Auto-save frames as PNG                                                 | false   |
+| `waveSpeed`         | float   | Wave animation speed                                                    | 1.0     |
+| `waveAngle`         | float   | Wave propagation direction in degrees (0–360)                           | 45      |
+| `waveMultiplierMin` | float   | Minimum wave multiplier applied during rendering                        | 0.0     |
+| `waveMultiplierMax` | float   | Maximum wave multiplier applied during rendering                        | 2.0     |
+| `changeTime`        | int     | Time in ms when grid transitions from stage 1 to stage 2                | 6000    |
+| `secondChangeTime`  | int     | Time in ms when grid transitions from stage 2 to stage 3 (0 = disabled) | 12000   |
+| `fadeDuration`      | int     | Crossfade duration in ms between grid stages                            | 2000    |
+
+**grid**
+
+| Parameter       | Type | Description             | Default |
+| --------------- | ---- | ----------------------- | ------- |
+| `initialTilesX` | int  | Grid columns in stage 1 | 16      |
+| `initialTilesY` | int  | Grid rows in stage 1    | 16      |
+| `changedTilesX` | int  | Grid columns in stage 2 | 8       |
+| `changedTilesY` | int  | Grid rows in stage 2    | 8       |
+| `finalTilesX`   | int  | Grid columns in stage 3 | 4       |
+| `finalTilesY`   | int  | Grid rows in stage 3    | 4       |
+
+**colors**
+
+| Parameter          | Type  | Description                                                                 | Default |
+| ------------------ | ----- | --------------------------------------------------------------------------- | ------- |
+| `brightnessMin`    | float | Minimum brightness (0–255)                                                  | 50      |
+| `brightnessMax`    | float | Maximum brightness (0–255)                                                  | 255     |
+| `saturationMin`    | float | Minimum saturation (0–255); 0 = greyscale                                   | 0       |
+| `saturationMax`    | float | Maximum saturation (0–255)                                                  | 0       |
+| `hueMin`           | float | Minimum hue (0–360); set both hue values to 0 for greyscale                 | 0       |
+| `hueMax`           | float | Maximum hue (0–360)                                                         | 0       |
+| `waveAmplitudeMin` | float | Minimum wave amplitude used for colour mapping                              | -200    |
+| `waveAmplitudeMax` | float | Maximum wave amplitude used for colour mapping                              | 200     |
+| `backgroundR/G/B`  | int   | Background colour channels (0–255 each); 0,0,0 = black; 255,255,255 = white | 0       |
 
 When `hueMin` and `hueMax` are different, the renderer switches to HSB colour mode automatically.
 
@@ -190,7 +260,7 @@ Simplest usage — loads a JSON configuration and renders the animation.
 
 ### ProgrammaticConfig
 
-Configures the system entirely in code. Each restart generates a random configuration.
+Configures the system entirely in code. Each restart generates a random configuration — including character, grid size, wave speed, and background colour chosen from a curated dark palette.
 
 ### CustomWave
 
@@ -206,13 +276,13 @@ Controls the wave propagation angle (0–360°) with UI sliders and keyboard pre
 
 ### CulturalStyles _(temporarily unavailable)_
 
-Applies parameter sets inspired by typographic traditions across different cultural and historical design movements — Swiss International Style, Bauhaus, Chinese ink calligraphy, Arabic Kufic geometry, Japanese minimalism, and others. The underlying `DesignSystem` API is fully functional; the example sketch will be reintroduced in a later release.
+Applies parameter sets inspired by typographic traditions across different cultural and historical design movements. The underlying `DesignSystem` API is fully functional; a new example sketch will be reintroduced in a later release.
 
-> **Editorial note:** The cultural and mood presets in this library — including `DesignSystem` and `VibePreset` — are the author's artistic interpretation, informed by 30+ years of professional practice in the design industry. They are expressive starting points for creative exploration, not ethnographic, anthropological, or perceptual science models. Parameter choices (grid density, wave speed, colour range, angle) reflect aesthetic sensibility and accumulated design intuition, and should not be treated as culturally definitive or scientifically validated representations of the traditions they reference.
+> **Editorial note:** The cultural and mood presets in this library — including `DesignSystem` and `VibePreset` — are the author's artistic interpretation, informed by 30+ years of professional practice in the design industry. They are expressive starting points for creative exploration, not ethnographic, anthropological, or perceptual research models.
 
 ### VibeCoding
 
-Natural-language configuration — press a key to set a mood (calm, techno, melancholic, chaotic, ocean) and the library adjusts wave speed, colour, grid density, and cell motion automatically.
+Showcases all 26 vibe keywords supported by `VibePreset.apply()`, organised across seven groups (Calm, Energetic, Melancholy, Chaotic, Ocean, Minimal, Light/Dark). Arrow keys cycle through every preset; `SPACE` blends two random keywords into a compound vibe; `R` restarts.
 
 > **Editorial note:** The mood-to-parameter mappings in `VibePreset` are the author's artistic interpretation based on 30+ years in the design industry. They are not grounded in psychoacoustics, affective computing research, or colour psychology literature. The labels (e.g. "calm", "techno", "ocean") serve as expressive shorthand for creative workflows, not as scientifically validated mood or emotion models.
 
@@ -226,15 +296,15 @@ Runs two typography instances side by side with independent configurations.
 
 ### PerformanceMode _(temporarily unavailable)_
 
-Optimised rendering path for high-resolution grids — demonstrates frame-rate management, reduced draw calls, and export-compatible output at large tile counts. The example sketch will be reintroduced in a later release.
+Optimised rendering path for high-resolution grids. The example sketch will be reintroduced in a later release.
 
 ### AudioReactive
 
-Audio-reactive typography — bass drives wave speed, treble controls brightness, beat detection triggers visual events.
+Audio-reactive typography. Bass drives wave speed, treble controls brightness, and beat detection triggers visual events.
 
 ### TextDrivenAnimation
 
-RiTa integration — generates words from Markov chains/grammars and maps linguistic features to animation parameters.
+Demonstrates RiTa integration. Words are generated from Markov chains and grammars, with linguistic features mapped to animation parameters.
 
 ### RandomASCII
 
@@ -246,27 +316,49 @@ Exports the current frame as an SVG vector graphic with full HSB colour preserva
 
 ### BackgroundImage
 
-Renders typography on top of a photograph — place `background.png` in the sketch's `data/` folder and the grid is composited over it each frame.
+Renders typography over a photograph. Place `background.png` in the sketch's `data/` folder; the grid is composited over it each frame.
 
 ### MultiPhoto
 
 Assigns a different photograph to each grid cell. Place `photo-01.png` … `photo-16.png` in `data/`; the sketch tiles them behind the glyph grid with centre-crop and 3-stage grid tracking.
 
+### GlyphDesign
+
+Demonstrates four new designer-oriented `GlyphExtractor` methods added in v0.2.2. Three interactive modes:
+
+1. **Interior fill** (`fillWithPoints`) — scatter points randomly inside the closed letterform; counter-forms are excluded automatically
+2. **Perimeter dots** (`distributeAlongOutline`) — N points evenly spaced by arc length around the full outline, not by raw tessellation density
+3. **Outer + inner** (`getOuterContour` / `getInnerContours`) — colour the outer boundary and counter-forms independently; shows the counter count for each character
+
+Useful starting point for stippling effects, flow-field seeding, necklace-of-dots typography, and counter-aware colouring.
+
 ### GlyphPath
 
-Extracts glyph outlines as vertices with five display modes: filled, points, deformed, contours, and a 4×4 tiled grid.
+Extracts glyph outlines as vertices with eight display modes: filled, points (arc-length distributed via `distributeAlongOutline`), deformed, contours, a 4×4 tiled grid, interior fill points (`fillWithPoints`), outer contour only (`getOuterContour`), and outer + inner counter-forms (`getOuterContour` / `getInnerContours`).
 
 ### GlyphDynamics
 
 Particle-based physics — each glyph vertex becomes a particle with mouse repulsion and spring-back forces.
 
+### GlyphWander
+
+Demonstrates per-glyph cell motion via `config.setCellMotion()`. Cycles through six motion modes — None, Perlin, Circular CW, Circular CCW, Lissajous, and Spring — with live radius and speed adjustment.
+
 ### TrailEffect
 
-Glyphs move within their grid cells (CW, CCW, or Perlin noise) and leave fading trails via semi-transparent overlay.
+Glyphs move within their grid cells and leave fading trails via semi-transparent overlay. Supports seven motion modes: Circular CW/CCW, Perlin noise, Lissajous, Spring, Gravity, and Magnetic. Trail length and wave angle are also adjustable live.
+
+### GravityDynamics
+
+A full showcase for `GravityMotion`. Two side-by-side control panels — library `ControlPanel` on the left, a custom gravity panel on the right with live sliders for Gravity, Restitution, Lateral force, Air Drag, Phase Spread, Radius, and Jump Strength. Four presets (Default / Heavy / Floaty / Pinball); `SPACE` to kick all glyphs back into the air.
+
+### MagneticDynamics
+
+A full showcase for `MagneticMotion`. Live sliders for Strength, Falloff, Smoothing, and Radius. Three presets (Repel / Attract / Rubber Band); `SPACE` to switch between repel and attract modes.
 
 ## Documentation
 
-A four-page printable cheat sheet (A4 landscape, dark theme) is available in:
+A four-page printable cheat sheet is available in:
 
 - **Online:** [qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html](https://qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html)
 - **HTML:** [`docs/CHEAT_SHEET.html`](docs/CHEAT_SHEET.html)
@@ -300,6 +392,12 @@ PShape shape = glyph.extractChar('A', 400);           // filled PShape
 PVector[] pts = glyph.getContourPoints('A', 400);     // outline vertices
 List<PVector[]> contours = glyph.getContours('A', 400);
 PShape deformed = glyph.extractDeformed('A', 400, amp, freq, phase);
+
+// v0.2.2 — designer utilities
+PVector[] fill   = glyph.fillWithPoints('O', 400, 800);        // interior scatter
+PVector[] ring   = glyph.distributeAlongOutline('O', 400, 200); // arc-length spaced
+PVector[] outer  = glyph.getOuterContour('B', 400);            // outer boundary only
+List<PVector[]> holes = glyph.getInnerContours('B', 400);      // counter-forms only
 ```
 
 ### Glyph Physics
@@ -328,8 +426,35 @@ CircularMotion ccw = new CircularMotion(8, 1.0, false);
 // Perlin noise wandering
 PerlinMotion perlin = new PerlinMotion(10, 1.0);
 
-// in draw():
-PVector offset = perlin.getOffset(col, row, frameCount);
+// Lissajous figure-8 (1:2 ratio — default)
+LissajousMotion fig8 = new LissajousMotion(10, 1.0);
+
+// Lissajous three-lobed knot (3:2 ratio)
+LissajousMotion knot = new LissajousMotion(10, 10, 1.0, 3, 2);
+
+// Spring-damped: glyphs chase a sinusoidally drifting target
+SpringMotion spring = new SpringMotion(12, 1.0);
+spring.setStiffness(0.35f);   // spring pull strength
+spring.setDamping(0.12f);     // energy loss per frame
+
+// Gravity + bounce: glyphs fall and bounce inside their cells
+GravityMotion gravity = new GravityMotion(12, 0.18f);
+gravity.setRestitution(0.72f); // energy retained per bounce
+gravity.kick(10.0f);           // upward impulse — re-energise settled glyphs
+
+// Magnetic: glyphs repel or attract toward the mouse cursor
+MagneticMotion magnetic = new MagneticMotion(this); // pass sketch reference
+magnetic.setTileGrid(width, height, tilesX, tilesY); // call once in setup()
+magnetic.setStrength(1800);   // field intensity
+magnetic.setFalloff(80);      // half-force distance in pixels
+magnetic.setAttract(false);   // false = repel, true = attract
+magnetic.togglePolarity();    // flip attract ↔ repel at runtime
+
+// Apply any motion via config (works with VibePreset pipeline too)
+config.setCellMotion(spring);
+
+// Or compute offset manually in draw():
+PVector offset = gravity.getOffset(col, row, frameCount);
 text(ch, cx + offset.x, cy + offset.y);
 ```
 
@@ -393,7 +518,7 @@ ffmpeg -framerate 30 -i frames/*/frame_%04d.png -c:v libx264 output.mp4
 
 ## Editorial Note
 
-The **`DesignSystem`** (cultural presets) and **`VibePreset`** (natural-language mood mapping) components of this library are the author's artistic interpretation, developed from 30+ years of professional practice in the design industry. The parameter mappings — grid proportions, wave speed, colour ranges, animation angle — reflect accumulated design intuition and aesthetic sensibility, not empirical research.
+The **`DesignSystem`** (cultural presets) and **`VibePreset`** (natural-language mood mapping) components of this library are the author's artistic interpretation, developed from 30+ years of professional practice in the design industry. The parameter mappings — grid proportions, wave speed, colour ranges, animation angle — reflect decades of design intuition and aesthetic sensibility, not empirical research.
 
 Specifically:
 
@@ -402,18 +527,9 @@ Specifically:
 
 Users who require culturally or scientifically rigorous representations are encouraged to define their own parameter sets using the `Configuration` API and `CellMotion` extension points.
 
-## Citation
+## Contributing
 
-```bibtex
-@software{semoglou_algorithmic_typography_2026,
-  title     = {Algorithmic Typography: A Processing Library
-               for Parametric Typography Animation},
-  author    = {Semoglou, Michail},
-  year      = {2026},
-  version   = {1.1.1},
-  url       = {https://github.com/MichailSemoglou/AlgorithmicTypography}
-}
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code style, and how to add new features.
 
 ## Author
 

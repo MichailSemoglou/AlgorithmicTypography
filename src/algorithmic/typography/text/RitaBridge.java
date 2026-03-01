@@ -11,7 +11,7 @@
  * Requires: Rita library (https://github.com/dhowe/rita4processing)
  * 
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  */
 
 package algorithmic.typography.text;

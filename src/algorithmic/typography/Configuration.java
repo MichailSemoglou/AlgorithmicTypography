@@ -6,7 +6,7 @@
  * settings.
  *
  * @author Michail Semoglou
- * @version 1.1.1
+ * @version 0.2.1
  * @since 1.0.0
  */
 
@@ -122,6 +122,16 @@ public class Configuration {
 
   /** Optional per-glyph motion applied during rendering. Null = no motion. */
   private CellMotion cellMotion = null;
+
+  // Background color (RGB, 0-255 per channel)
+  /** Red channel of the background colour. Default: 0 (black) */
+  private int backgroundR = 0;
+
+  /** Green channel of the background colour. Default: 0 (black) */
+  private int backgroundG = 0;
+
+  /** Blue channel of the background colour. Default: 0 (black) */
+  private int backgroundB = 0;
   
   /**
    * Creates a new Configuration with default values.
@@ -179,6 +189,18 @@ public class Configuration {
   /** Returns the optional per-glyph cell motion, or null if none is set.
    *  @return the CellMotion instance, or null */
   public CellMotion getCellMotion() { return cellMotion; }
+
+  /** Returns the red channel of the background colour (0-255).
+   *  @return background red channel */
+  public int getBackgroundRed()   { return backgroundR; }
+
+  /** Returns the green channel of the background colour (0-255).
+   *  @return background green channel */
+  public int getBackgroundGreen() { return backgroundG; }
+
+  /** Returns the blue channel of the background colour (0-255).
+   *  @return background blue channel */
+  public int getBackgroundBlue()  { return backgroundB; }
 
   public float getWaveSpeed() { return waveSpeed; }
   
@@ -789,7 +811,38 @@ public class Configuration {
     this.cellMotion = motion;
     return this;
   }
-  
+
+  /**
+   * Sets the background colour using separate R, G, B channels (0-255 each).
+   *
+   * @param r red channel (0-255)
+   * @param g green channel (0-255)
+   * @param b blue channel (0-255)
+   * @return this instance for method chaining
+   * @throws IllegalArgumentException if any channel is out of range
+   */
+  public Configuration setBackgroundColor(int r, int g, int b) {
+    if (r < 0 || r > 255) throw new IllegalArgumentException("Background red must be 0-255. Got: " + r);
+    if (g < 0 || g > 255) throw new IllegalArgumentException("Background green must be 0-255. Got: " + g);
+    if (b < 0 || b > 255) throw new IllegalArgumentException("Background blue must be 0-255. Got: " + b);
+    this.backgroundR = r;
+    this.backgroundG = g;
+    this.backgroundB = b;
+    onChange("backgroundColor", new int[]{r, g, b});
+    return this;
+  }
+
+  /**
+   * Sets the background colour as a greyscale value (0 = black, 255 = white).
+   *
+   * @param gray greyscale value (0-255)
+   * @return this instance for method chaining
+   * @throws IllegalArgumentException if value is out of range
+   */
+  public Configuration setBackgroundColor(int gray) {
+    return setBackgroundColor(gray, gray, gray);
+  }
+
   /**
    * Loads configuration from a JSON object.
    * 
@@ -866,6 +919,11 @@ public class Configuration {
       brightnessMax = getFloatInRange(colors, "brightnessMax", brightnessMax, 0.0f, 255.0f, "Brightness max");
       waveAmplitudeMin = getFloat(colors, "waveAmplitudeMin", waveAmplitudeMin, "Wave amplitude min");
       waveAmplitudeMax = getFloat(colors, "waveAmplitudeMax", waveAmplitudeMax, "Wave amplitude max");
+
+      // Background color channels
+      if (colors.hasKey("backgroundR")) backgroundR = Math.max(0, Math.min(255, colors.getInt("backgroundR", backgroundR)));
+      if (colors.hasKey("backgroundG")) backgroundG = Math.max(0, Math.min(255, colors.getInt("backgroundG", backgroundG)));
+      if (colors.hasKey("backgroundB")) backgroundB = Math.max(0, Math.min(255, colors.getInt("backgroundB", backgroundB)));
       
       // Validate ranges
       if (saturationMin > saturationMax) {
@@ -1035,6 +1093,9 @@ public class Configuration {
     colors.setFloat("brightnessMax", brightnessMax);
     colors.setFloat("waveAmplitudeMin", waveAmplitudeMin);
     colors.setFloat("waveAmplitudeMax", waveAmplitudeMax);
+    colors.setInt("backgroundR", backgroundR);
+    colors.setInt("backgroundG", backgroundG);
+    colors.setInt("backgroundB", backgroundB);
     json.setJSONObject("colors", colors);
     
     return json;
@@ -1075,6 +1136,9 @@ public class Configuration {
     copy.brightnessMax = this.brightnessMax;
     copy.waveAmplitudeMin = this.waveAmplitudeMin;
     copy.waveAmplitudeMax = this.waveAmplitudeMax;
+    copy.backgroundR = this.backgroundR;
+    copy.backgroundG = this.backgroundG;
+    copy.backgroundB = this.backgroundB;
     return copy;
   }
   
