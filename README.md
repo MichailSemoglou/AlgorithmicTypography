@@ -342,7 +342,7 @@ A dedicated showcase for `interpolateTo()`, the v0.2.3 morphing API. A large cen
 
 ### GlyphPath
 
-Extracts glyph outlines as vertices with eleven display modes: filled, points (arc-length distributed), deformed, contours, a 4×4 tiled grid, interior fill points, outer contour only, outer + inner counter-forms, hatch fill (`fillWithLines`), character morph (`interpolateTo`), and path particle (`sampleAlongPath`).
+Extracts glyph outlines as vertices with ten display modes: filled, points (arc-length distributed), deformed, contours, a 4×4 tiled grid, interior fill points, outer contour only, outer + inner counter-forms, hatch fill (`fillWithLines`), and path particle (`sampleAlongPath`).
 
 ### GlyphDynamics
 
