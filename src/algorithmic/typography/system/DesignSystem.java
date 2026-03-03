@@ -29,7 +29,7 @@
  * </ul>
  * 
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @since 1.0.0
  */
 

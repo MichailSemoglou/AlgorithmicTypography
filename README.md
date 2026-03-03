@@ -4,13 +4,13 @@
 
 [![Processing](https://img.shields.io/badge/Processing-4.x-blue)](https://processing.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.2.2-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+[![Version](https://img.shields.io/badge/Version-0.2.3-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
 ![AlgorithmicTypography showcase](docs/showcase.gif)
 ![AlgorithmicTypography showcase_2](docs/showcase_2.gif)
 
 > [!NOTE]
-> **Version 0.2.2** adds three designer-oriented `GlyphExtractor` methods: `fillWithPoints()` (scatter points inside a closed letterform, counters excluded), `distributeAlongOutline()` (N points evenly spaced by arc length around the full perimeter), and `getOuterContour()` / `getInnerContours()` (separating the outer boundary from counter-forms such as the holes in B, O, and P). A new `GlyphDesign` example demonstrates all three across three interactive modes. This release also introduces four new `CellMotion` types: `LissajousMotion` (figure-8 and knot-shaped Lissajous orbits), `SpringMotion` (spring-damped glyphs that chase a drifting target), `GravityMotion` (glyphs fall and bounce, with a `kick()` method to re-energise them), and `MagneticMotion` (mouse-driven repel/attract field). Dedicated showcase examples (`GravityDynamics` and `MagneticDynamics`) provide full live-control UIs. This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. The previous GitHub release was tagged `1.1.1` under a different versioning scheme; at the Processing community's request, the version number was reset to `0.x` to better reflect the library's work-in-progress status. Despite the lower number, 0.2.2 is substantially more capable than 1.1.1. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
+> **Version 0.2.3** deepens the `GlyphExtractor` designer toolkit and expands the `CellMotion` catalogue. New `GlyphExtractor` geometry methods: `fillWithLines()` (hatch lines clipped to the letterform interior), `offsetOutline()` (inline/outline expansion or contraction), `interpolateTo()` (morph between two letterform outlines at a normalised `t`), `getMedialAxis()` (approximate spine for calligraphic rendering), `sampleAlongPath()` (single point at a normalised arc-length position for particle animation), and `getBoundingContour()` (union outline of multiple characters as one path). New high-level convenience methods that eliminate sketch boilerplate: `morphShape()` (ready-to-draw `PShape` for morphs with correct hole handling), `interpolateContours()` (interpolated contour list for point-level morph effects), `centerOf()` (centering offset for a single glyph), `morphCenterOf()` (lerped centering offset for a morphing pair), and `drawAt()` (draw a centred letterform in one call). A new chainable `GlyphBuilder` fluent API removes boilerplate from common effects. Three new `CellMotion` types: `RippleMotion` (click-triggered concentric displacement rings), `FlowFieldMotion` (spatially coherent Perlin-noise vector field), and `OrbitalMotion` (glyphs orbit neighbour anchors in constellation patterns). This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
 
 ## Overview
 
@@ -22,11 +22,11 @@ The library is also well suited to **design education**. Its layered API — fro
 
 ### Why AlgorithmicTypography?
 
-What makes this library distinctive is that it was designed from the ground up with **designers in mind**, not programmers. You do not need to understand signal processing to create a wave-driven animation, manage threads to export frames, or parse font internals to extract glyph outlines — the library handles all of that. The result is a tool that feels at home in a design workflow while remaining fully open to code-level customisation.
+What makes this library distinctive is that it was designed from the ground up with **designers in mind**. You do not need to understand signal processing to create a wave-driven animation, manage threads to export frames, or parse font internals to extract glyph outlines — the library handles all of that. The result is a tool that feels at home in a design workflow while remaining fully open to code-level customisation.
 
 **For newcomers,** it is one of the most accessible entry points into generative typography in the Processing ecosystem. A working sketch requires just four lines of code; a JSON file handles the rest. From there, the API grows with you — every new concept (physics, audio, custom waves) builds on the same foundation rather than requiring a fresh start.
 
-**As an alternative to Geomerative,** AlgorithmicTypography already covers the core use cases — outline extraction, contour separation, interior point distribution, and arc-length-spaced perimeter sampling — without requiring an external dependency. Even at this early `0.x` stage, it offers capabilities that go well beyond glyph geometry: per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in. Version 1.0.0 is expected to consolidate these systems into a significantly more powerful and stable release.
+**As an alternative to Geomerative,** AlgorithmicTypography already covers the core use cases — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, and letterform morphing — without requiring an external dependency. Critically, it also resolves several long-standing issues with Geomerative's approach: Geomerative's contour extraction suffered from inconsistent winding order across different fonts, missing sub-paths on complex glyphs, and no reliable method for separating outer boundaries from inner counter-forms (counters — the enclosed negative spaces in 'B', 'O', 'P', 'R'). This required fragile sketch-level workarounds that broke as soon as the font changed. AlgorithmicTypography solves this at the source — contour extraction goes directly through Java2D's own `FlatteningPathIterator` on the raw AWT font outline (no third-party parser), outer vs. inner separation is determined by contour area (deterministic and font-agnostic), and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods go a step further: sketch code expresses design intent directly, with no glyph-bounds arithmetic or matrix boilerplate surfacing at the sketch level. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in. Version 1.0.0 is expected to consolidate these systems into a significantly more powerful and stable release.
 
 ## Features
 
@@ -35,7 +35,7 @@ What makes this library distinctive is that it was designed from the ground up w
 - **Wave angle** — Control the propagation direction of the colour wave (0–360°)
 - **Glyph extraction** — Extract glyph outlines as vertices (built-in alternative to Geomerative)
 - **Glyph physics** — Treat glyph vertices as particles with mouse attraction/repulsion
-- **Cell motion** — Six built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), and Mouse-magnetic (repel/attract)
+- **Cell motion** — Nine built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), Mouse-magnetic (repel/attract), Ripple (click-triggered concentric rings), FlowField (spatially coherent Perlin vector field), and Orbital (constellation orbit patterns)
 - **Trail effects** — Semi-transparent overlay trails with temporal displacement
 - **Audio reactivity** — Map bass, mid, treble, and beat detection to animation parameters
 - **Cultural design presets** — Parameter sets inspired by Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, and related typographic traditions (see [editorial note](#editorial-note))
@@ -115,7 +115,10 @@ algorithmic.typography
 │   ├── LissajousMotion            Figure-8 and knot-shaped Lissajous orbits
 │   ├── SpringMotion               Spring-damped glyphs chasing a drifting target
 │   ├── GravityMotion              Gravity, bounce, and kick() impulse physics
-│   └── MagneticMotion             Mouse-driven repel / attract field
+│   ├── MagneticMotion             Mouse-driven repel / attract field
+│   ├── RippleMotion               Click-triggered concentric displacement rings
+│   ├── FlowFieldMotion            Spatially coherent Perlin-noise vector field
+│   └── OrbitalMotion              Glyphs orbit neighbour-derived anchors (constellation)
 │
 ├── render/
 │   ├── GridRenderer               Offscreen PGraphics rendering
@@ -333,9 +336,13 @@ Demonstrates four new designer-oriented `GlyphExtractor` methods added in v0.2.2
 
 Useful starting point for stippling effects, flow-field seeding, necklace-of-dots typography, and counter-aware colouring.
 
+### GlyphMorph
+
+A dedicated showcase for `interpolateTo()`, the v0.2.3 morphing API. A large central letterform breathes between two characters via a smooth ping-pong animation. A timeline strip at the bottom shows five fixed-t snapshots (t = 0 / 0.25 / 0.5 / 0.75 / 1.0) so you can see the full morphing spread at a glance. Four display styles — Outline, Filled, Dot Cloud, and Dual (ghosted source + target + morph) — let you explore different creative directions. Mouse-X scrub mode hands control of t directly to the cursor. Eight curated character pairs chosen for interesting midpoints; SPACE cycles through them.
+
 ### GlyphPath
 
-Extracts glyph outlines as vertices with eight display modes: filled, points (arc-length distributed via `distributeAlongOutline`), deformed, contours, a 4×4 tiled grid, interior fill points (`fillWithPoints`), outer contour only (`getOuterContour`), and outer + inner counter-forms (`getOuterContour` / `getInnerContours`).
+Extracts glyph outlines as vertices with eleven display modes: filled, points (arc-length distributed), deformed, contours, a 4×4 tiled grid, interior fill points, outer contour only, outer + inner counter-forms, hatch fill (`fillWithLines`), character morph (`interpolateTo`), and path particle (`sampleAlongPath`).
 
 ### GlyphDynamics
 
@@ -343,7 +350,7 @@ Particle-based physics — each glyph vertex becomes a particle with mouse repul
 
 ### GlyphWander
 
-Demonstrates per-glyph cell motion via `config.setCellMotion()`. Cycles through six motion modes — None, Perlin, Circular CW, Circular CCW, Lissajous, and Spring — with live radius and speed adjustment.
+Demonstrates per-glyph cell motion via `config.setCellMotion()`. Cycles through eleven motion modes — None, Perlin, Circular CW, Circular CCW, Lissajous, Spring, Gravity, Magnetic, Ripple, FlowField, and Orbital — with live radius and speed adjustment. In Ripple mode, clicking triggers a concentric ring at the cursor position.
 
 ### TrailEffect
 
@@ -399,6 +406,23 @@ PVector[] fill   = glyph.fillWithPoints('O', 400, 800);        // interior scatt
 PVector[] ring   = glyph.distributeAlongOutline('O', 400, 200); // arc-length spaced
 PVector[] outer  = glyph.getOuterContour('B', 400);            // outer boundary only
 List<PVector[]> holes = glyph.getInnerContours('B', 400);      // counter-forms only
+
+// v0.2.3 — geometry depth
+float[][] segs  = glyph.fillWithLines('A', 400, 45, 8);       // hatch at 45°, 8 px apart
+PVector[] shrunk = glyph.offsetOutline('A', 400, -6);         // contract by 6 px
+PVector[] morph  = glyph.interpolateTo('A', 'B', 400, 0.5);   // halfway between A and B
+PVector[] spine  = glyph.getMedialAxis('A', 400, 120);        // approximate letterform spine
+PVector  pt      = glyph.sampleAlongPath('O', 400, 0.25);     // point at 25% around the outline
+
+// v0.2.3 — centering & high-level drawing (eliminate getBounds boilerplate)
+PVector o  = glyph.centerOf('A', 400, width/2, height/2);         // centering offset for a single glyph
+PVector om = glyph.morphCenterOf('A', 'B', 400, 0.5, cx, cy);     // lerped offset for a morphing pair
+glyph.drawAt('A', 400, width/2, height/2);                         // draw centred, current fill/stroke
+
+// v0.2.3 — morph rendering (holes handled inside the library)
+PShape ms = glyph.morphShape('A', 'B', 400, 0.5);                 // ready-to-draw PShape for morph
+ms.disableStyle(); fill(200); shape(ms, o.x, o.y);
+List<PVector[]> mc = glyph.interpolateContours('A', 'B', 400, 0.5); // raw contours for point effects
 ```
 
 ### Glyph Physics
@@ -450,6 +474,24 @@ magnetic.setStrength(1800);   // field intensity
 magnetic.setFalloff(80);      // half-force distance in pixels
 magnetic.setAttract(false);   // false = repel, true = attract
 magnetic.togglePolarity();    // flip attract ↔ repel at runtime
+
+// Ripple: click-triggered concentric displacement rings
+RippleMotion ripple = new RippleMotion(14, 1.0);
+ripple.setTileGrid(width, height, tilesX, tilesY); // call once in setup()
+ripple.trigger(mouseX, mouseY);                    // call from mousePressed()
+ripple.setExpandSpeed(3.5);    // px per frame the ring expands
+ripple.setWaveWidth(60);       // radial width of each ring
+ripple.setDecayRate(0.015);    // amplitude loss per frame
+
+// FlowField: spatially coherent Perlin-noise vector field
+FlowFieldMotion flow = new FlowFieldMotion(12, 1.0);
+flow.setFieldScale(0.003);     // spatial frequency of the noise field
+flow.setEvolutionRate(0.008);  // how fast the field evolves over time
+flow.setSeedOffset(42.0);      // seed for field isolation
+
+// Orbital: glyphs orbit neighbour-derived anchors
+OrbitalMotion orbital = new OrbitalMotion(10, 1.0);
+orbital.setWobble(0.3);        // radial wobble magnitude (0 = perfect circle)
 
 // Apply any motion via config (works with VibePreset pipeline too)
 config.setCellMotion(spring);

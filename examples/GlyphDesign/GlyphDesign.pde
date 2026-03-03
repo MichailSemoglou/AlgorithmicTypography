@@ -63,25 +63,21 @@ void draw() {
 // ── Mode 1: fillWithPoints ────────────────────────────────────────────────
 void drawInteriorFill(char ch) {
   PVector[] pts = glyph.fillWithPoints(ch, 800, ptCount);
-  float[] b = glyph.getBounds(ch, 800);
-  float ox = width / 2 - b[0] - b[2] / 2;
-  float oy = height / 2 - b[1] - b[3] / 2;
+  PVector   o   = glyph.centerOf(ch, 800, width / 2, height / 2);
 
   noStroke();
   for (int i = 0; i < pts.length; i++) {
     float hue = (map(i, 0, pts.length, 180, 300) + t * 20) % 360;
     float sz  = 2.5 + sin(t + i * 0.07) * 1.2;
     fill(hue, 200, 255, 220);
-    ellipse(ox + pts[i].x, oy + pts[i].y, sz, sz);
+    ellipse(o.x + pts[i].x, o.y + pts[i].y, sz, sz);
   }
 }
 
 // ── Mode 2: distributeAlongOutline ───────────────────────────────────────
 void drawPerimeterDots(char ch) {
   PVector[] pts = glyph.distributeAlongOutline(ch, 800, ptCount);
-  float[] b = glyph.getBounds(ch, 800);
-  float ox = width / 2 - b[0] - b[2] / 2;
-  float oy = height / 2 - b[1] - b[3] / 2;
+  PVector   o   = glyph.centerOf(ch, 800, width / 2, height / 2);
 
   noStroke();
   for (int i = 0; i < pts.length; i++) {
@@ -89,17 +85,15 @@ void drawPerimeterDots(char ch) {
     float hue   = (phase * 360 + t * 40) % 360;
     float sz    = 3 + sin(t * 2 + phase * TWO_PI * 4) * 1.5;
     fill(hue, 220, 255, 230);
-    ellipse(ox + pts[i].x, oy + pts[i].y, sz, sz);
+    ellipse(o.x + pts[i].x, o.y + pts[i].y, sz, sz);
   }
 }
 
 // ── Mode 3: getOuterContour + getInnerContours ───────────────────────────
 void drawOuterInner(char ch) {
-  PVector[] outer       = glyph.getOuterContour(ch, 800);
+  PVector[]       outer = glyph.getOuterContour(ch, 800);
   List<PVector[]> inner = glyph.getInnerContours(ch, 800);
-  float[] b = glyph.getBounds(ch, 800);
-  float ox = width / 2 - b[0] - b[2] / 2;
-  float oy = height / 2 - b[1] - b[3] / 2;
+  PVector         o     = glyph.centerOf(ch, 800, width / 2, height / 2);
 
   strokeWeight(1.5);
   noFill();
@@ -107,14 +101,14 @@ void drawOuterInner(char ch) {
   // Outer boundary - cyan-blue, closed
   stroke((200 + t * 30) % 360, 200, 255);
   beginShape();
-  for (PVector p : outer) vertex(ox + p.x, oy + p.y);
+  for (PVector p : outer) vertex(o.x + p.x, o.y + p.y);
   endShape(CLOSE);
 
   // Inner contours (counter-forms) - warm orange, each closed
   stroke((25 + t * 20) % 360, 220, 255);
   for (PVector[] contour : inner) {
     beginShape();
-    for (PVector p : contour) vertex(ox + p.x, oy + p.y);
+    for (PVector p : contour) vertex(o.x + p.x, o.y + p.y);
     endShape(CLOSE);
   }
 

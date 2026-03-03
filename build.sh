@@ -9,7 +9,7 @@
 set -e
 
 LIBRARY_NAME="AlgorithmicTypography"
-VERSION="0.2.1"
+VERSION="0.2.3"
 SRC_DIR="src"
 BUILD_DIR="build"
 LIBRARY_DIR="library"

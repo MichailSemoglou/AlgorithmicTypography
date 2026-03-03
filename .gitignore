@@ -40,6 +40,7 @@ examples/CulturalStyles/
 # Local-only docs
 CHANGELOG.md
 ROADMAP.md
+SHORTBIO.md
 
 # p5.js port — reserved for website build, not part of the Processing library
 p5js-port/

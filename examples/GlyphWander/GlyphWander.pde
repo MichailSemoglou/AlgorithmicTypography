@@ -12,11 +12,17 @@
  *   3  Circular CCW   — counter-clockwise orbits
  *   4  Lissajous      — figure-8 and knot-shaped orbits
  *   5  Spring         — spring-damped glyphs pulled toward a drifting target
+ *   6  Gravity        — glyphs fall under gravity and bounce
+ *   7  Magnetic       — glyphs repelled/attracted by the mouse cursor
+ *   8  Ripple         — click to trigger concentric displacement rings (v0.2.3)
+ *   9  FlowField      — glyphs drift in a slowly evolving Perlin noise field (v0.2.3)
+ *   10 Orbital        — glyphs orbit neighbours in a constellation pattern (v0.2.3)
  *
  * Controls:
  *   M / click   Cycle motion mode
  *   UP / DOWN   Increase / decrease radius
  *   + / -       Increase / decrease speed
+ *   SPACE       Trigger a ripple at the sketch centre (Ripple mode only)
  *   R           Restart animation
  */
 
@@ -26,6 +32,11 @@ import algorithmic.typography.core.PerlinMotion;
 import algorithmic.typography.core.CircularMotion;
 import algorithmic.typography.core.LissajousMotion;
 import algorithmic.typography.core.SpringMotion;
+import algorithmic.typography.core.GravityMotion;
+import algorithmic.typography.core.MagneticMotion;
+import algorithmic.typography.core.RippleMotion;
+import algorithmic.typography.core.FlowFieldMotion;
+import algorithmic.typography.core.OrbitalMotion;
 
 AlgorithmicTypography at;
 Configuration        config;
@@ -34,14 +45,30 @@ Configuration        config;
 PerlinMotion    perlin       = new PerlinMotion(12, 1.0);
 CircularMotion  cwMotion     = new CircularMotion(12, 1.0, true);
 CircularMotion  ccwMotion    = new CircularMotion(12, 1.0, false);
-LissajousMotion lissajous      = new LissajousMotion(12, 1.0);   // figure-8 default
-SpringMotion    springMotion   = new SpringMotion(12, 1.0);       // spring-damped
+LissajousMotion lissajous    = new LissajousMotion(12, 1.0);
+SpringMotion    springMotion = new SpringMotion(12, 1.0);
+GravityMotion   gravity      = new GravityMotion();
+MagneticMotion  magnetic;          // initialised in setup() — needs 'this'
+RippleMotion    ripple       = new RippleMotion(200, 80, 0.975f);
+FlowFieldMotion flowField    = new FlowFieldMotion(12, 0.007f, 0.005f);
+OrbitalMotion   orbital      = new OrbitalMotion(12, 0.6f);
 
 int      motionIdx = 1;   // start on Perlin
-String[] motionLabels = {"None", "Perlin", "Circular CW", "Circular CCW", "Lissajous", "Spring"};
+String[] motionLabels = {
+  "None", "Perlin", "Circular CW", "Circular CCW", "Lissajous",
+  "Spring", "Gravity", "Magnetic", "Ripple", "FlowField", "Orbital"
+};
 
 void setup() {
   size(1080, 1080);
+
+  // Magnetic needs a PApplet reference; wire up tile grid after size() call
+  magnetic = new MagneticMotion(this);
+  magnetic.setTileGrid(width, height, 12, 12);
+
+  // Ripple also needs a tile grid for world-space calculation
+  ripple.setTileGrid(width, height, 12, 12);
+  ripple.setRadius(20);
 
   config = new Configuration();
   config.setCanvasSize(width, height);
@@ -65,7 +92,7 @@ void setup() {
   applyMotion(motionIdx);
   at.initialize();
 
-  println("GlyphWander — M=mode  UP/DOWN=radius  +/-=speed  R=restart");
+  println("GlyphWander — M=mode  UP/DOWN=radius  +/-=speed  SPACE=ripple  R=restart");
 }
 
 void draw() {
@@ -77,23 +104,33 @@ void draw() {
 
 void applyMotion(int idx) {
   switch (idx) {
-    case 0: config.setCellMotion(null);         break;
-    case 1: config.setCellMotion(perlin);        break;
-    case 2: config.setCellMotion(cwMotion);      break;
-    case 3: config.setCellMotion(ccwMotion);     break;
-    case 4: config.setCellMotion(lissajous);     break;
-    case 5: config.setCellMotion(springMotion);   break;
+    case 0:  config.setCellMotion(null);        break;
+    case 1:  config.setCellMotion(perlin);      break;
+    case 2:  config.setCellMotion(cwMotion);    break;
+    case 3:  config.setCellMotion(ccwMotion);   break;
+    case 4:  config.setCellMotion(lissajous);   break;
+    case 5:  config.setCellMotion(springMotion); break;
+    case 6:  config.setCellMotion(gravity);     break;
+    case 7:  config.setCellMotion(magnetic);    break;
+    case 8:  config.setCellMotion(ripple);      break;
+    case 9:  config.setCellMotion(flowField);   break;
+    case 10: config.setCellMotion(orbital);     break;
   }
 }
 
 // Returns whichever motion object is currently active (or null)
 CellMotion activeMotion() {
   switch (motionIdx) {
-    case 1: return perlin;
-    case 2: return cwMotion;
-    case 3: return ccwMotion;
-    case 4: return lissajous;
-    case 5: return springMotion;
+    case 1:  return perlin;
+    case 2:  return cwMotion;
+    case 3:  return ccwMotion;
+    case 4:  return lissajous;
+    case 5:  return springMotion;
+    case 6:  return gravity;
+    case 7:  return magnetic;
+    case 8:  return ripple;
+    case 9:  return flowField;
+    case 10: return orbital;
     default: return null;
   }
 }
@@ -103,6 +140,9 @@ CellMotion activeMotion() {
 void drawHUD() {
   float r = (activeMotion() != null) ? activeMotion().getRadius() : 0;
   float s = (activeMotion() != null) ? activeMotion().getSpeed()  : 0;
+  String extra = (motionIdx == 8)
+    ? "   Rings: " + ripple.getRippleCount() + "  (SPACE = trigger)"
+    : "";
 
   fill(255, 200);
   noStroke();
@@ -111,6 +151,7 @@ void drawHUD() {
   text("Motion: " + motionLabels[motionIdx]
      + "   Radius: " + nf(r, 1, 1) + " px"
      + "   Speed: "  + nf(s, 1, 2)
+     + extra
      + "   FPS: "    + (int)frameRate, 16, 16);
 }
 
@@ -129,6 +170,12 @@ void keyPressed() {
     return;
   }
 
+  // Trigger ripple from centre on SPACE
+  if (key == ' ' && motionIdx == 8) {
+    ripple.trigger(width / 2.0, height / 2.0);
+    return;
+  }
+
   CellMotion m = activeMotion();
   if (m == null) return;
 
@@ -139,7 +186,12 @@ void keyPressed() {
 }
 
 void mousePressed() {
-  motionIdx = (motionIdx + 1) % motionLabels.length;
-  applyMotion(motionIdx);
-  println("Motion: " + motionLabels[motionIdx]);
+  if (motionIdx == 8) {
+    // In Ripple mode: trigger at mouse click position
+    ripple.trigger(mouseX, mouseY);
+  } else {
+    motionIdx = (motionIdx + 1) % motionLabels.length;
+    applyMotion(motionIdx);
+    println("Motion: " + motionLabels[motionIdx]);
+  }
 }

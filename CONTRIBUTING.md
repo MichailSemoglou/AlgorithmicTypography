@@ -101,7 +101,7 @@ High-impact areas right now (v0.3 targets):
 - [ ] **Baseline wave** — modulate the text baseline per-glyph (rise/fall) rather than raw Y displacement; respects ascenders/descenders
 - [ ] **Documentation** — tutorials, video guides, type-specimen showcase examples
 
-#### GlyphExtractor — Current Status (v0.2.2)
+#### GlyphExtractor — Current Status (v0.2.3)
 
 The `GlyphExtractor` class extracts outline data from any system font at any size. All methods below are currently implemented:
 
@@ -117,14 +117,21 @@ The `GlyphExtractor` class extracts outline data from any system font at any siz
 - ~~`distributeAlongOutline(char, float, int)`~~ ✅ — N arc-length-equalised points around the full perimeter
 - ~~`getOuterContour(char, float)`~~ ✅ — outermost contour only (largest area via shoelace)
 - ~~`getInnerContours(char, float)`~~ ✅ — counter-form contours only (holes in B, O, P, R, etc.)
+- ~~`fillWithLines(char, float, float, float)`~~ ✅ — hatch lines clipped to letterform interior (v0.2.3)
+- ~~`offsetOutline(char, float, float)`~~ ✅ — expand or contract the letterform boundary (v0.2.3)
+- ~~`interpolateTo(char, char, float, float)`~~ ✅ — morph between two letterform outlines at `t` (v0.2.3)
+- ~~`getMedialAxis(char, float, int)`~~ ✅ — approximate spine of the letterform (v0.2.3)
+- ~~`sampleAlongPath(char, float, float)`~~ ✅ — point at a normalised arc-length position (v0.2.3)
+- ~~`getBoundingContour(char[], float, float)`~~ ✅ — union outline of multiple characters as one closed path (v0.2.3)
+- ~~`of(char, float)` / `GlyphBuilder`~~ ✅ — fluent chainable builder for common draw patterns (v0.2.3)
 
 **Ideas for new methods:**
 
-- `sampleAlongPath(char, float, float)` — sample a point at a normalised arc-length position (0–1) for animation along the outline
-- `getBoundingContour(char[], float)` — union outline of multiple characters as a single closed path
-- `getSkeletonPoints(char, float)` — medial-axis / skeleton approximation for stroke-based rendering
+- `getTangent(char, float, float)` — direction vector at a normalised arc-length position; needed for orienting objects along an outline
+- `textOnPath(String, PVector[], float)` — lay out a string of glyphs along any arbitrary curve
+- `subdivide(char, float, int)` — increase tessellation density on demand for physics-heavy sketches
 
-#### Motion System — Current Status (v0.2.2)
+#### Motion System — Current Status (v0.2.3)
 
 The `CellMotion` base class makes it straightforward to add new per-glyph movement strategies.
 To add one, extend `CellMotion`, implement `getOffset(col, row, frameCount)`, and it integrates immediately with `config.setCellMotion()` and the full `VibePreset` pipeline.
@@ -137,12 +144,15 @@ To add one, extend `CellMotion`, implement `getOffset(col, row, frameCount)`, an
 - ~~`SpringMotion`~~ ✅ — spring-damped glyphs pulled toward a drifting target
 - ~~`GravityMotion`~~ ✅ — glyphs fall and bounce within their cells (`kick()` for re-energising)
 - ~~`MagneticMotion`~~ ✅ — mouse-driven repel/attract field with smooth lerping
+- ~~`RippleMotion`~~ ✅ — click-triggered concentric displacement rings that expand and decay (v0.2.3)
+- ~~`FlowFieldMotion`~~ ✅ — spatially coherent Perlin-noise vector field; adjacent glyphs flow together (v0.2.3)
+- ~~`OrbitalMotion`~~ ✅ — glyphs orbit neighbour-derived anchors in constellation patterns (v0.2.3)
 
 **Ideas for new motion types:**
 
-- `RippleMotion` — concentric displacement waves emanating from a click point
-- `FlowFieldMotion` — Perlin-noise vector field that glyphs follow as particles
-- `OrbitalMotion` — glyphs orbit other glyphs (typographic constellation)
+- `SwarmMotion` — emergent flocking behaviour (separation, alignment, cohesion) per glyph agent
+- `WaveCollapseMotion` — glyphs lock into quantised angle states and flip between them using WFC-inspired rules
+- `PhysicsChainMotion` — glyphs hang from a verlet chain; gravity + mouse drag creates pendulum cascades
 
 #### Example Sketches — Frame-Saving Convention
 

@@ -28,7 +28,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @since 1.0.0
  */
 
@@ -70,9 +70,12 @@ public class GlyphPhysics {
 
   // ── Contour structure (for shape/line rendering) ─────────────
   private List<int[]> contourRanges;  // [startIdx, length] per contour
-  
+
   // ── Offset for positioning ───────────────────────────────────
   private float offsetX = 0, offsetY = 0;
+
+  /** Total dot count distributed by arc length across all contours. */
+  private static final int DEFAULT_DISTRIBUTE_PTS = 600;
 
   // ───────────────────────────────────────────────────────────────
   //  Construction
@@ -101,11 +104,11 @@ public class GlyphPhysics {
    * @param fontSize font size in points
    */
   public void setChar(char ch, float fontSize) {
-    List<PVector[]> contours = extractor.getContours(ch, fontSize);
+    List<PVector[]> raw = extractor.getContours(ch, fontSize);
     float[] b = extractor.getBounds(ch, fontSize);
     offsetX = parent.width  / 2f - b[0] - b[2] / 2f;
     offsetY = parent.height / 2f - b[1] - b[3] / 2f;
-    loadContours(contours);
+    loadContours(redistributeContours(raw, DEFAULT_DISTRIBUTE_PTS));
   }
 
   /**
@@ -115,11 +118,39 @@ public class GlyphPhysics {
    * @param fontSize font size in points
    */
   public void setText(String text, float fontSize) {
-    List<PVector[]> contours = extractor.getContours(text, fontSize);
+    List<PVector[]> raw = extractor.getContours(text, fontSize);
     float[] b = extractor.getBounds(text, fontSize);
     offsetX = parent.width  / 2f - b[0] - b[2] / 2f;
     offsetY = parent.height / 2f - b[1] - b[3] / 2f;
-    loadContours(contours);
+    loadContours(redistributeContours(raw, DEFAULT_DISTRIBUTE_PTS));
+  }
+
+  /**
+   * Distributes {@code totalPts} across contours proportionally by arc length,
+   * resampling each to its share so particles are evenly spaced along the outline.
+   */
+  private List<PVector[]> redistributeContours(List<PVector[]> contours, int totalPts) {
+    if (contours.isEmpty()) return contours;
+    float[] lengths = new float[contours.size()];
+    float totalLen  = 0;
+    for (int i = 0; i < contours.size(); i++) {
+      PVector[] c = contours.get(i);
+      float len = 0;
+      for (int j = 1; j < c.length; j++) len += PVector.dist(c[j - 1], c[j]);
+      if (c.length > 1) len += PVector.dist(c[c.length - 1], c[0]); // closing edge
+      lengths[i] = len;
+      totalLen  += len;
+    }
+    List<PVector[]> result = new ArrayList<>();
+    for (int i = 0; i < contours.size(); i++) {
+      // Close the contour explicitly so the last→first edge is covered.
+      PVector[] raw    = contours.get(i);
+      PVector[] closed = java.util.Arrays.copyOf(raw, raw.length + 1);
+      closed[raw.length] = raw[0].copy();
+      int n = Math.max(3, Math.round(totalPts * lengths[i] / Math.max(totalLen, 1f)));
+      result.add(extractor.resample(closed, n));
+    }
+    return result;
   }
 
   /**

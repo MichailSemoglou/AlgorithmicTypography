@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @since 1.0.0
  */
 
@@ -77,7 +77,7 @@ import algorithmic.typography.system.VibePreset;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @see Configuration
  * @see WaveEngine
  */

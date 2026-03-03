@@ -255,7 +255,7 @@
       <div class="page-header">
         <h1>AlgorithmicTypography — Cheat Sheet</h1>
         <span class="sub"
-          >Processing Library v0.2.2 &nbsp;|&nbsp; Page 1 / 4</span
+          >Processing Library v0.2.3 &nbsp;|&nbsp; Page 1 / 5</span
         >
       </div>
 
@@ -451,7 +451,7 @@ at.<span class="fn">initialize</span>();
         </div>
       </div>
 
-      <div class="page-footer">Page 1 / 4</div>
+      <div class="page-footer">Page 1 / 5</div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -460,7 +460,7 @@ at.<span class="fn">initialize</span>();
     <div class="page">
       <div class="page-header">
         <h1>AlgorithmicTypography — Cheat Sheet</h1>
-        <span class="sub">Wave, Style &amp; Grid &nbsp;|&nbsp; Page 2 / 4</span>
+        <span class="sub">Wave, Style &amp; Grid &nbsp;|&nbsp; Page 2 / 5</span>
       </div>
 
       <div class="cols-3">
@@ -498,7 +498,7 @@ at.<span class="fn">setVibe</span>(<span class="str">"chaos energy"</span>);
 at.<span class="fn">setVibe</span>(<span class="str">"geometric minimal"</span>);
 </code></pre>
 
-            <p style="margin-top: 5px">Glyph motion (v0.2.1)</p>
+            <p style="margin-top: 5px">Glyph motion (v0.2.1 – v0.2.3)</p>
             <pre><code><span class="cm">// Perlin noise wander</span>
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">PerlinMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>));
 <span class="cm">// Circular orbital (CW / CCW)</span>
@@ -511,6 +511,15 @@ cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span clas
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">GravityMotion</span>(<span class="num">0.4f</span>, <span class="num">0.7f</span>));
 <span class="cm">// Mouse repel/attract field</span>
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">MagneticMotion</span>(<span class="kw">this</span>));
+<span class="cm">// ── v0.2.3 ──────────────────────────────────</span>
+<span class="cm">// Ripple: click-triggered concentric rings</span>
+<span class="ty">RippleMotion</span> r = <span class="kw">new</span> <span class="ty">RippleMotion</span>(<span class="num">14</span>, <span class="num">1.0f</span>);
+r.<span class="fn">setTileGrid</span>(width, height, tilesX, tilesY);
+r.<span class="fn">trigger</span>(mouseX, mouseY); <span class="cm">// in mousePressed()</span>
+<span class="cm">// FlowField: Perlin vector field</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">FlowFieldMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>));
+<span class="cm">// Orbital: constellation orbit patterns</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">OrbitalMotion</span>(<span class="num">10</span>, <span class="num">1.0f</span>));
 <span class="cm">// Disable</span>
 cfg.<span class="fn">setCellMotion</span>(<span class="kw">null</span>);
 </code></pre>
@@ -716,7 +725,7 @@ cfg.<span class="fn">getFadeDuration</span>();    <span class="cm">// crossfade 
         </div>
       </div>
 
-      <div class="page-footer">Page 2 / 4</div>
+      <div class="page-footer">Page 2 / 5</div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -726,7 +735,7 @@ cfg.<span class="fn">getFadeDuration</span>();    <span class="cm">// crossfade 
       <div class="page-header">
         <h1>AlgorithmicTypography — Cheat Sheet</h1>
         <span class="sub"
-          >Rendering, Images &amp; Export &nbsp;|&nbsp; Page 3 / 4</span
+          >Rendering, Images &amp; Export &nbsp;|&nbsp; Page 3 / 5</span
         >
       </div>
 
@@ -898,23 +907,21 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         </div>
       </div>
 
-      <div class="page-footer">Page 3 / 4</div>
+      <div class="page-footer">Page 3 / 5</div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
-     PAGE 4  —  Examples Gallery, Packages & Quick Tips
+     PAGE 4  —  Examples Gallery
      ═══════════════════════════════════════════════════════════ -->
     <div class="page">
       <div class="page-header">
         <h1>AlgorithmicTypography — Cheat Sheet</h1>
-        <span class="sub"
-          >Examples &amp; Reference &nbsp;|&nbsp; Page 4 / 4</span
-        >
+        <span class="sub">Examples Gallery &nbsp;|&nbsp; Page 4 / 5</span>
       </div>
 
-      <div class="section-title">Examples Gallery — 23 Sketches</div>
+      <div class="section-title">Examples Gallery — 24 Sketches</div>
 
-      <div class="cols-4" style="margin-bottom: 6px">
+      <div class="cols-4">
         <div class="example-card">
           <div class="name">AudioReactive</div>
           <div class="desc">
@@ -949,12 +956,6 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
           <div class="desc">Provide a lambda for a custom wave function.</div>
         </div>
         <div class="example-card">
-          <div class="name">GlyphDynamics</div>
-          <div class="desc">
-            Particle-based physics simulation on glyph outlines.
-          </div>
-        </div>
-        <div class="example-card">
           <div class="name">GlyphDesign</div>
           <div class="desc">
             fillWithPoints, distributeAlongOutline, getOuterContour /
@@ -962,16 +963,33 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
           </div>
         </div>
         <div class="example-card">
+          <div class="name">GlyphMorph</div>
+          <div class="desc">
+            Dedicated showcase for <code>interpolateTo()</code>: large central
+            morph, five-thumbnail timeline strip, four styles (Outline / Filled
+            / Dots / Dual), mouse-X scrub (v0.2.3).
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphDynamics</div>
+          <div class="desc">
+            Particle-based physics simulation on glyph outlines.
+          </div>
+        </div>
+        <div class="example-card">
           <div class="name">GlyphPath</div>
           <div class="desc">
-            Access individual glyph outlines as PShape paths.
+            11 display modes: filled, points, deformed, contours, tiled grid,
+            interior fill, outer contour, outer+inner, hatch fill, morph, path
+            particle (v0.2.3).
           </div>
         </div>
         <div class="example-card">
           <div class="name">GlyphWander</div>
           <div class="desc">
-            Cycle all 6 motion types: Perlin, Circular, Lissajous, Spring,
-            Gravity, Magnetic (+ no motion).
+            Cycle all 11 motion modes: None, Perlin, Circular CW/CCW, Lissajous,
+            Spring, Gravity, Magnetic, Ripple, FlowField, Orbital. Click
+            triggers ripple ring (v0.2.3).
           </div>
         </div>
         <div class="example-card">
@@ -983,7 +1001,9 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         </div>
         <div class="example-card">
           <div class="name">LiveControls</div>
-          <div class="desc">Adjust parameters live via WebSocket UI.</div>
+          <div class="desc">
+            Adjust parameters live via GUI sliders, keyboard, and OSC.
+          </div>
         </div>
         <div class="example-card">
           <div class="name">MagneticDynamics</div>
@@ -1051,66 +1071,24 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
         </div>
       </div>
 
-      <!-- ── Row 2 ──────────────────────────────────────── -->
-      <div class="cols-3">
-        <!-- ── PACKAGE STRUCTURE ──────────────────────────── -->
-        <div class="card">
-          <div class="card-header">Package Structure</div>
-          <div class="card-body">
-            <table>
-              <tr>
-                <th>Package</th>
-                <th>Purpose</th>
-              </tr>
-              <tr>
-                <td>algorithmic.typography</td>
-                <td>
-                  Core — AlgorithmicTypography, Configuration, HeadlessRenderer
-                </td>
-              </tr>
-              <tr>
-                <td>…typography.core</td>
-                <td>Grid engine, tile management</td>
-              </tr>
-              <tr>
-                <td>…typography.audio</td>
-                <td>Audio-reactive input</td>
-              </tr>
-              <tr>
-                <td>…typography.ml</td>
-                <td>ML-based vibe interpretation</td>
-              </tr>
-              <tr>
-                <td>…typography.net</td>
-                <td>WebSocket server for live controls</td>
-              </tr>
-              <tr>
-                <td>…typography.render</td>
-                <td>Renderers (screen, SVG, headless)</td>
-              </tr>
-              <tr>
-                <td>…typography.style</td>
-                <td>Design systems &amp; cultural presets</td>
-              </tr>
-              <tr>
-                <td>…typography.system</td>
-                <td>Vibe presets &amp; system utilities</td>
-              </tr>
-              <tr>
-                <td>…typography.text</td>
-                <td>Text / glyph processing</td>
-              </tr>
-              <tr>
-                <td>…typography.ui</td>
-                <td>UI components for live controls</td>
-              </tr>
-            </table>
-          </div>
-        </div>
+      <div class="page-footer">Page 4 / 5</div>
+    </div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 5  —  GlyphExtractor API, Package Structure & Quick Tips
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >GlyphExtractor, Packages &amp; Tips &nbsp;|&nbsp; Page 5 / 5</span
+        >
+      </div>
+
+      <div class="cols-3">
         <!-- ── GLYPH EXTRACTOR ────────────────────────────── -->
         <div class="card">
-          <div class="card-header">GlyphExtractor API (v0.2.2)</div>
+          <div class="card-header">GlyphExtractor API (v0.2.3)</div>
           <div class="card-body">
             <p>Designer-oriented glyph geometry access</p>
             <pre><code><span class="kw">import</span> <span class="ty">algorithmic.typography.render.GlyphExtractor</span>;
@@ -1118,53 +1096,216 @@ at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num
 
 <span class="ty">GlyphExtractor</span> g = <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Helvetica"</span>, <span class="num">72</span>);
 g.<span class="fn">setFlatness</span>(<span class="num">0.3</span>); <span class="cm">// curve resolution</span>
+
+<span class="cm">// Fluent GlyphBuilder (v0.2.3)</span>
+<span class="ty">GlyphExtractor</span>.<span class="fn">of</span>(<span class="str">'A'</span>, <span class="num">400</span>)
+  .<span class="fn">fillPoints</span>(<span class="num">500</span>)
+  .<span class="fn">hatch</span>(<span class="num">45</span>, <span class="num">8</span>)
+  .<span class="fn">colourByPosition</span>()
+  .<span class="fn">hueRange</span>(<span class="num">180</span>, <span class="num">270</span>)
+  .<span class="fn">draw</span>(<span class="kw">this</span>, x, y);
 </code></pre>
-            <table class="vtop" style="margin-top: 4px">
+            <table class="vtop" style="margin-top: 5px">
               <tr>
                 <th>Method</th>
                 <th>Returns</th>
-              </tr>
-              <tr>
-                <td>fillWithPoints(ch, size, n)</td>
-                <td>PVector[]</td>
-              </tr>
-              <tr>
-                <td>distributeAlongOutline(ch, size, n)</td>
-                <td>PVector[]</td>
-              </tr>
-              <tr>
-                <td>getOuterContour(ch, size)</td>
-                <td>PVector[]</td>
-              </tr>
-              <tr>
-                <td>getInnerContours(ch, size)</td>
-                <td>List&lt;PVector[]&gt;</td>
-              </tr>
-              <tr>
-                <td>getContours(ch, size)</td>
-                <td>List&lt;PVector[]&gt;</td>
-              </tr>
-              <tr>
-                <td>resample(pts, n)</td>
-                <td>PVector[]</td>
-              </tr>
-              <tr>
-                <td>getBounds(ch, size)</td>
-                <td>float[4]</td>
+                <th>Notes</th>
               </tr>
               <tr>
                 <td>extractChar(ch, size)</td>
                 <td>PShape</td>
+                <td>filled shape</td>
               </tr>
               <tr>
-                <td>extractDeformed(ch, size, …)</td>
+                <td>extractDeformed(ch, sz, …)</td>
                 <td>PShape</td>
+                <td>wave-distorted</td>
+              </tr>
+              <tr>
+                <td>getContours(ch, size)</td>
+                <td>List&lt;PVector[]&gt;</td>
+                <td>all contours</td>
+              </tr>
+              <tr>
+                <td>getOuterContour(ch, size)</td>
+                <td>PVector[]</td>
+                <td>largest area</td>
+              </tr>
+              <tr>
+                <td>getInnerContours(ch, size)</td>
+                <td>List&lt;PVector[]&gt;</td>
+                <td>counter-forms</td>
+              </tr>
+              <tr>
+                <td>fillWithPoints(ch, size, n)</td>
+                <td>PVector[]</td>
+                <td>interior scatter</td>
+              </tr>
+              <tr>
+                <td>distributeAlongOutline(ch, sz, n)</td>
+                <td>PVector[]</td>
+                <td>arc-length spaced</td>
+              </tr>
+              <tr>
+                <td>getBounds(ch, size)</td>
+                <td>float[4]</td>
+                <td>x,y,w,h</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>fillWithLines(ch, sz, ang, gap)</td>
+                <td>float[][]</td>
+                <td>hatch segments</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>offsetOutline(ch, size, dist)</td>
+                <td>PVector[]</td>
+                <td>inline / outline</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>interpolateTo(c1, c2, sz, t)</td>
+                <td>PVector[]</td>
+                <td>morph at t∈[0,1]</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>getMedialAxis(ch, size, n)</td>
+                <td>PVector[]</td>
+                <td>spine approx.</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>sampleAlongPath(ch, size, t)</td>
+                <td>PVector</td>
+                <td>point at arc t</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>getBoundingContour(chs[], sz, f)</td>
+                <td>PVector[]</td>
+                <td>union outline</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>of(ch, size) → GlyphBuilder</td>
+                <td>GlyphBuilder</td>
+                <td>fluent API</td>
               </tr>
             </table>
-            <p style="margin-top: 4px">
-              <span class="tag">String overloads</span> available for all four
-              v0.2.2 methods. See <span class="tag">GlyphDesign</span> example.
+            <p style="margin-top: 5px">
+              <span class="tag" style="color: var(--accent)">v0.2.3</span> rows
+              highlighted in accent colour.
             </p>
+          </div>
+        </div>
+
+        <!-- ── PACKAGE STRUCTURE ──────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Package Structure</div>
+          <div class="card-body">
+            <table>
+              <tr>
+                <th>Package</th>
+                <th>Key classes</th>
+              </tr>
+              <tr>
+                <td>algorithmic.typography</td>
+                <td>AlgorithmicTypography, Configuration, HeadlessRenderer</td>
+              </tr>
+              <tr>
+                <td>…typography.core</td>
+                <td>
+                  WaveEngine, WavePresets, CellMotion, all Motion types,
+                  TemporalTrail
+                </td>
+              </tr>
+              <tr>
+                <td>…typography.render</td>
+                <td>
+                  GridRenderer, GlyphExtractor, GlyphPhysics, ExportController,
+                  VectorExporter
+                </td>
+              </tr>
+              <tr>
+                <td>…typography.audio</td>
+                <td>AudioBridge (FFT, beat detection)</td>
+              </tr>
+              <tr>
+                <td>…typography.style</td>
+                <td>ColorPalette, Serendipity</td>
+              </tr>
+              <tr>
+                <td>…typography.system</td>
+                <td>DesignSystem, VibePreset</td>
+              </tr>
+              <tr>
+                <td>…typography.text</td>
+                <td>RitaBridge (RiTa integration)</td>
+              </tr>
+              <tr>
+                <td>…typography.ui</td>
+                <td>ControlPanel, Slider, OSCBridge</td>
+              </tr>
+              <tr>
+                <td>…typography.ml</td>
+                <td>AIWaveFunction</td>
+              </tr>
+              <tr>
+                <td>…typography.net</td>
+                <td>WebSocketServer</td>
+              </tr>
+            </table>
+
+            <p class="section-title" style="margin-top: 10px">
+              CellMotion Types
+            </p>
+            <table>
+              <tr>
+                <th>Class</th>
+                <th>Since</th>
+                <th>Description</th>
+              </tr>
+              <tr>
+                <td>CircularMotion</td>
+                <td>0.2.1</td>
+                <td>CW / CCW orbital</td>
+              </tr>
+              <tr>
+                <td>PerlinMotion</td>
+                <td>0.2.1</td>
+                <td>noise wandering</td>
+              </tr>
+              <tr>
+                <td>LissajousMotion</td>
+                <td>0.2.1</td>
+                <td>figure-8 / knot</td>
+              </tr>
+              <tr>
+                <td>SpringMotion</td>
+                <td>0.2.1</td>
+                <td>spring-damped chase</td>
+              </tr>
+              <tr>
+                <td>GravityMotion</td>
+                <td>0.2.1</td>
+                <td>fall + bounce + kick()</td>
+              </tr>
+              <tr>
+                <td>MagneticMotion</td>
+                <td>0.2.2</td>
+                <td>mouse repel / attract</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>RippleMotion</td>
+                <td>0.2.3</td>
+                <td>concentric click rings</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>FlowFieldMotion</td>
+                <td>0.2.3</td>
+                <td>Perlin vector field</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>OrbitalMotion</td>
+                <td>0.2.3</td>
+                <td>constellation orbit</td>
+              </tr>
+            </table>
           </div>
         </div>
 
@@ -1236,7 +1377,7 @@ g.<span class="fn">setFlatness</span>(<span class="num">0.3</span>); <span class
               <tr>
                 <td>9</td>
                 <td>
-                  Builder pattern chains:
+                  Builder pattern:
                   <code
                     >new Configuration.Builder().initialTiles(8,8).build()</code
                   >
@@ -1249,13 +1390,28 @@ g.<span class="fn">setFlatness</span>(<span class="num">0.3</span>); <span class
                   <code>index.html</code> in a browser.
                 </td>
               </tr>
+              <tr>
+                <td>11</td>
+                <td>
+                  <code>RippleMotion.trigger(x,y)</code> must be called from
+                  <code>mousePressed()</code>; call
+                  <code>setTileGrid()</code> once in <code>setup()</code>.
+                </td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>
+                  All new <code>GlyphExtractor</code> methods have String
+                  overloads — pass a word instead of a single char.
+                </td>
+              </tr>
             </table>
           </div>
         </div>
       </div>
 
       <div class="page-footer">
-        Page 4 / 4 &nbsp;·&nbsp; AlgorithmicTypography v0.2.2 &nbsp;·&nbsp;
+        Page 5 / 5 &nbsp;·&nbsp; AlgorithmicTypography v0.2.3 &nbsp;·&nbsp;
         Processing 4+
       </div>
     </div>

@@ -44,7 +44,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @since 0.2.1
  * @see CellMotion
  * @see GravityMotion

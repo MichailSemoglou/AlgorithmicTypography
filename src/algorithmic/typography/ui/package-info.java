@@ -7,6 +7,7 @@
  * 
  * Key classes:
  * - {@link Slider}: Lightweight interactive slider widget
+ * - {@link ProgressBar}: Read-only normalised progress/scrub indicator
  * - {@link ControlPanel}: Collapsible panel of sliders for all parameters
  * - {@link OSCBridge}: OSC network control
  * 
@@ -14,7 +15,7 @@
  * - oscP5: for OSC network control
  * 
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @since 1.0.0
  */
 package algorithmic.typography.ui;

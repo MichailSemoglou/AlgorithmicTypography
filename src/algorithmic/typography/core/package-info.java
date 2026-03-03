@@ -16,9 +16,12 @@
  * - {@link SpringMotion}: Spring-damped glyphs pulled toward a drifting target
  * - {@link GravityMotion}: Gravity-driven fall and bounce within a cell
  * - {@link MagneticMotion}: Mouse-driven repel / attract field
+ * - {@link RippleMotion}: Click-triggered concentric displacement rings (v0.2.3)
+ * - {@link FlowFieldMotion}: Spatially coherent Perlin-noise vector field (v0.2.3)
+ * - {@link OrbitalMotion}: Glyphs orbit neighbour anchors in constellation patterns (v0.2.3)
  * 
  * @author Michail Semoglou
- * @version 0.2.1
+ * @version 0.2.3
  * @since 1.0.0
  */
 package algorithmic.typography.core;
