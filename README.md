@@ -338,7 +338,7 @@ Useful starting point for stippling effects, flow-field seeding, necklace-of-dot
 
 ### GlyphMorph
 
-A dedicated showcase for `interpolateTo()`, the v0.2.3 morphing API. A large central letterform breathes between two characters via a smooth ping-pong animation. A timeline strip at the bottom shows five fixed-t snapshots (t = 0 / 0.25 / 0.5 / 0.75 / 1.0) so you can see the full morphing spread at a glance. Four display styles — Outline, Filled, Dot Cloud, and Dual (ghosted source + target + morph) — let you explore different creative directions. Mouse-X scrub mode hands control of t directly to the cursor. Eight curated character pairs chosen for interesting midpoints; SPACE cycles through them.
+A dedicated showcase for `interpolateTo()`, the v0.2.3 morphing API. A large central letterform breathes between two characters via a smooth ping-pong animation. A timeline strip at the bottom shows five fixed-t snapshots (t = 0 / 0.25 / 0.5 / 0.75 / 1.0) so you can see the full morphing spread at a glance. Three display styles — Outline, Filled, and Dot Cloud — let you explore different creative directions. Mouse-X scrub mode hands control of t directly to the cursor. Six curated character pairs chosen for interesting midpoints; SPACE cycles through them.
 
 ### GlyphPath
 
