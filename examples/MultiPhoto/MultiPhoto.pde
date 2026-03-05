@@ -85,38 +85,56 @@ void setup() {
 void draw() {
   background(0);
 
-  // Determine current grid size from elapsed time
-  int elapsed = millis() - startTime;
+  // Determine current grid size(s) and cross-fade alpha from elapsed time
+  int elapsed          = millis() - startTime;
   int changeTime       = cfg.getChangeTime();
   int secondChangeTime = cfg.getSecondChangeTime();
-  int cols, rows;
+  int fadeDuration     = cfg.getFadeDuration();
+  boolean hasThird     = secondChangeTime > 0;
 
-  if (secondChangeTime > 0 && elapsed > secondChangeTime) {
-    cols = cfg.getFinalTilesX();
-    rows = cfg.getFinalTilesY();
+  // fromCols/fromRows: outgoing grid; toCols/toRows: incoming grid; t: 0..1
+  int fromCols, fromRows, toCols, toRows;
+  float t;
+
+  if (hasThird && elapsed > secondChangeTime + fadeDuration) {
+    // Fully in stage 3
+    fromCols = toCols = cfg.getFinalTilesX();
+    fromRows = toRows = cfg.getFinalTilesY();
+    t = 1;
+  } else if (hasThird && elapsed > secondChangeTime) {
+    // Cross-fading stage 2 → 3
+    fromCols = cfg.getChangedTilesX(); fromRows = cfg.getChangedTilesY();
+    toCols   = cfg.getFinalTilesX();   toRows   = cfg.getFinalTilesY();
+    t = fadeDuration > 0 ? constrain((float)(elapsed - secondChangeTime) / fadeDuration, 0, 1) : 1;
+  } else if (elapsed > changeTime + fadeDuration) {
+    // Fully in stage 2
+    fromCols = toCols = cfg.getChangedTilesX();
+    fromRows = toRows = cfg.getChangedTilesY();
+    t = 1;
   } else if (elapsed > changeTime) {
-    cols = cfg.getChangedTilesX();
-    rows = cfg.getChangedTilesY();
+    // Cross-fading stage 1 → 2
+    fromCols = cfg.getInitialTilesX(); fromRows = cfg.getInitialTilesY();
+    toCols   = cfg.getChangedTilesX(); toRows   = cfg.getChangedTilesY();
+    t = fadeDuration > 0 ? constrain((float)(elapsed - changeTime) / fadeDuration, 0, 1) : 1;
   } else {
-    cols = cfg.getInitialTilesX();
-    rows = cfg.getInitialTilesY();
+    // Fully in stage 1
+    fromCols = toCols = cfg.getInitialTilesX();
+    fromRows = toRows = cfg.getInitialTilesY();
+    t = 0;
   }
 
   // ── Draw per-cell photographs ─────────────────────────
-  float cellW = (float) width  / cols;
-  float cellH = (float) height / rows;
-
-  for (int gx = 0; gx < cols; gx++) {
-    for (int gy = 0; gy < rows; gy++) {
-      int idx = (gy * cols + gx) % photoCount;
-      PImage img = photos[idx];
-
-      // Centre-crop the photo to fill the cell
-      float cx = gx * cellW;
-      float cy = gy * cellH;
-      drawCroppedImage(img, cx, cy, cellW, cellH);
-    }
+  // Outgoing grid (fading out)
+  if (t < 1) {
+    tint(255, 255 * (1 - t));
+    drawPhotoGrid(fromCols, fromRows);
   }
+  // Incoming grid (fading in)
+  if (t > 0) {
+    tint(255, 255 * t);
+    drawPhotoGrid(toCols, toRows);
+  }
+  noTint();
 
   // ── Overlay the typography grid ───────────────────────
   at.renderAt(0, 0, width, height);
@@ -128,6 +146,18 @@ void draw() {
 }
 
 // ── Helpers ──────────────────────────────────────────────
+
+/** Draws the full photo grid at the given column/row count. */
+void drawPhotoGrid(int cols, int rows) {
+  float cellW = (float) width  / cols;
+  float cellH = (float) height / rows;
+  for (int gx = 0; gx < cols; gx++) {
+    for (int gy = 0; gy < rows; gy++) {
+      int idx = (gy * cols + gx) % photoCount;
+      drawCroppedImage(photos[idx], gx * cellW, gy * cellH, cellW, cellH);
+    }
+  }
+}
 
 /** Draws `img` cropped to cover the rectangle (dx, dy, dw, dh). */
 void drawCroppedImage(PImage img, float dx, float dy, float dw, float dh) {

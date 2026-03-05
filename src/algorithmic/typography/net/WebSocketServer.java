@@ -8,7 +8,7 @@
  * Requires: Java-WebSocket library
  * 
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  */
 
 package algorithmic.typography.net;

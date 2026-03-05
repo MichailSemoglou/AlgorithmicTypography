@@ -4,13 +4,13 @@
 
 [![Processing](https://img.shields.io/badge/Processing-4.x-blue)](https://processing.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.2.3-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+[![Version](https://img.shields.io/badge/Version-0.2.4-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
 ![AlgorithmicTypography showcase](docs/showcase.gif)
 ![AlgorithmicTypography showcase_2](docs/showcase_2.gif)
 
 > [!NOTE]
-> **Version 0.2.3** deepens the `GlyphExtractor` designer toolkit and expands the `CellMotion` catalogue. New `GlyphExtractor` geometry methods: `fillWithLines()` (hatch lines clipped to the letterform interior), `offsetOutline()` (inline/outline expansion or contraction), `interpolateTo()` (morph between two letterform outlines at a normalised `t`), `getMedialAxis()` (approximate spine for calligraphic rendering), `sampleAlongPath()` (single point at a normalised arc-length position for particle animation), and `getBoundingContour()` (union outline of multiple characters as one path). New high-level convenience methods that eliminate sketch boilerplate: `morphShape()` (ready-to-draw `PShape` for morphs with correct hole handling), `interpolateContours()` (interpolated contour list for point-level morph effects), `centerOf()` (centering offset for a single glyph), `morphCenterOf()` (lerped centering offset for a morphing pair), and `drawAt()` (draw a centred letterform in one call). A new chainable `GlyphBuilder` fluent API removes boilerplate from common effects. Three new `CellMotion` types: `RippleMotion` (click-triggered concentric displacement rings), `FlowFieldMotion` (spatially coherent Perlin-noise vector field), and `OrbitalMotion` (glyphs orbit neighbour anchors in constellation patterns). This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
+> **Version 0.2.4** makes the library significantly more expressive from `config.json` alone. A new `"cellMotion"` JSON block configures any of the 10 built-in motion styles (`"perlin"`, `"circular"`, `"lissajous"`, `"spring"`, `"gravity"`, `"magnetic"`, `"ripple"`, `"flowfield"`, `"orbital"`, `"none"`) directly from the file, unifying wave, colour, and motion into a single declarative config. New `"waveType"` field selects the wave shape (`SINE`, `TANGENT`, `SQUARE`, `TRIANGLE`, `SAWTOOTH`) without any code changes; `waveAngle` is now present in all shipped example configs. A new `"cellBorder"` JSON block (plus matching `setCellBorder*()` API and `BORDER_*` bitmask constants) draws per-cell border strokes on any combination of sides with either a static colour or a wave-reactive colour mode that pulses in sync with glyph brightness. Several example sketches were also refined in this release: TrailEffect now focuses purely on motion and trail behaviour (wave angle controls removed to keep the demonstration clear), and its colour transitions were tuned for a smoother, more organic feel. Built on v0.2.3, which deepened the `GlyphExtractor` toolkit (`fillWithLines()`, `offsetOutline()`, `interpolateTo()`, `getMedialAxis()`, `sampleAlongPath()`, `getBoundingContour()`, and the fluent `GlyphBuilder` API) and added three `CellMotion` types (`RippleMotion`, `FlowFieldMotion`, `OrbitalMotion`). This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
 
 ## Overview
 
@@ -18,24 +18,27 @@ AlgorithmicTypography is built mainly for **graphic designers and typographers**
 
 It is expressive enough for complex typographic systems and approachable enough for a designer's first generative sketch.
 
-The library is also well suited to **design education**. Its layered API — from one-line vibe presets and JSON configuration to custom wave functions and per-cell physics engines — makes it a practical tool for generative typography courses. Students can start with immediate visual results and progressively engage with the underlying parameters, using the library to explore the relationship between code, form, and typographic expression.
+The library is also well suited to **design education**. Its layered API, spanning one-line vibe presets and JSON configuration through to custom wave functions and per-cell physics engines, makes it a practical tool for generative typography courses. Students can start with immediate visual results and progressively engage with the underlying parameters, using the library to explore the relationship between code, form, and typographic expression.
 
 ### Why AlgorithmicTypography?
 
-What makes this library distinctive is that it was designed from the ground up with **designers in mind**. You do not need to understand signal processing to create a wave-driven animation, manage threads to export frames, or parse font internals to extract glyph outlines — the library handles all of that. The result is a tool that feels at home in a design workflow while remaining fully open to code-level customisation.
+What makes this library distinctive is that it was designed from the ground up with **designers in mind**. You do not need to understand signal processing to create a wave-driven animation, manage threads to export frames, or parse font internals to extract glyph outlines: the library handles all of that. The result is a tool that feels at home in a design workflow while remaining fully open to code-level customisation.
 
 **For newcomers,** it is one of the most accessible entry points into generative typography in the Processing ecosystem. A working sketch requires just four lines of code; a JSON file handles the rest. From there, the API grows with you — every new concept (physics, audio, custom waves) builds on the same foundation rather than requiring a fresh start.
 
-**As an alternative to Geomerative,** AlgorithmicTypography already covers the core use cases — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, and letterform morphing — without requiring an external dependency. Critically, it also resolves several long-standing issues with Geomerative's approach: Geomerative's contour extraction suffered from inconsistent winding order across different fonts, missing sub-paths on complex glyphs, and no reliable method for separating outer boundaries from inner counter-forms (counters — the enclosed negative spaces in 'B', 'O', 'P', 'R'). This required fragile sketch-level workarounds that broke as soon as the font changed. AlgorithmicTypography solves this at the source — contour extraction goes directly through Java2D's own `FlatteningPathIterator` on the raw AWT font outline (no third-party parser), outer vs. inner separation is determined by contour area (deterministic and font-agnostic), and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods go a step further: sketch code expresses design intent directly, with no glyph-bounds arithmetic or matrix boilerplate surfacing at the sketch level. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in. Version 1.0.0 is expected to consolidate these systems into a significantly more powerful and stable release.
+**As an alternative to Geomerative,** AlgorithmicTypography covers the same core use cases — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, and letterform morphing — without requiring an external dependency, and with a few architectural differences worth knowing about. Geomerative parses font files directly through its own SVG/font engine; AlgorithmicTypography goes through Java2D's own `FlatteningPathIterator` on the raw AWT font outline, which means outer vs. inner contour separation is determined by contour area (deterministic and font-agnostic) rather than winding order, and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods express design intent directly, with no glyph-bounds arithmetic or matrix boilerplate at the sketch level. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in, making it a more complete toolkit for animated and interactive typographic work.
+
+The long-term goal is to make AlgorithmicTypography the definitive library for generative typography in Processing. The current release focuses on integration and accessibility, bringing tools that previously required multiple libraries or significant boilerplate into a single, designer-friendly API. Genuinely new capabilities are on the roadmap.
 
 ## Features
 
-- **Wave-driven animation** — Sine, tangent, square, triangle, sawtooth, Perlin noise, and custom wave functions
+- **Wave-driven animation** — Sine, tangent, square, triangle, sawtooth, Perlin noise, and custom wave functions — now selectable directly in `config.json` via `waveType`
 - **HSB colour mapping** — Configurable hue, saturation, and brightness ranges across the grid
-- **Wave angle** — Control the propagation direction of the colour wave (0–360°)
+- **Wave angle** — Control the propagation direction of the colour wave (0–360°) — now available in `config.json` via `waveAngle`
+- **Cell borders** — Draw optional per-cell border lines (top, bottom, left, right, or any bitmask combination) with configurable colour, weight, and a wave-reactive colour mode (`cellBorder`)
 - **Glyph extraction** — Extract glyph outlines as vertices (built-in alternative to Geomerative)
 - **Glyph physics** — Treat glyph vertices as particles with mouse attraction/repulsion
-- **Cell motion** — Nine built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), Mouse-magnetic (repel/attract), Ripple (click-triggered concentric rings), FlowField (spatially coherent Perlin vector field), and Orbital (constellation orbit patterns)
+- **Cell motion** — Ten built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), Mouse-magnetic (repel/attract), Ripple (click-triggered concentric rings), FlowField (spatially coherent Perlin vector field), and Orbital (constellation orbit patterns) — all configurable via code _or_ the new `"cellMotion"` JSON block
 - **Trail effects** — Semi-transparent overlay trails with temporal displacement
 - **Audio reactivity** — Map bass, mid, treble, and beat detection to animation parameters
 - **Cultural design presets** — Parameter sets inspired by Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, and related typographic traditions (see [editorial note](#editorial-note))
@@ -171,6 +174,7 @@ Create a `config.json` file in your sketch's `data/` folder:
     "saveFrames": false,
     "waveSpeed": 1.0,
     "waveAngle": 45,
+    "waveType": "SINE",
     "waveMultiplierMin": 0.0,
     "waveMultiplierMax": 2.0,
     "changeTime": 6000,
@@ -197,6 +201,19 @@ Create a `config.json` file in your sketch's `data/` folder:
     "backgroundR": 0,
     "backgroundG": 0,
     "backgroundB": 0
+  },
+  "cellBorder": {
+    "sides": 0,
+    "r": 255,
+    "g": 255,
+    "b": 255,
+    "weight": 1.0,
+    "colorMode": 0
+  },
+  "cellMotion": {
+    "style": "none",
+    "radius": 12,
+    "speed": 1.0
   }
 }
 ```
@@ -214,20 +231,21 @@ Create a `config.json` file in your sketch's `data/` folder:
 
 **animation**
 
-| Parameter           | Type    | Description                                                             | Default |
-| ------------------- | ------- | ----------------------------------------------------------------------- | ------- |
-| `character`         | String  | Character to render in the grid                                         | `"A"`   |
-| `textScale`         | float   | Text size relative to tile (0–1)                                        | 0.8     |
-| `duration`          | int     | Animation duration in seconds                                           | 18      |
-| `fps`               | int     | Frames per second                                                       | 30      |
-| `saveFrames`        | boolean | Auto-save frames as PNG                                                 | false   |
-| `waveSpeed`         | float   | Wave animation speed                                                    | 1.0     |
-| `waveAngle`         | float   | Wave propagation direction in degrees (0–360)                           | 45      |
-| `waveMultiplierMin` | float   | Minimum wave multiplier applied during rendering                        | 0.0     |
-| `waveMultiplierMax` | float   | Maximum wave multiplier applied during rendering                        | 2.0     |
-| `changeTime`        | int     | Time in ms when grid transitions from stage 1 to stage 2                | 6000    |
-| `secondChangeTime`  | int     | Time in ms when grid transitions from stage 2 to stage 3 (0 = disabled) | 12000   |
-| `fadeDuration`      | int     | Crossfade duration in ms between grid stages                            | 2000    |
+| Parameter           | Type    | Description                                                             | Default  |
+| ------------------- | ------- | ----------------------------------------------------------------------- | -------- |
+| `character`         | String  | Character to render in the grid                                         | `"A"`    |
+| `textScale`         | float   | Text size relative to tile (0–1)                                        | 0.8      |
+| `duration`          | int     | Animation duration in seconds                                           | 18       |
+| `fps`               | int     | Frames per second                                                       | 30       |
+| `saveFrames`        | boolean | Auto-save frames as PNG                                                 | false    |
+| `waveSpeed`         | float   | Wave animation speed                                                    | 1.0      |
+| `waveAngle`         | float   | Wave propagation direction in degrees (0–360)                           | 45       |
+| `waveType`          | String  | Wave shape: `SINE`, `TANGENT`, `SQUARE`, `TRIANGLE`, or `SAWTOOTH`      | `"SINE"` |
+| `waveMultiplierMin` | float   | Minimum wave multiplier applied during rendering                        | 0.0      |
+| `waveMultiplierMax` | float   | Maximum wave multiplier applied during rendering                        | 2.0      |
+| `changeTime`        | int     | Time in ms when grid transitions from stage 1 to stage 2                | 6000     |
+| `secondChangeTime`  | int     | Time in ms when grid transitions from stage 2 to stage 3 (0 = disabled) | 12000    |
+| `fadeDuration`      | int     | Crossfade duration in ms between grid stages                            | 2000     |
 
 **grid**
 
@@ -255,6 +273,47 @@ Create a `config.json` file in your sketch's `data/` folder:
 | `backgroundR/G/B`  | int   | Background colour channels (0–255 each); 0,0,0 = black; 255,255,255 = white | 0       |
 
 When `hueMin` and `hueMax` are different, the renderer switches to HSB colour mode automatically.
+
+**cellBorder**
+
+| Parameter   | Type  | Description                                                                                                     | Default |
+| ----------- | ----- | --------------------------------------------------------------------------------------------------------------- | ------- |
+| `sides`     | int   | Bitmask of sides to draw: `1`=top, `2`=bottom, `4`=left, `8`=right, `15`=all, `0`=none                          | 0       |
+| `r`         | int   | Border colour red channel (0–255)                                                                               | 255     |
+| `g`         | int   | Border colour green channel (0–255)                                                                             | 255     |
+| `b`         | int   | Border colour blue channel (0–255)                                                                              | 255     |
+| `weight`    | float | Stroke weight in pixels                                                                                         | 1.0     |
+| `colorMode` | int   | `0` = static colour (r/g/b), `1` = wave-reactive (border brightness pulses in sync with each cell's wave value) | 0       |
+
+Side bitmask constants in code: `Configuration.BORDER_TOP`, `BORDER_BOTTOM`, `BORDER_LEFT`, `BORDER_RIGHT`, `BORDER_ALL`, `BORDER_NONE`. Combine with `|`: e.g. `BORDER_TOP | BORDER_BOTTOM` = horizontal rules only.
+
+**cellMotion**
+
+| Parameter         | Type    | Description                                                                                                                                    | Default  |
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `style`           | String  | Motion style: `"none"`, `"perlin"`, `"circular"`, `"lissajous"`, `"spring"`, `"gravity"`, `"magnetic"`, `"ripple"`, `"flowfield"`, `"orbital"` | `"none"` |
+| `radius`          | float   | Maximum displacement from cell centre in pixels                                                                                                | 12       |
+| `speed`           | float   | Animation speed multiplier                                                                                                                     | 1.0      |
+| `clockwise`       | boolean | **circular only** — rotation direction                                                                                                         | true     |
+| `stiffness`       | float   | **spring only** — spring constant (0.05–1.0)                                                                                                   | 0.3      |
+| `damping`         | float   | **spring only** — damping coefficient (0.05–0.5)                                                                                               | 0.15     |
+| `gravity`         | float   | **gravity only** — downward acceleration in px/frame²                                                                                          | 0.6      |
+| `restitution`     | float   | **gravity only** — bounce energy retention (0–1)                                                                                               | 0.72     |
+| `lateralStrength` | float   | **gravity only** — sinusoidal lateral force amplitude                                                                                          | 0.06     |
+| `strength`        | float   | **magnetic only** — field strength (typical: 400–4000)                                                                                         | 1800     |
+| `falloff`         | float   | **magnetic only** — half-force distance in pixels                                                                                              | 80       |
+| `smoothing`       | float   | **magnetic only** — per-frame lerp factor (0.05–0.4)                                                                                           | 0.12     |
+| `attract`         | boolean | **magnetic only** — `true` = attract, `false` = repel                                                                                          | false    |
+| `expandSpeed`     | float   | **ripple only** — ring expansion speed (px/s equivalent)                                                                                       | 200      |
+| `waveWidth`       | float   | **ripple only** — width of the displacement band                                                                                               | 80       |
+| `decayRate`       | float   | **ripple only** — per-frame amplitude decay (0–1; 1 = no decay)                                                                                | 0.975    |
+| `fieldScale`      | float   | **flowfield only** — spatial scale of the noise field                                                                                          | 0.007    |
+| `evolutionRate`   | float   | **flowfield only** — temporal evolution speed per frame                                                                                        | 0.005    |
+| `octaves`         | int     | **flowfield only** — number of curl-noise octave layers (1–4); more octaves add fine-grained turbulence                                        | 2        |
+| `persistence`     | float   | **flowfield only** — amplitude decay per octave (0–1; lower = finer octaves have less influence)                                               | 0.45     |
+| `phaseRange`      | float   | **flowfield only** — maximum inter-cell Z-axis phase spread; `0` restores fully synchronised (block) behaviour                                 | 8.0      |
+
+Omit the `cellMotion` block entirely, or set `"style": "none"`, for no per-cell motion. `magnetic` and `ripple` are wired to the sketch automatically using the canvas dimensions and tile counts already in the config.
 
 ## Examples
 
@@ -354,7 +413,7 @@ Demonstrates per-glyph cell motion via `config.setCellMotion()`. Cycles through 
 
 ### TrailEffect
 
-Glyphs move within their grid cells and leave fading trails via semi-transparent overlay. Supports seven motion modes: Circular CW/CCW, Perlin noise, Lissajous, Spring, Gravity, and Magnetic. Trail length and wave angle are also adjustable live.
+Glyphs move within their grid cells and leave fading trails via semi-transparent overlay. Supports seven motion modes: Circular CW/CCW, Perlin noise, Lissajous, Spring, Gravity, and Magnetic. Trail length and motion radius are adjustable live.
 
 ### GravityDynamics
 
@@ -396,33 +455,33 @@ engine.setCustomWaveFunction(new MyWave());
 
 ```java
 GlyphExtractor glyph = new GlyphExtractor(this, "Helvetica", 72);
-PShape shape = glyph.extractChar('A', 400);           // filled PShape
-PVector[] pts = glyph.getContourPoints('A', 400);     // outline vertices
+PShape shape = glyph.extractChar('A', 400);  // filled PShape
+PVector[] pts = glyph.getContourPoints('A', 400);  // outline vertices
 List<PVector[]> contours = glyph.getContours('A', 400);
 PShape deformed = glyph.extractDeformed('A', 400, amp, freq, phase);
 
 // v0.2.2 — designer utilities
-PVector[] fill   = glyph.fillWithPoints('O', 400, 800);        // interior scatter
-PVector[] ring   = glyph.distributeAlongOutline('O', 400, 200); // arc-length spaced
-PVector[] outer  = glyph.getOuterContour('B', 400);            // outer boundary only
-List<PVector[]> holes = glyph.getInnerContours('B', 400);      // counter-forms only
+PVector[] fill = glyph.fillWithPoints('O', 400, 800);  // interior scatter
+PVector[] ring = glyph.distributeAlongOutline('O', 400, 200);  // arc-length spaced
+PVector[] outer = glyph.getOuterContour('B', 400);  // outer boundary only
+List<PVector[]> holes = glyph.getInnerContours('B', 400);  // counter-forms only
 
 // v0.2.3 — geometry depth
-float[][] segs  = glyph.fillWithLines('A', 400, 45, 8);       // hatch at 45°, 8 px apart
-PVector[] shrunk = glyph.offsetOutline('A', 400, -6);         // contract by 6 px
-PVector[] morph  = glyph.interpolateTo('A', 'B', 400, 0.5);   // halfway between A and B
-PVector[] spine  = glyph.getMedialAxis('A', 400, 120);        // approximate letterform spine
-PVector  pt      = glyph.sampleAlongPath('O', 400, 0.25);     // point at 25% around the outline
+float[][] segs = glyph.fillWithLines('A', 400, 45, 8);  // hatch at 45°, 8 px apart
+PVector[] shrunk = glyph.offsetOutline('A', 400, -6);  // contract by 6 px
+PVector[] morph = glyph.interpolateTo('A', 'B', 400, 0.5);  // halfway between A and B
+PVector[] spine = glyph.getMedialAxis('A', 400, 120);  // approximate letterform spine
+PVector pt = glyph.sampleAlongPath('O', 400, 0.25);  // point at 25% around the outline
 
 // v0.2.3 — centering & high-level drawing (eliminate getBounds boilerplate)
-PVector o  = glyph.centerOf('A', 400, width/2, height/2);         // centering offset for a single glyph
-PVector om = glyph.morphCenterOf('A', 'B', 400, 0.5, cx, cy);     // lerped offset for a morphing pair
-glyph.drawAt('A', 400, width/2, height/2);                         // draw centred, current fill/stroke
+PVector o = glyph.centerOf('A', 400, width/2, height/2);  // centering offset for a single glyph
+PVector om = glyph.morphCenterOf('A', 'B', 400, 0.5, cx, cy);  // lerped offset for a morphing pair
+glyph.drawAt('A', 400, width/2, height/2);  // draw centred, current fill/stroke
 
 // v0.2.3 — morph rendering (holes handled inside the library)
-PShape ms = glyph.morphShape('A', 'B', 400, 0.5);                 // ready-to-draw PShape for morph
+PShape ms = glyph.morphShape('A', 'B', 400, 0.5);  // ready-to-draw PShape for morph
 ms.disableStyle(); fill(200); shape(ms, o.x, o.y);
-List<PVector[]> mc = glyph.interpolateContours('A', 'B', 400, 0.5); // raw contours for point effects
+List<PVector[]> mc = glyph.interpolateContours('A', 'B', 400, 0.5);  // raw contours for point effects
 ```
 
 ### Glyph Physics

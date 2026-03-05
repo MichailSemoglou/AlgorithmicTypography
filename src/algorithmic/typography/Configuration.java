@@ -6,7 +6,7 @@
  * settings.
  *
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 1.0.0
  */
 
@@ -14,6 +14,15 @@ package algorithmic.typography;
 
 import processing.data.*;
 import algorithmic.typography.core.CellMotion;
+import algorithmic.typography.core.CircularMotion;
+import algorithmic.typography.core.FlowFieldMotion;
+import algorithmic.typography.core.GravityMotion;
+import algorithmic.typography.core.LissajousMotion;
+import algorithmic.typography.core.MagneticMotion;
+import algorithmic.typography.core.OrbitalMotion;
+import algorithmic.typography.core.PerlinMotion;
+import algorithmic.typography.core.RippleMotion;
+import algorithmic.typography.core.SpringMotion;
 
 /**
  * Configuration holds all parameters for the AlgorithmicTypography system.
@@ -32,6 +41,26 @@ import algorithmic.typography.core.CellMotion;
  */
 public class Configuration {
   
+  // Cell border side constants (bitmask)
+  /** No border sides drawn. */
+  public static final int BORDER_NONE   = 0;
+  /** Top edge of each cell. */
+  public static final int BORDER_TOP    = 1;
+  /** Bottom edge of each cell. */
+  public static final int BORDER_BOTTOM = 2;
+  /** Left edge of each cell. */
+  public static final int BORDER_LEFT   = 4;
+  /** Right edge of each cell. */
+  public static final int BORDER_RIGHT  = 8;
+  /** All four edges ({@code TOP | BOTTOM | LEFT | RIGHT}). */
+  public static final int BORDER_ALL    = 15;
+
+  // Cell border colour-mode constants
+  /** Border colour is the fixed R/G/B set via {@code setCellBorderColor}. Default. */
+  public static final int BORDER_COLOR_STATIC = 0;
+  /** Border colour follows the wave value of each cell — the grid pulses in sync with the glyphs. */
+  public static final int BORDER_COLOR_WAVE   = 1;
+
   // Canvas configuration
   /** Width of the canvas in pixels. Default: 1080 */
   private int canvasWidth = 1080;
@@ -69,7 +98,13 @@ public class Configuration {
   
   /** Wave propagation angle in degrees (0-360). 0=horizontal, 90=vertical, 45=diagonal. Default: 45 */
   private float waveAngle = 45.0f;
-  
+
+  /**
+   * Wave shape used for brightness calculations.
+   * Valid values: "SINE", "TANGENT", "SQUARE", "TRIANGLE", "SAWTOOTH". Default: "SINE"
+   */
+  private String waveType = "SINE";
+
   /** Minimum value for wave multiplier. Default: 0.0 */
   private float waveMultiplierMin = 0.0f;
   
@@ -132,7 +167,26 @@ public class Configuration {
 
   /** Blue channel of the background colour. Default: 0 (black) */
   private int backgroundB = 0;
-  
+
+  // Cell border configuration
+  /** Bitmask of which cell sides to draw borders on. Default: BORDER_NONE (none) */
+  private int cellBorderSides = BORDER_NONE;
+
+  /** Red channel of the cell border colour. Default: 255 (white) */
+  private int cellBorderR = 255;
+
+  /** Green channel of the cell border colour. Default: 255 (white) */
+  private int cellBorderG = 255;
+
+  /** Blue channel of the cell border colour. Default: 255 (white) */
+  private int cellBorderB = 255;
+
+  /** Stroke weight for cell border lines in pixels. Default: 1.0 */
+  private float cellBorderWeight = 1.0f;
+
+  /** Colour mode for cell border lines. Default: BORDER_COLOR_STATIC */
+  private int cellBorderColorMode = BORDER_COLOR_STATIC;
+
   /**
    * Creates a new Configuration with default values.
    */
@@ -184,8 +238,6 @@ public class Configuration {
    *  @return true if frame saving is enabled */
   public boolean isSaveFrames() { return saveFrames; }
   
-  /** Returns the wave animation speed multiplier.
-   *  @return the wave animation speed multiplier */
   /** Returns the optional per-glyph cell motion, or null if none is set.
    *  @return the CellMotion instance, or null */
   public CellMotion getCellMotion() { return cellMotion; }
@@ -202,11 +254,42 @@ public class Configuration {
    *  @return background blue channel */
   public int getBackgroundBlue()  { return backgroundB; }
 
+  /** Returns the cell border side bitmask.
+   *  Use the {@code BORDER_*} constants to interpret the value.
+   *  @return bitmask of active border sides */
+  public int getCellBorderSides()    { return cellBorderSides; }
+
+  /** Returns the red channel of the cell border colour (0-255).
+   *  @return cell border red channel */
+  public int getCellBorderRed()      { return cellBorderR; }
+
+  /** Returns the green channel of the cell border colour (0-255).
+   *  @return cell border green channel */
+  public int getCellBorderGreen()    { return cellBorderG; }
+
+  /** Returns the blue channel of the cell border colour (0-255).
+   *  @return cell border blue channel */
+  public int getCellBorderBlue()     { return cellBorderB; }
+
+  /** Returns the cell border stroke weight in pixels.
+   *  @return cell border stroke weight */
+  public float getCellBorderWeight() { return cellBorderWeight; }
+
+  /** Returns the cell border colour mode ({@code BORDER_COLOR_STATIC} or {@code BORDER_COLOR_WAVE}).
+   *  @return cell border colour mode */
+  public int getCellBorderColorMode() { return cellBorderColorMode; }
+
+  /** Returns the wave speed multiplier.
+   *  @return the wave speed multiplier */
   public float getWaveSpeed() { return waveSpeed; }
   
   /** Returns the wave propagation angle.
    *  @return the wave propagation angle in degrees (0-360) */
   public float getWaveAngle() { return waveAngle; }
+
+  /** Returns the wave shape type name (e.g. "SINE", "SQUARE").
+   *  @return the wave type name */
+  public String getWaveType()  { return waveType; }
   
   /** Returns the minimum wave multiplier.
    *  @return the minimum wave multiplier value */
@@ -466,7 +549,25 @@ public class Configuration {
     onChange("waveAngle", this.waveAngle);
     return this;
   }
-  
+
+  /**
+   * Sets the wave shape by name.
+   * Accepted values (case-insensitive): SINE, TANGENT, SQUARE, TRIANGLE, SAWTOOTH.
+   * Invalid names are silently ignored and the current type is kept.
+   *
+   * @param type wave type name
+   * @return this instance for method chaining
+   */
+  public Configuration setWaveType(String type) {
+    if (type == null) return this;
+    String t = type.toUpperCase().trim();
+    for (String valid : new String[]{"SINE","TANGENT","SQUARE","TRIANGLE","SAWTOOTH"}) {
+      if (valid.equals(t)) { this.waveType = t; onChange("waveType", t); return this; }
+    }
+    System.err.println("Warning: Unknown waveType '" + type + "' — keeping '" + this.waveType + "'");
+    return this;
+  }
+
   /**
    * Sets the minimum wave multiplier.
    *
@@ -844,6 +945,85 @@ public class Configuration {
   }
 
   /**
+   * Sets which sides of each cell receive a border stroke.
+   * Combine sides with {@code |}, for example:
+   * <pre>
+   * config.setCellBorderSides(Configuration.BORDER_TOP | Configuration.BORDER_BOTTOM);
+   * config.setCellBorderSides(Configuration.BORDER_ALL);
+   * </pre>
+   *
+   * @param sides bitmask built from {@code BORDER_TOP}, {@code BORDER_BOTTOM},
+   *              {@code BORDER_LEFT}, {@code BORDER_RIGHT}, or {@code BORDER_ALL}
+   * @return this instance for method chaining
+   */
+  public Configuration setCellBorderSides(int sides) {
+    this.cellBorderSides = sides & BORDER_ALL;
+    onChange("cellBorderSides", this.cellBorderSides);
+    return this;
+  }
+
+  /**
+   * Sets the cell border colour using separate R, G, B channels (0-255 each).
+   *
+   * @param r red channel (0-255)
+   * @param g green channel (0-255)
+   * @param b blue channel (0-255)
+   * @return this instance for method chaining
+   * @throws IllegalArgumentException if any channel is out of range
+   */
+  public Configuration setCellBorderColor(int r, int g, int b) {
+    if (r < 0 || r > 255) throw new IllegalArgumentException("Border red must be 0-255. Got: " + r);
+    if (g < 0 || g > 255) throw new IllegalArgumentException("Border green must be 0-255. Got: " + g);
+    if (b < 0 || b > 255) throw new IllegalArgumentException("Border blue must be 0-255. Got: " + b);
+    this.cellBorderR = r;
+    this.cellBorderG = g;
+    this.cellBorderB = b;
+    onChange("cellBorderColor", new int[]{r, g, b});
+    return this;
+  }
+
+  /**
+   * Sets the cell border colour as a greyscale value (0 = black, 255 = white).
+   *
+   * @param gray greyscale value (0-255)
+   * @return this instance for method chaining
+   */
+  public Configuration setCellBorderColor(int gray) {
+    return setCellBorderColor(gray, gray, gray);
+  }
+
+  /**
+   * Sets the stroke weight for cell border lines.
+   *
+   * @param weight stroke weight in pixels (must be positive)
+   * @return this instance for method chaining
+   * @throws IllegalArgumentException if weight is not positive
+   */
+  public Configuration setCellBorderWeight(float weight) {
+    if (weight <= 0) throw new IllegalArgumentException("Cell border weight must be positive. Got: " + weight);
+    this.cellBorderWeight = weight;
+    onChange("cellBorderWeight", weight);
+    return this;
+  }
+
+  /**
+   * Sets the cell border colour mode.
+   * <ul>
+   *   <li>{@code BORDER_COLOR_STATIC} — fixed colour set via {@code setCellBorderColor} (default)</li>
+   *   <li>{@code BORDER_COLOR_WAVE} — border brightness follows the wave value of each cell;
+   *       the grid lines pulse in sync with the letterforms</li>
+   * </ul>
+   *
+   * @param mode {@code BORDER_COLOR_STATIC} or {@code BORDER_COLOR_WAVE}
+   * @return this instance for method chaining
+   */
+  public Configuration setCellBorderColorMode(int mode) {
+    this.cellBorderColorMode = (mode == BORDER_COLOR_WAVE) ? BORDER_COLOR_WAVE : BORDER_COLOR_STATIC;
+    onChange("cellBorderColorMode", this.cellBorderColorMode);
+    return this;
+  }
+
+  /**
    * Loads configuration from a JSON object.
    * 
    * This method parses a JSONObject and applies its values to this
@@ -881,10 +1061,19 @@ public class Configuration {
         }
       }
       
-      textScale = getFloatInRange(animation, "textScale", textScale, 0.0f, 1.0f, "Text scale");
+      textScale = getFloatInRange(animation, "textScale", textScale, Float.MIN_VALUE, 1.0f, "Text scale");
       saveFrames = animation.getBoolean("saveFrames", saveFrames);
       waveSpeed = getFloat(animation, "waveSpeed", waveSpeed, "Wave speed");
       waveAngle = getFloat(animation, "waveAngle", waveAngle, "Wave angle");
+      if (animation.hasKey("waveType")) {
+        String wt = animation.getString("waveType", waveType).toUpperCase().trim();
+        boolean valid = false;
+        for (String v : new String[]{"SINE","TANGENT","SQUARE","TRIANGLE","SAWTOOTH"}) {
+          if (v.equals(wt)) { valid = true; break; }
+        }
+        if (valid) waveType = wt;
+        else System.err.println("Warning: Unknown waveType '" + wt + "' in JSON, using '" + waveType + "'");
+      }
       waveMultiplierMin = getFloat(animation, "waveMultiplierMin", waveMultiplierMin, "Wave multiplier min");
       waveMultiplierMax = getFloat(animation, "waveMultiplierMax", waveMultiplierMax, "Wave multiplier max");
       
@@ -940,6 +1129,23 @@ public class Configuration {
       }
     }
     
+    // Load cell border configuration
+    if (json.hasKey("cellBorder")) {
+      JSONObject cb = json.getJSONObject("cellBorder");
+      if (cb.hasKey("sides"))  cellBorderSides  = Math.max(BORDER_NONE, Math.min(BORDER_ALL, cb.getInt("sides", cellBorderSides)));
+      if (cb.hasKey("r"))      cellBorderR      = Math.max(0, Math.min(255, cb.getInt("r", cellBorderR)));
+      if (cb.hasKey("g"))      cellBorderG      = Math.max(0, Math.min(255, cb.getInt("g", cellBorderG)));
+      if (cb.hasKey("b"))      cellBorderB      = Math.max(0, Math.min(255, cb.getInt("b", cellBorderB)));
+      if (cb.hasKey("weight")) {
+        float w = cb.getFloat("weight", cellBorderWeight);
+        if (w > 0) cellBorderWeight = w;
+      }
+      if (cb.hasKey("colorMode")) {
+        int m = cb.getInt("colorMode", cellBorderColorMode);
+        cellBorderColorMode = (m == BORDER_COLOR_WAVE) ? BORDER_COLOR_WAVE : BORDER_COLOR_STATIC;
+      }
+    }
+
     // Validate overall configuration
     validate();
   }
@@ -1071,6 +1277,7 @@ public class Configuration {
     animation.setBoolean("saveFrames", saveFrames);
     animation.setFloat("waveSpeed", waveSpeed);
     animation.setFloat("waveAngle", waveAngle);
+    animation.setString("waveType", waveType);
     animation.setFloat("waveMultiplierMin", waveMultiplierMin);
     animation.setFloat("waveMultiplierMax", waveMultiplierMax);
     json.setJSONObject("animation", animation);
@@ -1097,7 +1304,82 @@ public class Configuration {
     colors.setInt("backgroundG", backgroundG);
     colors.setInt("backgroundB", backgroundB);
     json.setJSONObject("colors", colors);
-    
+
+    JSONObject cellBorderJson = new JSONObject();
+    cellBorderJson.setInt("sides",       cellBorderSides);
+    cellBorderJson.setInt("r",           cellBorderR);
+    cellBorderJson.setInt("g",           cellBorderG);
+    cellBorderJson.setInt("b",           cellBorderB);
+    cellBorderJson.setFloat("weight",    cellBorderWeight);
+    cellBorderJson.setInt("colorMode",   cellBorderColorMode);
+    json.setJSONObject("cellBorder", cellBorderJson);
+
+    // Serialize cell motion (if one has been configured)
+    CellMotion cm = cellMotion;
+    if (cm != null) {
+      JSONObject motionJson = new JSONObject();
+      if (cm instanceof PerlinMotion) {
+        motionJson.setString("style",  "perlin");
+        motionJson.setFloat("radius", cm.getRadius());
+        motionJson.setFloat("speed",  cm.getSpeed());
+      } else if (cm instanceof CircularMotion) {
+        CircularMotion c = (CircularMotion) cm;
+        motionJson.setString("style",     "circular");
+        motionJson.setFloat("radius",     c.getRadius());
+        motionJson.setFloat("speed",      c.getSpeed());
+        motionJson.setBoolean("clockwise", c.isClockwise());
+      } else if (cm instanceof LissajousMotion) {
+        motionJson.setString("style",  "lissajous");
+        motionJson.setFloat("radius", cm.getRadius());
+        motionJson.setFloat("speed",  cm.getSpeed());
+      } else if (cm instanceof SpringMotion) {
+        SpringMotion s = (SpringMotion) cm;
+        motionJson.setString("style",     "spring");
+        motionJson.setFloat("radius",    s.getRadius());
+        motionJson.setFloat("speed",     s.getSpeed());
+        motionJson.setFloat("stiffness", s.getStiffness());
+        motionJson.setFloat("damping",   s.getDamping());
+      } else if (cm instanceof GravityMotion) {
+        GravityMotion g = (GravityMotion) cm;
+        motionJson.setString("style",          "gravity");
+        motionJson.setFloat("radius",          g.getRadius());
+        motionJson.setFloat("gravity",         g.getGravity());
+        motionJson.setFloat("restitution",     g.getRestitution());
+        motionJson.setFloat("lateralStrength", g.getLateralStrength());
+      } else if (cm instanceof MagneticMotion) {
+        MagneticMotion mag = (MagneticMotion) cm;
+        motionJson.setString("style",     "magnetic");
+        motionJson.setFloat("radius",    mag.getRadius());
+        motionJson.setFloat("strength",  mag.getStrength());
+        motionJson.setFloat("falloff",   mag.getFalloff());
+        motionJson.setFloat("smoothing", mag.getSmoothing());
+        motionJson.setBoolean("attract", mag.isAttract());
+      } else if (cm instanceof RippleMotion) {
+        RippleMotion r = (RippleMotion) cm;
+        motionJson.setString("style",       "ripple");
+        motionJson.setFloat("radius",      r.getRadius());
+        motionJson.setFloat("expandSpeed", r.getExpandSpeed());
+        motionJson.setFloat("waveWidth",   r.getWaveWidth());
+        motionJson.setFloat("decayRate",   r.getDecayRate());
+      } else if (cm instanceof FlowFieldMotion) {
+        FlowFieldMotion f = (FlowFieldMotion) cm;
+        motionJson.setString("style",        "flowfield");
+        motionJson.setFloat("radius",        f.getRadius());
+        motionJson.setFloat("fieldScale",    f.getFieldScale());
+        motionJson.setFloat("evolutionRate", f.getEvolutionRate());
+        motionJson.setInt("octaves",         f.getOctaves());
+        motionJson.setFloat("persistence",   f.getPersistence());
+        motionJson.setFloat("phaseRange",    f.getPhaseRange());
+      } else if (cm instanceof OrbitalMotion) {
+        motionJson.setString("style",  "orbital");
+        motionJson.setFloat("radius", cm.getRadius());
+        motionJson.setFloat("speed",  cm.getSpeed());
+      } else {
+        motionJson.setString("style", "none");
+      }
+      json.setJSONObject("cellMotion", motionJson);
+    }
+
     return json;
   }
   
@@ -1120,6 +1402,7 @@ public class Configuration {
     copy.saveFrames = this.saveFrames;
     copy.waveSpeed = this.waveSpeed;
     copy.waveAngle = this.waveAngle;
+    copy.waveType  = this.waveType;
     copy.waveMultiplierMin = this.waveMultiplierMin;
     copy.waveMultiplierMax = this.waveMultiplierMax;
     copy.initialTilesX = this.initialTilesX;
@@ -1139,6 +1422,12 @@ public class Configuration {
     copy.backgroundR = this.backgroundR;
     copy.backgroundG = this.backgroundG;
     copy.backgroundB = this.backgroundB;
+    copy.cellBorderSides     = this.cellBorderSides;
+    copy.cellBorderR         = this.cellBorderR;
+    copy.cellBorderG         = this.cellBorderG;
+    copy.cellBorderB         = this.cellBorderB;
+    copy.cellBorderWeight    = this.cellBorderWeight;
+    copy.cellBorderColorMode = this.cellBorderColorMode;
     return copy;
   }
   
@@ -1270,7 +1559,19 @@ public class Configuration {
       config.waveAngle = angle % 360.0f;
       return this;
     }
-    
+
+    /**
+     * Sets the wave shape.
+     * Accepted values (case-insensitive): SINE, TANGENT, SQUARE, TRIANGLE, SAWTOOTH.
+     *
+     * @param type wave type name
+     * @return this builder for method chaining
+     */
+    public Builder waveType(String type) {
+      config.setWaveType(type);
+      return this;
+    }
+
     /**
      * Sets the wave multiplier range.
      * 
@@ -1336,6 +1637,21 @@ public class Configuration {
       return this;
     }
     
+    /**
+     * Sets the background colour as RGB components.
+     * 
+     * @param r red channel (0-255)
+     * @param g green channel (0-255)
+     * @param b blue channel (0-255)
+     * @return this builder for method chaining
+     */
+    public Builder backgroundColor(int r, int g, int b) {
+      config.backgroundR = Math.max(0, Math.min(255, r));
+      config.backgroundG = Math.max(0, Math.min(255, g));
+      config.backgroundB = Math.max(0, Math.min(255, b));
+      return this;
+    }
+
     /**
      * Sets the display character.
      * 
@@ -1403,7 +1719,45 @@ public class Configuration {
       config.fadeDuration = durationMs;
       return this;
     }
-    
+
+    /**
+     * Configures cell border lines.
+     * <p>Example: {@code .cellBorder(Configuration.BORDER_ALL, 255, 255, 255, 1.0f)}</p>
+     *
+     * @param sides  bitmask of sides (see {@code Configuration.BORDER_*} constants)
+     * @param r      red channel of border colour (0-255)
+     * @param g      green channel of border colour (0-255)
+     * @param b      blue channel of border colour (0-255)
+     * @param weight stroke weight in pixels (must be positive)
+     * @return this builder for method chaining
+     */
+    public Builder cellBorder(int sides, int r, int g, int b, float weight) {
+      return cellBorder(sides, r, g, b, weight, Configuration.BORDER_COLOR_STATIC);
+    }
+
+    /**
+     * Configures cell border lines with colour mode.
+     *
+     * @param sides      bitmask of sides (see {@code Configuration.BORDER_*} constants)
+     * @param r          red channel of border colour (0-255)
+     * @param g          green channel of border colour (0-255)
+     * @param b          blue channel of border colour (0-255)
+     * @param weight     stroke weight in pixels (must be positive)
+     * @param colorMode  {@code BORDER_COLOR_STATIC} or {@code BORDER_COLOR_WAVE}
+     * @return this builder for method chaining
+     */
+    public Builder cellBorder(int sides, int r, int g, int b, float weight, int colorMode) {
+      config.cellBorderSides     = sides & Configuration.BORDER_ALL;
+      config.cellBorderR         = r;
+      config.cellBorderG         = g;
+      config.cellBorderB         = b;
+      config.cellBorderWeight    = weight;
+      config.cellBorderColorMode = (colorMode == Configuration.BORDER_COLOR_WAVE)
+                                    ? Configuration.BORDER_COLOR_WAVE
+                                    : Configuration.BORDER_COLOR_STATIC;
+      return this;
+    }
+
     /**
      * Builds and validates the Configuration instance.
      * 

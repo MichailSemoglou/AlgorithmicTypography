@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 1.0.0
  */
 
@@ -15,6 +15,15 @@ package algorithmic.typography;
 import processing.core.*;
 import processing.data.*;
 import algorithmic.typography.core.CellMotion;
+import algorithmic.typography.core.CircularMotion;
+import algorithmic.typography.core.FlowFieldMotion;
+import algorithmic.typography.core.GravityMotion;
+import algorithmic.typography.core.LissajousMotion;
+import algorithmic.typography.core.MagneticMotion;
+import algorithmic.typography.core.OrbitalMotion;
+import algorithmic.typography.core.PerlinMotion;
+import algorithmic.typography.core.RippleMotion;
+import algorithmic.typography.core.SpringMotion;
 import algorithmic.typography.core.WaveEngine;
 import algorithmic.typography.core.WaveFunction;
 import algorithmic.typography.core.WavePresets;
@@ -77,7 +86,7 @@ import algorithmic.typography.system.VibePreset;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @see Configuration
  * @see WaveEngine
  */
@@ -169,6 +178,7 @@ public class AlgorithmicTypography {
       JSONObject json = parent.loadJSONObject(filename);
       if (json != null) {
         config.loadFromJSON(json);
+        buildCellMotionFromJSON(json);
         parent.println("Configuration loaded successfully from " + filename);
       } else {
         parent.println("Warning: Could not load configuration file " + filename + ". Using defaults.");
@@ -247,6 +257,23 @@ public class AlgorithmicTypography {
    */
   public AlgorithmicTypography setWaveType(WavePresets.Type type) {
     waveEngine.setCustomWaveFunction(WavePresets.get(type));
+    config.setWaveType(type.name());
+    return this;
+  }
+
+  /**
+   * Sets the wave shape by name. Convenience overload that also updates the configuration.
+   * Accepted values (case-insensitive): SINE, TANGENT, SQUARE, TRIANGLE, SAWTOOTH.
+   *
+   * @param typeName the wave type name
+   * @return this instance for method chaining
+   */
+  public AlgorithmicTypography setWaveType(String typeName) {
+    try {
+      setWaveType(WavePresets.Type.valueOf(typeName.toUpperCase().trim()));
+    } catch (IllegalArgumentException e) {
+      parent.println("Unknown wave type '" + typeName + "' — valid values: SINE, TANGENT, SQUARE, TRIANGLE, SAWTOOTH");
+    }
     return this;
   }
   
@@ -293,7 +320,16 @@ public class AlgorithmicTypography {
     parent.frameRate(config.getAnimationFPS());
     startTime = parent.millis();
     frameCounter = 0;
-    
+
+    // Apply wave type from configuration
+    try {
+      WavePresets.Type wt = WavePresets.Type.valueOf(config.getWaveType());
+      waveEngine.setCustomWaveFunction(WavePresets.get(wt));
+    } catch (IllegalArgumentException e) {
+      // Unknown type — fall back to SINE
+      waveEngine.setCustomWaveFunction(WavePresets.get(WavePresets.Type.SINE));
+    }
+
     // Only create frames directory when saving is enabled
     if (config.isSaveFrames()) {
       framesSubdir = "frames/" + parent.nf(parent.year(), 4) + parent.nf(parent.month(), 2) + parent.nf(parent.day(), 2) + "_" + 
@@ -478,6 +514,15 @@ public class AlgorithmicTypography {
     
     float clampedAlpha = Math.max(0, Math.min(255, alpha));
     CellMotion motion = config.getCellMotion();
+
+    // Border setup
+    int   borderSides     = config.getCellBorderSides();
+    int   borderR         = config.getCellBorderRed();
+    int   borderG         = config.getCellBorderGreen();
+    int   borderB         = config.getCellBorderBlue();
+    float borderWeight    = config.getCellBorderWeight();
+    int   borderColorMode = config.getCellBorderColorMode();
+    parent.noStroke();
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
@@ -493,6 +538,23 @@ public class AlgorithmicTypography {
           cy += off.y;
         }
         parent.text(ch, cx, cy);
+        if (borderSides != 0) {
+          parent.strokeWeight(borderWeight);
+          if (borderColorMode == Configuration.BORDER_COLOR_WAVE) {
+            parent.stroke(h, s, b * 0.5f, clampedAlpha);
+          } else {
+            parent.colorMode(PApplet.RGB, 255);
+            parent.stroke(borderR, borderG, borderB, clampedAlpha);
+            parent.colorMode(PApplet.HSB, 360, 255, 255, 255);
+          }
+          float bx0 = x * tileW,   by0 = y * tileH;
+          float bx1 = bx0 + tileW, by1 = by0 + tileH;
+          if ((borderSides & Configuration.BORDER_TOP)    != 0) parent.line(bx0, by0, bx1, by0);
+          if ((borderSides & Configuration.BORDER_BOTTOM) != 0) parent.line(bx0, by1, bx1, by1);
+          if ((borderSides & Configuration.BORDER_LEFT)   != 0) parent.line(bx0, by0, bx0, by1);
+          if ((borderSides & Configuration.BORDER_RIGHT)  != 0) parent.line(bx1, by0, bx1, by1);
+          parent.noStroke();
+        }
       }
     }
     
@@ -524,6 +586,15 @@ public class AlgorithmicTypography {
     
     float clampedAlpha = Math.max(0, Math.min(255, alpha));
     CellMotion motion = config.getCellMotion();
+
+    // Border setup
+    int   borderSides     = config.getCellBorderSides();
+    int   borderR         = config.getCellBorderRed();
+    int   borderG         = config.getCellBorderGreen();
+    int   borderB         = config.getCellBorderBlue();
+    float borderWeight    = config.getCellBorderWeight();
+    int   borderColorMode = config.getCellBorderColorMode();
+    parent.noStroke();
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
@@ -539,6 +610,23 @@ public class AlgorithmicTypography {
           cy += off.y;
         }
         parent.text(ch, cx, cy);
+        if (borderSides != 0) {
+          parent.strokeWeight(borderWeight);
+          if (borderColorMode == Configuration.BORDER_COLOR_WAVE) {
+            parent.stroke(hue, sat, bri * 0.5f, clampedAlpha);
+          } else {
+            parent.colorMode(PApplet.RGB, 255);
+            parent.stroke(borderR, borderG, borderB, clampedAlpha);
+            parent.colorMode(PApplet.HSB, 360, 255, 255, 255);
+          }
+          float bx0 = ox + x * tileW,   by0 = oy + y * tileH;
+          float bx1 = bx0 + tileW,      by1 = by0 + tileH;
+          if ((borderSides & Configuration.BORDER_TOP)    != 0) parent.line(bx0, by0, bx1, by0);
+          if ((borderSides & Configuration.BORDER_BOTTOM) != 0) parent.line(bx0, by1, bx1, by1);
+          if ((borderSides & Configuration.BORDER_LEFT)   != 0) parent.line(bx0, by0, bx0, by1);
+          if ((borderSides & Configuration.BORDER_RIGHT)  != 0) parent.line(bx1, by0, bx1, by1);
+          parent.noStroke();
+        }
       }
     }
     
@@ -750,6 +838,101 @@ public class AlgorithmicTypography {
     return framesSubdir;
   }
   
+  /**
+   * Instantiates and applies a {@code CellMotion} from the {@code "cellMotion"}
+   * block of a parsed JSON config object.
+   *
+   * <p>Supported styles: {@code none}, {@code perlin}, {@code circular},
+   * {@code lissajous}, {@code spring}, {@code gravity}, {@code magnetic},
+   * {@code ripple}, {@code flowfield}, {@code orbital}.</p>
+   *
+   * @param json the top-level JSONObject from the config file
+   */
+  private void buildCellMotionFromJSON(JSONObject json) {
+    if (!json.hasKey("cellMotion")) return;
+    JSONObject m = json.getJSONObject("cellMotion");
+    if (m == null) return;
+
+    String style  = m.getString("style", "none").toLowerCase().trim();
+    float  radius = m.getFloat("radius", 12.0f);
+    float  speed  = m.getFloat("speed",  1.0f);
+
+    CellMotion motion = null;
+    switch (style) {
+      case "perlin":
+        motion = new PerlinMotion(radius, speed);
+        break;
+      case "circular": {
+        boolean cw = m.getBoolean("clockwise", true);
+        motion = new CircularMotion(radius, speed, cw);
+        break;
+      }
+      case "lissajous":
+        motion = new LissajousMotion(radius, speed);
+        break;
+      case "spring": {
+        float stiffness = m.getFloat("stiffness", 0.3f);
+        float damping   = m.getFloat("damping",   0.15f);
+        motion = new SpringMotion(radius, speed, stiffness, damping);
+        break;
+      }
+      case "gravity": {
+        float grav           = m.getFloat("gravity",          0.6f);
+        float restitution    = m.getFloat("restitution",      0.72f);
+        float lateralStrength = m.getFloat("lateralStrength", 0.06f);
+        motion = new GravityMotion(radius, grav, restitution, lateralStrength);
+        break;
+      }
+      case "magnetic": {
+        float   strength  = m.getFloat("strength",  1800.0f);
+        float   falloff   = m.getFloat("falloff",   80.0f);
+        float   smoothing = m.getFloat("smoothing", 0.12f);
+        boolean attract   = m.getBoolean("attract",  false);
+        MagneticMotion mag = new MagneticMotion(parent, strength, falloff, attract);
+        mag.setSmoothing(smoothing);
+        mag.setRadius(radius);
+        mag.setTileGrid(config.getCanvasWidth(), config.getCanvasHeight(),
+                        config.getInitialTilesX(), config.getInitialTilesY());
+        motion = mag;
+        break;
+      }
+      case "ripple": {
+        float expandSpeed = m.getFloat("expandSpeed", 200.0f);
+        float waveWidth   = m.getFloat("waveWidth",   80.0f);
+        float decayRate   = m.getFloat("decayRate",   0.975f);
+        RippleMotion ripple = new RippleMotion(expandSpeed, waveWidth, decayRate);
+        ripple.setRadius(radius);
+        ripple.setTileGrid(config.getCanvasWidth(), config.getCanvasHeight(),
+                           config.getInitialTilesX(), config.getInitialTilesY());
+        motion = ripple;
+        break;
+      }
+      case "flowfield": {
+        float fieldScale    = m.getFloat("fieldScale",    0.007f);
+        float evolutionRate = m.getFloat("evolutionRate", 0.005f);
+        int   octaves       = m.getInt(  "octaves",       2);
+        float persistence   = m.getFloat("persistence",   0.45f);
+        float phaseRange    = m.getFloat("phaseRange",    8.0f);
+        FlowFieldMotion ff  = new FlowFieldMotion(radius, fieldScale, evolutionRate);
+        ff.setOctaves(octaves);
+        ff.setPersistence(persistence);
+        ff.setPhaseRange(phaseRange);
+        motion = ff;
+        break;
+      }
+      case "orbital":
+        motion = new OrbitalMotion(radius, speed);
+        break;
+      case "none":
+      default:
+        break;
+    }
+
+    if (motion != null) {
+      config.setCellMotion(motion);
+    }
+  }
+
   /**
    * Disposes of resources used by this instance.
    * 

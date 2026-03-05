@@ -13,6 +13,7 @@
     "saveFrames": false,
     "waveSpeed": 1.2,
     "waveAngle": 45,
+    "waveType": "SINE",
     "waveMultiplierMin": 0.5,
     "waveMultiplierMax": 2.5
   },

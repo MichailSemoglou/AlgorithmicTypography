@@ -2,16 +2,21 @@
  * ProgrammaticConfig
  *
  * Configure the typography system in code instead of a JSON file.
- * Each restart generates a random configuration — including background colour.
+ * Each restart generates a random configuration — including background colour,
+ * cell border sides, border colour, and border weight.
  *
  * Controls:
  *   R - New random configuration
  *   S - Toggle frame saving
+ *   B - Toggle cell border colour mode: Static → Wave (pulses with the grid)
  */
 
 import algorithmic.typography.*;
 
 AlgorithmicTypography at;
+
+// Wave border mode toggled by B key (applies to every new random config)
+boolean borderWaveMode = false;
 
 void setup() {
   size(800, 800);
@@ -21,7 +26,7 @@ void setup() {
   at.setAutoRender(false);
   at.initialize();
 
-  println("ProgrammaticConfig — press R for a new random config");
+  println("ProgrammaticConfig — press R for a new random config, B to toggle wave border");
 }
 
 void draw() {
@@ -35,6 +40,11 @@ void keyPressed() {
     at.restart();
   } else if (key == 's' || key == 'S') {
     at.toggleFrameSaving();
+  } else if (key == 'b' || key == 'B') {
+    borderWaveMode = !borderWaveMode;
+    at.getConfiguration().setCellBorderColorMode(
+      borderWaveMode ? Configuration.BORDER_COLOR_WAVE : Configuration.BORDER_COLOR_STATIC);
+    println("Border colour mode: " + (borderWaveMode ? "Wave (pulses with grid)" : "Static"));
   }
 }
 
@@ -70,10 +80,29 @@ Configuration randomConfig() {
   int[] bg = bgPalette[int(random(bgPalette.length))];
   c.setBackgroundColor(bg[0], bg[1], bg[2]);
 
+  // Random border: sides, grey tone, and weight
+  int[] borderOptions = {
+    Configuration.BORDER_NONE,
+    Configuration.BORDER_NONE,                           // 2× weighting toward "none"
+    Configuration.BORDER_TOP | Configuration.BORDER_BOTTOM,
+    Configuration.BORDER_ALL
+  };
+  int   borderSides  = borderOptions[int(random(borderOptions.length))];
+  int   borderGray   = int(random(4)) * 20 + 30;        // 30, 50, 70, or 90
+  float borderWeight = random(0.5, 2.0);
+  c.setCellBorderSides(borderSides);
+  c.setCellBorderColor(borderGray);
+  c.setCellBorderWeight(borderWeight);
+  c.setCellBorderColorMode(
+    borderWaveMode ? Configuration.BORDER_COLOR_WAVE : Configuration.BORDER_COLOR_STATIC);
+
+  String[] sideNames = { "none", "none", "horiz-rules", "all" };
   println("New config  char=" + c.getCharacter()
     + "  grid=" + c.getInitialTilesX() + "x" + c.getInitialTilesY()
     + "  speed=" + nf(c.getWaveSpeed(), 1, 2)
-    + "  bg=(" + bg[0] + "," + bg[1] + "," + bg[2] + ")");
+    + "  bg=(" + bg[0] + "," + bg[1] + "," + bg[2] + ")"
+    + "  border=" + sideNames[int(random(sideNames.length))]
+    + "/gray" + borderGray + "/wt" + nf(borderWeight, 1, 1));
 
   return c;
 }

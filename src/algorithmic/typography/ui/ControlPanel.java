@@ -28,7 +28,7 @@
  * <p>Keyboard shortcuts still work via {@link #handleKeyPress(char)}.</p>
  *
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 1.0.0
  */
 package algorithmic.typography.ui;

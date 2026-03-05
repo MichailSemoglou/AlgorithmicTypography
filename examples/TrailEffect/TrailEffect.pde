@@ -11,7 +11,6 @@
  *   M           Cycle motion: CW → CCW → Perlin → Lissajous → Spring → Gravity → Magnetic
  *   UP/DOWN     Trail length (overlay opacity)
  *   +/-         Motion radius
- *   SPACE       Toggle wave angle (0 / 45 / 90 / 135)
  */
 
 import algorithmic.typography.*;
@@ -43,9 +42,6 @@ int   tilesX    = 20;
 int   tilesY    = 20;
 int   trailAlpha = 30;          // 0 = infinite trail, 255 = no trail
 
-int   angleIdx  = 1;
-float[] angles  = {0, 45, 90, 135};
-
 void setup() {
   size(1080, 1080);
 
@@ -53,12 +49,11 @@ void setup() {
   config.setCanvasSize(width, height);
   config.setGridSize(tilesX, tilesY);
   config.setTextScale(0.55f);
-  config.setWaveSpeed(1.8f);
-  config.setWaveAngle(angles[angleIdx]);
-  config.setBrightnessRange(120, 255);
-  config.setHueRange(180, 330);       // cyan → pink
+  config.setBrightnessRange(150, 255);
+  config.setHueRange(200, 310);       // cyan → pink
   config.setSaturationMin(180);
   config.setSaturationMax(255);
+  config.setWaveAmplitudeRange(-80, 80);
   config.setSaveFrames(false);
 
   wave = new WaveEngine(config);
@@ -79,7 +74,7 @@ void setup() {
 
   background(0);   // clear once at start
 
-  println("TrailEffect — M=motion  UP/DOWN=trail  +/-=radius  SPACE=angle");
+  println("TrailEffect — M=motion  UP/DOWN=trail  +/-=radius");
 }
 
 void draw() {
@@ -89,7 +84,7 @@ void draw() {
   rect(0, 0, width, height);
 
   // ── Update wave engine ────────────────────────────────────
-  wave.update(frameCount, config.getWaveSpeed());
+  wave.update(frameCount, 0.9f);
 
   // ── Draw grid ─────────────────────────────────────────────
   float tileW  = (float) width  / tilesX;
@@ -142,7 +137,6 @@ void drawHUD() {
   float motionR = motion.getRadius();
   text("Motion: " + motionNames[motionIdx] + " (r=" + (int)motionR + ")" +
        "   Trail: " + trailAlpha +
-       "   Angle: " + (int)config.getWaveAngle() + "°" +
        "   FPS: " + (int)frameRate, 16, 16);
 }
 
@@ -150,12 +144,6 @@ void keyPressed() {
   // Trail opacity (lower = longer trail)
   if (keyCode == DOWN) trailAlpha = max(trailAlpha - 5, 5);
   if (keyCode == UP)   trailAlpha = min(trailAlpha + 5, 255);
-
-  // Wave angle
-  if (key == ' ') {
-    angleIdx = (angleIdx + 1) % angles.length;
-    config.setWaveAngle(angles[angleIdx]);
-  }
 
   // Motion cycling
   if (key == 'm' || key == 'M') {

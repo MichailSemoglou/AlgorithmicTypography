@@ -18,7 +18,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 1.0.0
  */
 package algorithmic.typography.core;
@@ -222,13 +222,15 @@ public final class WavePresets {
   /**
    * Computes the standard phase value shared by all mathematical presets.
    *
-   * <p>Combines frame-based time animation with a diagonal spatial
-   * sweep across the normalized grid.</p>
+   * <p>Combines frame-based time animation with a directional spatial
+   * sweep across the normalised grid, rotated by {@code config.getWaveAngle()}.</p>
    */
   private static float computePhase(int frameCount, float x, float y,
                                      Configuration config) {
+    float angleRad = PApplet.radians(config.getWaveAngle());
+    float dx = PApplet.cos(angleRad);
+    float dy = PApplet.sin(angleRad);
     return frameCount * config.getWaveSpeed() * 0.05f
-         + x * PApplet.TWO_PI * 3
-         + y * PApplet.TWO_PI * 3;
+         + (x * dx + y * dy) * PApplet.TWO_PI * 3;
   }
 }

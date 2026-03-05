@@ -11,6 +11,8 @@
     "textScale": 0.7,
     "saveFrames": false,
     "waveSpeed": 1.0,
+    "waveAngle": 45,
+    "waveType": "SINE",
     "waveMultiplierMin": 0.5,
     "waveMultiplierMax": 2.5
   },

@@ -14,11 +14,22 @@
  * Controls:
  *   R - Restart the animation
  *   S - Toggle frame saving
+ *   B - Cycle cell border mode:
+ *         None → Horizontal rules (top + bottom) → All four sides
  */
 
 import algorithmic.typography.*;
 
 AlgorithmicTypography at;
+
+// Border modes cycled by the B key
+final int[] BORDER_MODES = {
+  Configuration.BORDER_NONE,
+  Configuration.BORDER_TOP | Configuration.BORDER_BOTTOM,
+  Configuration.BORDER_ALL
+};
+final String[] BORDER_LABELS = { "None", "Horizontal rules", "All sides" };
+int borderIdx = 2;  // start on BORDER_ALL to match config.json default
 
 void setup() {
   size(800, 800);
@@ -28,7 +39,7 @@ void setup() {
   at.setAutoRender(false);
   at.initialize();
 
-  println("BasicGrid — press R to restart, S to toggle saving");
+  println("BasicGrid — press R to restart, S to toggle saving, B to cycle borders");
 }
 
 void draw() {
@@ -40,5 +51,9 @@ void keyPressed() {
     at.restart();
   } else if (key == 's' || key == 'S') {
     at.toggleFrameSaving();
+  } else if (key == 'b' || key == 'B') {
+    borderIdx = (borderIdx + 1) % BORDER_MODES.length;
+    at.getConfiguration().setCellBorderSides(BORDER_MODES[borderIdx]);
+    println("Cell border: " + BORDER_LABELS[borderIdx]);
   }
 }

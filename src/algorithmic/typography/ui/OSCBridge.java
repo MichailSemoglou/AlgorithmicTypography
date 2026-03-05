@@ -8,7 +8,7 @@
  * Requires: oscP5 library (http://www.sojamo.de/libraries/oscP5/)
  * 
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  */
 
 package algorithmic.typography.ui;

@@ -104,17 +104,17 @@ void draw() {
 
 void applyMotion(int idx) {
   switch (idx) {
-    case 0:  config.setCellMotion(null);        break;
-    case 1:  config.setCellMotion(perlin);      break;
-    case 2:  config.setCellMotion(cwMotion);    break;
-    case 3:  config.setCellMotion(ccwMotion);   break;
-    case 4:  config.setCellMotion(lissajous);   break;
+    case 0:  config.setCellMotion(null);         break;
+    case 1:  config.setCellMotion(perlin);       break;
+    case 2:  config.setCellMotion(cwMotion);     break;
+    case 3:  config.setCellMotion(ccwMotion);    break;
+    case 4:  config.setCellMotion(lissajous);    break;
     case 5:  config.setCellMotion(springMotion); break;
-    case 6:  config.setCellMotion(gravity);     break;
-    case 7:  config.setCellMotion(magnetic);    break;
-    case 8:  config.setCellMotion(ripple);      break;
-    case 9:  config.setCellMotion(flowField);   break;
-    case 10: config.setCellMotion(orbital);     break;
+    case 6:  config.setCellMotion(gravity);      break;
+    case 7:  config.setCellMotion(magnetic);     break;
+    case 8:  config.setCellMotion(ripple);       break;
+    case 9:  config.setCellMotion(flowField);    break;
+    case 10: config.setCellMotion(orbital);      break;
   }
 }
 

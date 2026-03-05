@@ -6,7 +6,7 @@
  * changes in real-time.
  * 
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  */
 
 package algorithmic.typography;
@@ -22,7 +22,14 @@ import java.util.ArrayList;
  * adjustment without restarting the animation.</p>
  */
 public class ObservableConfiguration extends Configuration {
-  
+
+  /**
+   * Constructs an ObservableConfiguration with default values and no listeners.
+   */
+  public ObservableConfiguration() {
+    super();
+  }
+
   private final List<ConfigurationListener> listeners = new ArrayList<>();
   private boolean notificationsEnabled = true;
   

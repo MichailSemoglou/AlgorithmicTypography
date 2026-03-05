@@ -6,7 +6,7 @@
  * multiple output formats including raster and vector.
  * 
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  */
 
 package algorithmic.typography.render;
@@ -97,7 +97,14 @@ public class GridRenderer {
     target.noStroke();
     target.textSize(textSz);
     target.textAlign(PApplet.CENTER, PApplet.CENTER);
-    
+
+    int   borderSides     = config.getCellBorderSides();
+    int   borderR         = config.getCellBorderRed();
+    int   borderG         = config.getCellBorderGreen();
+    int   borderB         = config.getCellBorderBlue();
+    float borderWeight    = config.getCellBorderWeight();
+    int   borderColorMode = config.getCellBorderColorMode();
+
     boolean useHSB = config.getHueMin() != config.getHueMax();
     if (useHSB) {
       target.colorMode(PApplet.HSB, 360, 255, 255);
@@ -105,16 +112,38 @@ public class GridRenderer {
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
+        float waveH = 0, waveS = 0, waveVal = 0;
         if (useHSB) {
-          float h = waveEngine.calculateHue(frameCount, x, y, tilesX, tilesY);
-          float s = waveEngine.calculateSaturation(frameCount, x, y, tilesX, tilesY);
-          float b = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
-          target.fill(h, s, b);
+          waveH   = waveEngine.calculateHue(frameCount, x, y, tilesX, tilesY);
+          waveS   = waveEngine.calculateSaturation(frameCount, x, y, tilesX, tilesY);
+          waveVal = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
+          target.fill(waveH, waveS, waveVal);
         } else {
-          float c = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
-          target.fill(c);
+          waveVal = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
+          target.fill(waveVal);
         }
         target.text(ch, x * tileW + tileW / 2, y * tileH + tileH / 2);
+        if (borderSides != 0) {
+          target.strokeWeight(borderWeight);
+          if (borderColorMode == Configuration.BORDER_COLOR_WAVE) {
+            if (useHSB) {
+              target.stroke(waveH, waveS, waveVal * 0.5f);
+            } else {
+              target.stroke(waveVal * 0.5f);
+            }
+          } else {
+            if (useHSB) target.colorMode(PApplet.RGB, 255);
+            target.stroke(borderR, borderG, borderB);
+            if (useHSB) target.colorMode(PApplet.HSB, 360, 255, 255);
+          }
+          float bx0 = x * tileW,      by0 = y * tileH;
+          float bx1 = bx0 + tileW,    by1 = by0 + tileH;
+          if ((borderSides & Configuration.BORDER_TOP)    != 0) target.line(bx0, by0, bx1, by0);
+          if ((borderSides & Configuration.BORDER_BOTTOM) != 0) target.line(bx0, by1, bx1, by1);
+          if ((borderSides & Configuration.BORDER_LEFT)   != 0) target.line(bx0, by0, bx0, by1);
+          if ((borderSides & Configuration.BORDER_RIGHT)  != 0) target.line(bx1, by0, bx1, by1);
+          target.noStroke();
+        }
       }
     }
     
@@ -149,6 +178,13 @@ public class GridRenderer {
     target.noStroke();
     target.textSize(textSz);
     target.textAlign(PApplet.CENTER, PApplet.CENTER);
+
+    int   borderSides     = config.getCellBorderSides();
+    int   borderR         = config.getCellBorderRed();
+    int   borderG         = config.getCellBorderGreen();
+    int   borderB         = config.getCellBorderBlue();
+    float borderWeight    = config.getCellBorderWeight();
+    int   borderColorMode = config.getCellBorderColorMode();
     
     boolean useHSB = config.getHueMin() != config.getHueMax();
     if (useHSB) {
@@ -157,16 +193,38 @@ public class GridRenderer {
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
+        float waveH = 0, waveS = 0, waveVal = 0;
         if (useHSB) {
-          float h = waveEngine.calculateHue(frameCount, x, y, tilesX, tilesY);
-          float s = waveEngine.calculateSaturation(frameCount, x, y, tilesX, tilesY);
-          float b = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
-          target.fill(h, s, b);
+          waveH   = waveEngine.calculateHue(frameCount, x, y, tilesX, tilesY);
+          waveS   = waveEngine.calculateSaturation(frameCount, x, y, tilesX, tilesY);
+          waveVal = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
+          target.fill(waveH, waveS, waveVal);
         } else {
-          float c = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
-          target.fill(c);
+          waveVal = waveEngine.calculateColorCustom(frameCount, x, y, tilesX, tilesY);
+          target.fill(waveVal);
         }
         target.text(ch, x * tileW + tileW / 2, y * tileH + tileH / 2);
+        if (borderSides != 0) {
+          target.strokeWeight(borderWeight);
+          if (borderColorMode == Configuration.BORDER_COLOR_WAVE) {
+            if (useHSB) {
+              target.stroke(waveH, waveS, waveVal * 0.5f);
+            } else {
+              target.stroke(waveVal * 0.5f);
+            }
+          } else {
+            if (useHSB) target.colorMode(PApplet.RGB, 255);
+            target.stroke(borderR, borderG, borderB);
+            if (useHSB) target.colorMode(PApplet.HSB, 360, 255, 255);
+          }
+          float bx0 = x * tileW,      by0 = y * tileH;
+          float bx1 = bx0 + tileW,    by1 = by0 + tileH;
+          if ((borderSides & Configuration.BORDER_TOP)    != 0) target.line(bx0, by0, bx1, by0);
+          if ((borderSides & Configuration.BORDER_BOTTOM) != 0) target.line(bx0, by1, bx1, by1);
+          if ((borderSides & Configuration.BORDER_LEFT)   != 0) target.line(bx0, by0, bx0, by1);
+          if ((borderSides & Configuration.BORDER_RIGHT)  != 0) target.line(bx1, by0, bx1, by1);
+          target.noStroke();
+        }
       }
     }
     

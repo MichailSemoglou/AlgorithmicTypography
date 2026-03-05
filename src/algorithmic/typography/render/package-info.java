@@ -12,7 +12,7 @@
  * - GlyphPhysics: Particle-based physics for glyph vertices
  * 
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 1.0.0
  */
 package algorithmic.typography.render;

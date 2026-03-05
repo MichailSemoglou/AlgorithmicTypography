@@ -42,6 +42,10 @@ int     charIdx  = 0;
 float   amp      = 6.0f;     // deformation amplitude
 boolean saveSVG  = false;
 
+// Mode 10 — comet trail for sampleAlongPath
+ArrayList<PVector> pathTrail = new ArrayList<PVector>();
+final int TRAIL_LEN = 80;
+
 void setup() {
   size(1080, 1080);
 
@@ -294,32 +298,35 @@ void drawHatchFill(char ch) {
   noStroke();
 }
 
-// ── Mode 10 (key q): sampleAlongPath particle (v0.2.3) ────
+// ── Mode 10 (key q): sampleAlongPath comet trail (v0.2.3) ──
 void drawPathParticle(char ch) {
-  PVector[] outline = glyph.distributeAlongOutline(ch, 600, 400);
-  PVector   o       = glyph.centerOf(ch, 600, width / 2, height / 2);
+  PVector o   = glyph.centerOf(ch, 600, width / 2, height / 2);
+  float   t   = (frameCount * 0.003f) % 1.0f;
+  PVector pt  = glyph.sampleAlongPath(ch, 600, t);
+  PVector pos = new PVector(o.x + pt.x, o.y + pt.y);
+
+  pathTrail.add(pos);
+  while (pathTrail.size() > TRAIL_LEN) pathTrail.remove(0);
 
   colorMode(HSB, 360, 255, 255);
-  stroke(180, 120, 160, 80);
-  strokeWeight(1);
-  noFill();
-  beginShape();
-  for (PVector p : outline) vertex(o.x + p.x, o.y + p.y);
-  endShape(CLOSE);
-
-  // Animate three particles at different phases
   noStroke();
-  for (int p = 0; p < 3; p++) {
-    float t = ((frameCount * 0.006f + p * 0.33f) % 1.0f);
-    PVector pt = glyph.sampleAlongPath(ch, 600, t);
-    float hue = (t * 360 + p * 120) % 360;
-    fill(hue, 220, 255, 240);
-    float sz = 10 + sin(frameCount * 0.07f + p * 2.1f) * 4;
-    ellipse(o.x + pt.x, o.y + pt.y, sz, sz);
+
+  // Trail — older segments are smaller and more transparent
+  for (int i = 0; i < pathTrail.size(); i++) {
+    float frac  = (float) i / TRAIL_LEN;
+    float hue   = (t * 360 + i * 3) % 360;
+    float alpha = frac * 230;
+    float sz    = 3 + frac * 12;
+    fill(hue, 200, 255, alpha);
+    PVector tp = pathTrail.get(i);
+    ellipse(tp.x, tp.y, sz, sz);
   }
 
+  // Bright head
+  fill((t * 360) % 360, 160, 255);
+  ellipse(pos.x, pos.y, 20, 20);
+
   colorMode(RGB, 255);
-  noStroke();
 }
 
 // ── HUD ──────────────────────────────────────────────────────
@@ -342,8 +349,10 @@ void keyPressed() {
     modeIdx = 8;   // Hatch fill
   } else if (key == 'q' || key == 'Q') {
     modeIdx = 9;   // Path particle
+    pathTrail.clear();
   } else if (key == ' ') {
     charIdx = (charIdx + 1) % chars.length;
+    pathTrail.clear();
   } else if (key == 's' || key == 'S') {
     saveSVG = true;
   } else if (keyCode == UP) {

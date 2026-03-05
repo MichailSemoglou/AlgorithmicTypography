@@ -31,7 +31,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 0.2.3
  * @see CellMotion
  * @see FlowFieldMotion
@@ -249,4 +249,13 @@ public class RippleMotion extends CellMotion {
 
   /** Returns the number of currently active ripple rings. */
   public int getRippleCount() { return ripples.size(); }
+
+  /** Returns the ring expansion speed (px/s equivalent). @return expandSpeed */
+  public float getExpandSpeed() { return expandSpeed; }
+
+  /** Returns the width of the displacement band around the ring front. @return waveWidth */
+  public float getWaveWidth()   { return waveWidth; }
+
+  /** Returns the per-frame amplitude decay rate. @return decayRate */
+  public float getDecayRate()   { return decayRate; }
 }

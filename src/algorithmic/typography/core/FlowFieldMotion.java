@@ -1,15 +1,18 @@
 /**
- * FlowFieldMotion - Glyphs drift as particles in a slowly evolving Perlin-noise vector field.
+ * FlowFieldMotion - Glyphs drift as particles in a slowly evolving curl-noise vector field.
  *
- * <p>A 2-D Perlin-noise field is evaluated at each cell's world position. The
- * resulting angle drives the displacement direction; the magnitude tapers toward
- * the cell edges so glyphs never stray outside their tile. The field itself
- * evolves over time, producing smooth, slowly shifting currents across the grid.</p>
+ * <p>Each cell's displacement is derived from the mathematical curl of a Perlin
+ * scalar potential, producing a <em>divergence-free</em> (solenoidal) vector field.
+ * Unlike directly mapping noise to an angle, curl noise creates genuine eddies —
+ * closed circulation zones that glyphs orbit rather than converge into or scatter
+ * from. The field is sampled independently per octave (for multi-scale structure)
+ * and each cell receives a deterministic per-cell phase seed, so neighbouring cells
+ * evolve through the field at offset phases rather than in synchronised lockstep.</p>
  *
- * <p>Unlike {@code PerlinMotion}, which gives each glyph an independent noise path,
- * {@code FlowFieldMotion} creates a <em>spatially coherent</em> field — adjacent
- * cells flow together, forming visible currents and eddies that travel across the
- * whole grid.</p>
+ * <p>Unlike {@code PerlinMotion}, which gives each glyph a fully independent noise
+ * path, {@code FlowFieldMotion} creates a <em>spatially coherent</em> field —
+ * adjacent cells share the same underlying current while retaining individual
+ * phase independence.</p>
  *
  * <h2>Usage</h2>
  * <pre>
@@ -19,17 +22,19 @@
  *
  * <h2>Feel guide</h2>
  * <pre>
- * // Slow, wide eddies
+ * // Slow, wide eddies — visible circulation zones sweep the grid
  * FlowFieldMotion slow = new FlowFieldMotion();
- * slow.setFieldScale(0.004f);   slow.setEvolutionRate(0.003f);
+ * slow.setFieldScale(0.004f);  slow.setEvolutionRate(0.003f);
+ * slow.setPhaseRange(10.0f);   // strong cell-to-cell independence
  *
- * // Fast turbulence
+ * // Fast multi-scale turbulence
  * FlowFieldMotion fast = new FlowFieldMotion();
- * fast.setFieldScale(0.012f);   fast.setEvolutionRate(0.012f);
+ * fast.setFieldScale(0.012f);  fast.setEvolutionRate(0.012f);
+ * fast.setOctaves(3);          fast.setPersistence(0.5f);
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.3
+ * @version 0.2.4
  * @since 0.2.3
  * @see CellMotion
  * @see RippleMotion
@@ -68,6 +73,41 @@ public class FlowFieldMotion extends CellMotion {
    */
   private float zOffset = 100.0f;
 
+  /**
+   * Number of octave layers summed to form the curl field. Higher values add
+   * finer-grained turbulence on top of the large-scale current.
+   * Default: 2. Range: 1–4.
+   */
+  private int octaves = 2;
+
+  /**
+   * Frequency multiplier from one octave to the next (standard lacunarity).
+   * Default: 2.0.
+   */
+  private float lacunarity = 2.0f;
+
+  /**
+   * Amplitude multiplier from one octave to the next.
+   * Lower values reduce the influence of finer octaves. Default: 0.45.
+   */
+  private float persistence = 0.45f;
+
+  /**
+   * Maximum Z-axis spread used for per-cell phase seeding.
+   * Each (col, row) pair is hashed to a deterministic offset in [0, phaseRange],
+   * so neighbouring cells evolve through the field at different phases —
+   * eliminating the whole-grid "block" synchrony.
+   * Default: 8.0. Set to 0 to restore fully synchronised behaviour.
+   */
+  private float phaseRange = 8.0f;
+
+  /**
+   * Finite-difference step used when numerically deriving the curl.
+   * In noise-coordinate space; independent of fieldScale.
+   * Default: 0.3.
+   */
+  private float curlEpsilon = 0.3f;
+
   // ── Constructors ─────────────────────────────────────────────
 
   /** Default: 10 px radius, moderate field scale, slow evolution. */
@@ -94,17 +134,55 @@ public class FlowFieldMotion extends CellMotion {
   public PVector getOffset(int col, int row, int frameCount) {
     float t = frameCount * evolutionRate * speed;
 
-    // Sample two staggered noise channels to get an angle in [0, 2π]
-    float nx = noise3D(col * fieldScale, row * fieldScale * 0.8f, t + zOffset);
-    float ny = noise3D(col * fieldScale * 0.8f, row * fieldScale, t + zOffset + 31.41f);
+    // Per-cell deterministic phase: each (col,row) gets a unique Z-axis offset
+    // so cells evolve through the field at different phases — no block lockstep.
+    float cellZ = cellPhase(col, row) * phaseRange;
+    float tz    = t + zOffset + cellZ;
 
-    // Map [0,1] → [0, 2π] for each channel, then use as angle components
-    float angle = nx * 2 * (float) Math.PI * 2; // full two-cycle sweep
-    float mag   = (ny * 0.5f + 0.5f) * radius;   // 0..radius
+    // Multi-octave curl noise.
+    // Curl is derived from the gradient of a scalar potential P(x,y,t):
+    //   curlX =  ∂P/∂y,  curlY = -∂P/∂x
+    // Approximated numerically with a symmetric finite difference.
+    // This produces a divergence-free (solenoidal) field — glyphs orbit
+    // eddies rather than converging to or diverging from fixed points.
+    float cx = 0, cy = 0;
+    float freq     = fieldScale;
+    float ampScale = 1.0f;
+    float totalAmp = 0.0f;
 
-    float x = (float) Math.cos(angle) * mag;
-    float y = (float) Math.sin(angle) * mag;
-    return new PVector(x, y);
+    for (int o = 0; o < octaves; o++) {
+      float px = col * freq;
+      float py = row * freq;
+      float oz = tz + o * 17.3f; // separate Z slice per octave
+
+      float dPdY =  noise3D(px,              py + curlEpsilon, oz)
+                  - noise3D(px,              py - curlEpsilon, oz);
+      float dPdX =  noise3D(px + curlEpsilon, py,              oz)
+                  - noise3D(px - curlEpsilon, py,              oz);
+
+      cx       +=  dPdY  * ampScale;
+      cy       += -dPdX  * ampScale;
+      totalAmp += ampScale;
+
+      freq     *= lacunarity;
+      ampScale *= persistence;
+    }
+
+    // Normalise by total amplitude weight then scale to radius.
+    // Raw diffs are in [-1,1]; result maps to [-radius, radius] per axis.
+    cx = (cx / totalAmp) * radius;
+    cy = (cy / totalAmp) * radius;
+
+    return new PVector(cx, cy);
+  }
+
+  /** Deterministic per-cell phase in [0, 1] derived from a fast integer hash. */
+  private static float cellPhase(int col, int row) {
+    int h = col * 1664525 + row * 1013904223 + 22695477;
+    h ^= (h >>> 16);
+    h *= 0x45d9f3b;
+    h ^= (h >>> 16);
+    return ((h & 0x7FFFFFFF) % 10000) / 10000.0f;
   }
 
   // ── Noise ─────────────────────────────────────────────────────
@@ -177,4 +255,41 @@ public class FlowFieldMotion extends CellMotion {
    * @param z seed offset
    */
   public void setSeedOffset(float z) { this.zOffset = z; }
+
+  /** Returns the spatial scale of the noise field. @return fieldScale */
+  public float getFieldScale()    { return fieldScale; }
+
+  /** Returns the temporal evolution rate. @return evolutionRate */
+  public float getEvolutionRate() { return evolutionRate; }
+
+  /**
+   * Sets the number of octave layers (1–4). More octaves add finer detail
+   * but increase computation slightly. Default: 2.
+   * @param n number of octaves
+   */
+  public void setOctaves(int n) { this.octaves = Math.max(1, Math.min(4, n)); }
+
+  /**
+   * Sets the amplitude decay per octave (persistence).
+   * 1.0 = all octaves equal weight; 0.0 = only first octave. Default: 0.45.
+   * @param p persistence factor in [0, 1]
+   */
+  public void setPersistence(float p) { this.persistence = Math.max(0, Math.min(1, p)); }
+
+  /**
+   * Sets the maximum per-cell Z-axis phase spread.
+   * Larger values increase the independence between neighbouring cells.
+   * 0 disables per-cell phase (restores fully synchronised field). Default: 8.0.
+   * @param range phase range (≥ 0)
+   */
+  public void setPhaseRange(float range) { this.phaseRange = Math.max(0, range); }
+
+  /** Returns the number of octave layers. @return octaves */
+  public int getOctaves()       { return octaves; }
+
+  /** Returns the persistence (amplitude decay per octave). @return persistence */
+  public float getPersistence() { return persistence; }
+
+  /** Returns the maximum per-cell phase spread. @return phaseRange */
+  public float getPhaseRange()  { return phaseRange; }
 }

@@ -20,6 +20,7 @@
  *   2                — preset 45° (diagonal)
  *   3                — preset 90° (vertical)
  *   4                — preset 135° (anti-diagonal)
+ *   B                — toggle horizontal rules (top + bottom border lines)
  *   H                — toggle control panel
  *   R                — restart animation
  */
@@ -39,6 +40,7 @@ Slider satMaxSlider;
 Slider[] sliders;
 
 boolean panelVisible = true;
+boolean borderRulesOn = true;   // TOP + BOTTOM horizontal rules (matches config.json default)
 
 // ── Layout constants ──────────────────────────────────────────────
 float panelX = 10, panelY = 10, panelW = 320;
@@ -74,6 +76,7 @@ void draw() {
   textSize(13);
   text("Angle " + String.format("%.0f", config.getWaveAngle()) + "°"
      + "   Speed " + String.format("%.1f", config.getWaveSpeed())
+     + "   Rules " + (borderRulesOn ? "on" : "off")
      + "   FPS " + String.format("%.0f", frameRate),
        width - 12, 12);
 }
@@ -156,6 +159,14 @@ void keyPressed() {
     case '2': config.setWaveAngle(45);  println("Preset: 45° (diagonal)");       break;
     case '3': config.setWaveAngle(90);  println("Preset: 90° (vertical)");       break;
     case '4': config.setWaveAngle(135); println("Preset: 135° (anti-diagonal)"); break;
+    case 'b': case 'B':
+      borderRulesOn = !borderRulesOn;
+      config.setCellBorderSides(
+        borderRulesOn
+          ? Configuration.BORDER_TOP | Configuration.BORDER_BOTTOM
+          : Configuration.BORDER_NONE);
+      println("Horizontal rules: " + (borderRulesOn ? "on" : "off"));
+      break;
     case 'h': case 'H': panelVisible = !panelVisible; break;
     case 'r': case 'R': at.restart(); break;
   }

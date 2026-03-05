@@ -15,7 +15,8 @@
     "waveSpeed": 0.5,
     "waveMultiplierMin": 0,
     "waveMultiplierMax": 2,
-    "waveAngle": 0
+    "waveAngle": 0,
+    "waveType": "SINE"
   },
   "grid": {
     "initialTilesX": 16,

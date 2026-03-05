@@ -13,6 +13,7 @@
     "saveFrames": false,
     "waveSpeed": 1.5,
     "waveAngle": 45,
+    "waveType": "SINE",
     "waveMultiplierMin": 0.5,
     "waveMultiplierMax": 3.0
   },
@@ -34,5 +35,13 @@
     "backgroundR": 0,
     "backgroundG": 0,
     "backgroundB": 0
+  },
+  "cellBorder": {
+    "sides": 3,
+    "r": 255,
+    "g": 255,
+    "b": 255,
+    "weight": 1.0,
+    "colorMode": 0
   }
 }
