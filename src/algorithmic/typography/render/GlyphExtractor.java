@@ -27,6 +27,12 @@
  *   <li>Approximate medial axis / spine of the letterform ({@code getMedialAxis})</li>
  *   <li>Single point at a normalised arc-length position ({@code sampleAlongPath})</li>
  *   <li>Union outline of multiple characters as a single path ({@code getBoundingContour})</li>
+ *   <li>Boolean Area operations — merge, overlap, and punch letterforms ({@code union} / {@code intersect} / {@code subtract})</li>
+ *   <li>Tangent direction at any arc-length position ({@code getTangent})</li>
+ *   <li>Lay a string of glyphs along any arbitrary curve ({@code textOnPath})</li>
+ *   <li>Increase tessellation density on demand ({@code subdivide})</li>
+ *   <li>Dashed stroke outline — dash/gap pairs along the arc-length-resampled contour ({@code getDashedOutline})</li>
+ *   <li>Typographic fingerprint derived from outline geometry ({@code getStressAxis}, {@code getOpticalCentroid}, {@code getCounterRatio}, {@code getStrokeWeight}, {@code buildTypeDNAProfile})</li>
  * </ul>
  * 
  * <h2>Example Usage</h2>
@@ -46,13 +52,14 @@
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 0.2.4
+ * @version 0.2.5
  * @since 1.0.0
  */
 
 package algorithmic.typography.render;
 
 import processing.core.*;
+import processing.data.JSONObject;
 
 import java.awt.BasicStroke;
 import java.awt.Font;
@@ -61,11 +68,13 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -198,8 +207,7 @@ public class GlyphExtractor {
   public PShape extractChar(char ch, float fontSize) {
     Font sized = awtFont.deriveFont(fontSize);
     GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
-    Shape outline = gv.getOutline();
-    return shapeToProcessing(outline);
+    return shapeToProcessing(new Area(gv.getOutline()));
   }
   
   /**
@@ -215,8 +223,7 @@ public class GlyphExtractor {
   public PShape extractString(String text, float fontSize) {
     Font sized = awtFont.deriveFont(fontSize);
     GlyphVector gv = sized.createGlyphVector(frc, text);
-    Shape outline = gv.getOutline();
-    return shapeToProcessing(outline);
+    return shapeToProcessing(new Area(gv.getOutline()));
   }
   
   // ── Point extraction ───────────────────────────────────────────
@@ -265,8 +272,7 @@ public class GlyphExtractor {
   public List<PVector[]> getContours(char ch, float fontSize) {
     Font sized = awtFont.deriveFont(fontSize);
     GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
-    Shape outline = gv.getOutline();
-    return extractContours(outline);
+    return extractContours(new Area(gv.getOutline()));
   }
   
   /**
@@ -279,8 +285,7 @@ public class GlyphExtractor {
   public List<PVector[]> getContours(String text, float fontSize) {
     Font sized = awtFont.deriveFont(fontSize);
     GlyphVector gv = sized.createGlyphVector(frc, text);
-    Shape outline = gv.getOutline();
-    return extractContours(outline);
+    return extractContours(new Area(gv.getOutline()));
   }
   
   // ── Deformed extraction ────────────────────────────────────────
@@ -427,6 +432,29 @@ public class GlyphExtractor {
   }
 
   /**
+   * Returns the drawing origin that visually centres {@code text} at {@code (cx, cy)}.
+   *
+   * <p>Equivalent to {@link #centerOf(char, float, float, float)} but accepts a
+   * multi-character string (e.g. a word), using the combined glyph-vector bounding
+   * box so the entire word is centred at the given canvas point:</p>
+   * <pre>
+   * PVector o = glyph.centerOf("TYPO", 400, width / 2, height / 2);
+   * PShape  s = glyph.extractString("TYPO", 400);
+   * shape(s, o.x, o.y);
+   * </pre>
+   *
+   * @param text     the text string to centre
+   * @param fontSize the font size
+   * @param cx       the desired canvas centre x
+   * @param cy       the desired canvas centre y
+   * @return a {@code PVector} whose x/y is the drawing origin
+   */
+  public PVector centerOf(String text, float fontSize, float cx, float cy) {
+    float[] b = getBounds(text, fontSize);
+    return new PVector(cx - b[0] - b[2] / 2f, cy - b[1] - b[3] / 2f);
+  }
+
+  /**
    * Returns the drawing origin that visually centres the morphed letterform at {@code (cx, cy)}.
    *
    * <p>Equivalent to {@link #centerOf} but lerps the bounding boxes of both characters
@@ -559,7 +587,10 @@ public class GlyphExtractor {
    * @return the outer contour as an array of PVectors, or an empty array
    */
   public PVector[] getOuterContour(char ch, float fontSize) {
-    return largestContour(getContours(ch, fontSize));
+    PVector[] outer = largestContour(getContours(ch, fontSize));
+    // getContours() normalises winding via Area — outers become CCW in y-down.
+    // textOnPath expects CW traversal (original TrueType convention), so reverse.
+    return reversePath(outer);
   }
   
   /**
@@ -1053,10 +1084,911 @@ public class GlyphExtractor {
     }
   }
 
-  // ── Internal v0.2.3 helpers ────────────────────────────────────
+  // ── Boolean operations (v0.2.5) ───────────────────────────────
 
   /**
-   * Clips evenly-spaced hatch lines to the interior of an AWT shape.
+   * Merges two letterform outlines into a single closed PShape.
+   *
+   * <p>Uses AWT {@code Area.add()} to compute the union of the two glyph
+   * footprints. The result is the outer boundary enclosing both characters,
+   * including any overlap region. Useful for ligature-style compositions and
+   * overlapping-letterform designs.</p>
+   *
+   * <pre>
+   * PShape merged = glyph.union('O', 'C', 600);
+   * shape(merged, ox, oy);
+   * </pre>
+   *
+   * @param charA    the first character
+   * @param charB    the second character
+   * @param fontSize the font size applied to both characters
+   * @return a {@code PShape} containing the merged outline, ready to draw
+   */
+  public PShape union(char charA, char charB, float fontSize) {
+    Area a = glyphArea(charA, fontSize);
+    Area b = glyphArea(charB, fontSize);
+    a.add(b);
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Returns the union outline of two letterforms as a raw contour array.
+   *
+   * <p>Same operation as {@link #union(char, char, float)} but returns the
+   * outer boundary as a {@code PVector[]} for point-level effects.</p>
+   *
+   * @param charA    the first character
+   * @param charB    the second character
+   * @param fontSize the font size
+   * @return the outer contour of the merged shape as an array of PVectors
+   */
+  public PVector[] getUnionContour(char charA, char charB, float fontSize) {
+    Area a = glyphArea(charA, fontSize);
+    Area b = glyphArea(charB, fontSize);
+    a.add(b);
+    return largestContour(extractContours(a));
+  }
+
+  /**
+   * Returns a PShape containing only the region where two letterforms overlap.
+   *
+   * <p>Uses AWT {@code Area.intersect()}: an empty shape is returned when the
+   * two outlines do not overlap at all. Useful for revealing shared geometric
+   * structure and for compound-shape masking.</p>
+   *
+   * <pre>
+   * PShape overlap = glyph.intersect('O', 'C', 600);
+   * shape(overlap, ox, oy);
+   * </pre>
+   *
+   * @param charA    the first character
+   * @param charB    the second character
+   * @param fontSize the font size applied to both characters
+   * @return a {@code PShape} containing the intersection region
+   */
+  public PShape intersect(char charA, char charB, float fontSize) {
+    Area a = glyphArea(charA, fontSize);
+    Area b = glyphArea(charB, fontSize);
+    a.intersect(b);
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Returns the intersection region of two letterforms as a raw contour array.
+   *
+   * @param charA    the first character
+   * @param charB    the second character
+   * @param fontSize the font size
+   * @return outer contour of the intersection, or an empty array if no overlap
+   */
+  public PVector[] getIntersectContour(char charA, char charB, float fontSize) {
+    Area a = glyphArea(charA, fontSize);
+    Area b = glyphArea(charB, fontSize);
+    a.intersect(b);
+    return largestContour(extractContours(a));
+  }
+
+  /**
+   * Cuts the second letterform out of the first, returning the remaining shape.
+   *
+   * <p>Uses AWT {@code Area.subtract()} (charA minus charB). The result is the
+   * portion of charA that does not overlap charB — useful for knockouts,
+   * compound shapes, and layered type design.</p>
+   *
+   * <pre>
+   * PShape knocked = glyph.subtract('O', 'C', 600);
+   * shape(knocked, ox, oy);
+   * </pre>
+   *
+   * @param charA    the base character (will be cut)
+   * @param charB    the cutter character (its area is removed from charA)
+   * @param fontSize the font size applied to both characters
+   * @return a {@code PShape} representing charA with charB punched out
+   */
+  public PShape subtract(char charA, char charB, float fontSize) {
+    Area a = glyphArea(charA, fontSize);
+    Area b = glyphArea(charB, fontSize);
+    a.subtract(b);
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Returns the subtraction result as a raw contour array (charA minus charB).
+   *
+   * @param charA    the base character
+   * @param charB    the cutter character
+   * @param fontSize the font size
+   * @return outer contour of the remaining shape, or an empty array if fully cut
+   */
+  public PVector[] getSubtractContour(char charA, char charB, float fontSize) {
+    Area a = glyphArea(charA, fontSize);
+    Area b = glyphArea(charB, fontSize);
+    a.subtract(b);
+    return largestContour(extractContours(a));
+  }
+
+  // ── Primitive area factories (v0.2.5) ──────────────────────────
+
+  /**
+   * Returns an AWT {@code Area} representing a circle in glyph space.
+   *
+   * <p>Use with the mixed boolean overloads to combine geometric primitives
+   * with letterforms:
+   * <pre>
+   * float[] b = glyph.getBounds('A', 600);
+   * float gcx = b[0] + b[2] / 2;  // glyph-space centre x
+   * float gcy = b[1] + b[3] / 2;
+   * Area circle = glyph.circleArea(gcx, gcy, b[3] * 0.55f);
+   * PShape result = glyph.subtract(circle, 'A', 600);  // circle with A punched out
+   * </pre></p>
+   *
+   * @param cx     centre x in glyph space
+   * @param cy     centre y in glyph space
+   * @param radius radius in pixels
+   * @return an {@code Area} for use in mixed boolean operations
+   */
+  public Area circleArea(float cx, float cy, float radius) {
+    double d = radius * 2.0;
+    return new Area(new Ellipse2D.Double(cx - radius, cy - radius, d, d));
+  }
+
+  /**
+   * Returns an AWT {@code Area} representing an ellipse in glyph space.
+   *
+   * @param cx centre x in glyph space
+   * @param cy centre y in glyph space
+   * @param w  full width
+   * @param h  full height
+   * @return an {@code Area} for use in mixed boolean operations
+   */
+  public Area ellipseArea(float cx, float cy, float w, float h) {
+    return new Area(new Ellipse2D.Double(cx - w / 2.0, cy - h / 2.0, w, h));
+  }
+
+  /**
+   * Returns an AWT {@code Area} representing an axis-aligned rectangle in glyph space.
+   *
+   * @param x      left edge x in glyph space
+   * @param y      top edge y in glyph space
+   * @param w      width
+   * @param h      height
+   * @return an {@code Area} for use in mixed boolean operations
+   */
+  public Area rectArea(float x, float y, float w, float h) {
+    return new Area(new Rectangle2D.Double(x, y, w, h));
+  }
+
+  /**
+   * Returns an AWT {@code Area} representing a rounded rectangle in glyph space.
+   *
+   * @param x    left edge x in glyph space
+   * @param y    top edge y in glyph space
+   * @param w    width
+   * @param h    height
+   * @param arcW corner arc width
+   * @param arcH corner arc height
+   * @return an {@code Area} for use in mixed boolean operations
+   */
+  public Area roundedRectArea(float x, float y, float w, float h, float arcW, float arcH) {
+    return new Area(new RoundRectangle2D.Double(x, y, w, h, arcW, arcH));
+  }
+
+  /**
+   * Converts an AWT {@code Area} to a Processing {@code PShape}.
+   *
+   * <p>Use this to render any {@code Area} returned by the primitive factories
+   * or composed manually:
+   * <pre>
+   * Area circle = glyph.circleArea(cx, cy, r);
+   * circle.subtract(glyph.circleArea(cx, cy, r * 0.6f));  // ring
+   * PShape ring = glyph.areaToShape(circle);
+   * </pre></p>
+   *
+   * @param area the AWT Area to convert
+   * @return a Processing {@code PShape} ready to pass to {@code shape()}
+   */
+  public PShape areaToShape(Area area) {
+    return shapeToProcessing(area);
+  }
+
+  // ── Mixed boolean overloads: Area ✕ glyph (v0.2.5) ───────────────
+
+  /**
+   * Merges a geometric primitive with a letterform.
+   *
+   * <pre>
+   * Area circle = glyph.circleArea(gcx, gcy, 300);
+   * PShape merged = glyph.union(circle, 'A', 600);
+   * </pre>
+   *
+   * @param shapeA   the geometric primitive (built with {@link #circleArea} etc.)
+   * @param charB    the letterform to merge in
+   * @param fontSize font size for {@code charB}
+   * @return merged {@code PShape}
+   */
+  public PShape union(Area shapeA, char charB, float fontSize) {
+    Area a = new Area(shapeA);
+    a.add(glyphArea(charB, fontSize));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Merges a letterform with a geometric primitive.
+   *
+   * @param charA    the letterform
+   * @param fontSize font size for {@code charA}
+   * @param shapeB   the geometric primitive to merge in
+   * @return merged {@code PShape}
+   */
+  public PShape union(char charA, float fontSize, Area shapeB) {
+    Area a = glyphArea(charA, fontSize);
+    a.add(new Area(shapeB));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Intersects a geometric primitive with a letterform (region where both overlap).
+   *
+   * <pre>
+   * Area rect = glyph.rectArea(bx, by, bw, bh * 0.5f);  // top half
+   * PShape sliced = glyph.intersect(rect, 'A', 600);
+   * </pre>
+   *
+   * @param shapeA   the geometric primitive
+   * @param charB    the letterform
+   * @param fontSize font size for {@code charB}
+   * @return intersected {@code PShape}
+   */
+  public PShape intersect(Area shapeA, char charB, float fontSize) {
+    Area a = new Area(shapeA);
+    a.intersect(glyphArea(charB, fontSize));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Intersects a letterform with a geometric primitive.
+   *
+   * @param charA    the letterform
+   * @param fontSize font size for {@code charA}
+   * @param shapeB   the geometric primitive
+   * @return intersected {@code PShape}
+   */
+  public PShape intersect(char charA, float fontSize, Area shapeB) {
+    Area a = glyphArea(charA, fontSize);
+    a.intersect(new Area(shapeB));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Subtracts a letterform from a geometric primitive (letter punched out of shape).
+   *
+   * <pre>
+   * Area circle = glyph.circleArea(gcx, gcy, 300);
+   * PShape knocked = glyph.subtract(circle, 'A', 600);  // circle with A punched through
+   * </pre>
+   *
+   * @param shapeA   the base geometric primitive (will be cut)
+   * @param charB    the cutter letterform
+   * @param fontSize font size for {@code charB}
+   * @return {@code PShape} with the letterform punched out of the primitive
+   */
+  public PShape subtract(Area shapeA, char charB, float fontSize) {
+    Area a = new Area(shapeA);
+    a.subtract(glyphArea(charB, fontSize));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Subtracts a geometric primitive from a letterform (shape punched out of letter).
+   *
+   * @param charA    the base letterform (will be cut)
+   * @param fontSize font size for {@code charA}
+   * @param shapeB   the cutter geometric primitive
+   * @return {@code PShape} with the primitive punched out of the letterform
+   */
+  public PShape subtract(char charA, float fontSize, Area shapeB) {
+    Area a = glyphArea(charA, fontSize);
+    a.subtract(new Area(shapeB));
+    return shapeToProcessing(a);
+  }
+
+  // ── Mixed boolean overloads: Area ✕ Area (v0.2.5) ────────────────
+
+  /**
+   * Boolean union of two geometric primitives.
+   *
+   * @param shapeA the first primitive
+   * @param shapeB the second primitive
+   * @return merged {@code PShape}
+   */
+  public PShape union(Area shapeA, Area shapeB) {
+    Area a = new Area(shapeA);
+    a.add(new Area(shapeB));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Boolean intersection of two geometric primitives.
+   *
+   * @param shapeA the first primitive
+   * @param shapeB the second primitive
+   * @return intersected {@code PShape}
+   */
+  public PShape intersect(Area shapeA, Area shapeB) {
+    Area a = new Area(shapeA);
+    a.intersect(new Area(shapeB));
+    return shapeToProcessing(a);
+  }
+
+  /**
+   * Boolean subtraction of two geometric primitives (shapeA minus shapeB).
+   *
+   * @param shapeA the base primitive (will be cut)
+   * @param shapeB the cutter primitive
+   * @return {@code PShape} of shapeA with shapeB removed
+   */
+  public PShape subtract(Area shapeA, Area shapeB) {
+    Area a = new Area(shapeA);
+    a.subtract(new Area(shapeB));
+    return shapeToProcessing(a);
+  }
+
+  // ── Path utilities (v0.2.5) ────────────────────────────────────
+
+  /**
+   * Returns the normalised tangent direction at a given arc-length position.
+   *
+   * <p>The tangent is computed by looking at the outline at positions
+   * {@code t} and {@code t + ε}, then normalising the difference vector.
+   * Useful for orienting ornaments, arrows, or glyphs that follow a letterform.
+   * At {@code t = 0}, the tangent points in the direction the perimeter travels
+   * away from the start point.</p>
+   *
+   * <pre>
+   * PVector tan = glyph.getTangent('O', 600, frameCount * 0.005 % 1.0);
+   * float angle = atan2(tan.y, tan.x);  // use in rotate()
+   * </pre>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @param t        normalised arc-length position in [0.0, 1.0]
+   * @return a unit {@code PVector} tangent to the outline at {@code t}; defaults
+   *         to {@code (1, 0)} if the outline is degenerate
+   */
+  public PVector getTangent(char ch, float fontSize, float t) {
+    t = Math.max(0, Math.min(1, t));
+    PVector[] pts = distributeAlongOutline(ch, fontSize, 1024);
+    if (pts.length < 2) return new PVector(1, 0);
+    float eps = 1.0f / pts.length;
+    float t2  = (t + eps) % 1.0f;
+    int   idx1 = (int)(t  * pts.length) % pts.length;
+    int   idx2 = (int)(t2 * pts.length) % pts.length;
+    PVector tangent = PVector.sub(pts[idx2], pts[idx1]);
+    if (tangent.mag() < 1e-6f) return new PVector(1, 0);
+    tangent.normalize();
+    return tangent;
+  }
+
+  /**
+   * Returns a dashed stroke representation of a character's outline.
+   *
+   * <p>The contour is arc-length-resampled and then walked in alternating
+   * dash/gap cycles. Each dash is returned as a {@code {x1, y1, x2, y2}}
+   * endpoint pair — the same format as {@link #fillWithLines(char, float, float, float)} —
+   * so they can be rendered directly with Processing's {@code line()} call:</p>
+   *
+   * <pre>
+   * float[][] segs = glyph.getDashedOutline('A', 600, 12, 6);
+   * for (float[] s : segs) line(ox+s[0], oy+s[1], ox+s[2], oy+s[3]);
+   * </pre>
+   *
+   * <p>This is a print-design staple (engraving, laser stencil, stamp aesthetics)
+   * not available in other Processing typography libraries.</p>
+   *
+   * @param ch         the character
+   * @param fontSize   the font size
+   * @param dashLength length of each visible dash in pixels (must be &gt; 0)
+   * @param gapLength  length of each gap between dashes in pixels (must be &gt; 0)
+   * @return array of {@code {x1, y1, x2, y2}} endpoint pairs; never {@code null}
+   */
+  public float[][] getDashedOutline(char ch, float fontSize, float dashLength, float gapLength) {
+    if (dashLength <= 0 || gapLength <= 0) return new float[0][];
+    List<PVector[]> contours = getContours(ch, fontSize);
+    if (contours.isEmpty()) return new float[0][];
+    return buildDashedOutline(contours, dashLength, gapLength);
+  }
+
+  /**
+   * Produces dashed-outline segment pairs for a text string.
+   *
+   * <p>Equivalent to {@link #getDashedOutline(char, float, float, float)} but accepts
+   * a multi-character string (e.g. a word). Each contour of every character is walked
+   * independently, so dash seams never cross between glyphs.</p>
+   *
+   * <pre>
+   * float[][] segs = glyph.getDashedOutline("TYPO", 400, 12, 6);
+   * for (float[] s : segs) line(ox+s[0], oy+s[1], ox+s[2], oy+s[3]);
+   * </pre>
+   *
+   * @param text       the text string
+   * @param fontSize   the font size
+   * @param dashLength length of each visible dash in pixels (must be &gt; 0)
+   * @param gapLength  length of each gap between dashes in pixels (must be &gt; 0)
+   * @return array of {@code {x1, y1, x2, y2}} endpoint pairs; never {@code null}
+   */
+  public float[][] getDashedOutline(String text, float fontSize, float dashLength, float gapLength) {
+    if (dashLength <= 0 || gapLength <= 0) return new float[0][];
+    List<PVector[]> contours = getContours(text, fontSize);
+    if (contours.isEmpty()) return new float[0][];
+    return buildDashedOutline(contours, dashLength, gapLength);
+  }
+
+  /**
+   * Core dash-walking algorithm shared by both {@code getDashedOutline} overloads.
+   *
+   * <p>Processes each contour independently so the dash walker never bridges
+   * two separate letterform boundaries. 2048 samples are distributed across
+   * contours proportionally by arc length.</p>
+   */
+  private float[][] buildDashedOutline(List<PVector[]> contours, float dashLength, float gapLength) {
+    List<float[]> result = new ArrayList<>();
+
+    // Allocate 2048 samples distributed proportionally across all contours.
+    float totalLen = 0;
+    float[] lengths = new float[contours.size()];
+    for (int i = 0; i < contours.size(); i++) {
+      PVector[] c = contours.get(i);
+      float len = 0;
+      for (int j = 1; j < c.length; j++) len += PVector.dist(c[j - 1], c[j]);
+      if (c.length > 1) len += PVector.dist(c[c.length - 1], c[0]);
+      lengths[i] = len;
+      totalLen += len;
+    }
+    if (totalLen == 0) return new float[0][];
+
+    for (int ci = 0; ci < contours.size(); ci++) {
+      int n = Math.max(4, Math.round(2048 * lengths[ci] / totalLen));
+
+      // Close the contour for resampling (same as resamplePerContour does)
+      PVector[] c = contours.get(ci);
+      boolean alreadyClosed = c.length > 1 &&
+          PVector.dist(c[c.length - 1], c[0]) < 0.01f;
+      PVector[] closed;
+      if (alreadyClosed) {
+        closed = c;
+      } else {
+        closed = new PVector[c.length + 1];
+        System.arraycopy(c, 0, closed, 0, c.length);
+        closed[c.length] = c[0].copy();
+      }
+      PVector[] pts = resample(closed, n + 1);
+      // pts[n] is a duplicate of pts[0]; keep it so the closing segment is walked.
+
+      // Fresh dash-walker state for each contour
+      float posInCycle = 0;
+      boolean inDash   = true;
+      float segStartX  = pts[0].x, segStartY = pts[0].y;
+
+      for (int i = 1; i <= n; i++) {
+        float dx   = pts[i].x - pts[i - 1].x;
+        float dy   = pts[i].y - pts[i - 1].y;
+        float seg  = (float) Math.sqrt(dx * dx + dy * dy);
+        float walked = 0;
+
+        while (walked < seg) {
+          float remaining = inDash ? (dashLength - posInCycle) : (gapLength - posInCycle);
+          float step      = Math.min(remaining, seg - walked);
+          float frac      = (walked + step) / seg;
+          float px = pts[i - 1].x + frac * dx;
+          float py = pts[i - 1].y + frac * dy;
+
+          posInCycle += step;
+          walked     += step;
+
+          if (posInCycle >= (inDash ? dashLength : gapLength) - 1e-4f) {
+            if (inDash) result.add(new float[]{ segStartX, segStartY, px, py });
+            inDash     = !inDash;
+            posInCycle = 0;
+            segStartX  = px;
+            segStartY  = py;
+          }
+        }
+      }
+    }
+    return result.toArray(new float[0][]);
+  }
+
+  /**
+   * Returns a higher-density tessellation of a character outline.
+   *
+   * <p>Temporarily applies a finer flatness than the current instance setting
+   * to derive more tessellation vertices, then resamples the result to exactly
+   * {@code targetCount} evenly-spaced points. The instance's flatness value is
+   * not mutated. Useful when downstream physics or deformation effects need more
+   * points than the font naturally provides.</p>
+   *
+   * <pre>
+   * PVector[] dense = glyph.subdivide('A', 600, 1200);
+   * for (PVector p : dense) ellipse(ox+p.x, oy+p.y, 2, 2);
+   * </pre>
+   *
+   * @param ch          the character
+   * @param fontSize    the font size
+   * @param targetCount the desired number of output points (&ge; 2)
+   * @return arc-length resampled contour with {@code targetCount} points
+   */
+  public PVector[] subdivide(char ch, float fontSize, int targetCount) {
+    if (targetCount < 2) targetCount = 2;
+    // Temporarily drop flatness for a denser tessellation; save and restore.
+    float savedFlatness = this.flatness;
+    this.flatness = Math.min(savedFlatness, 0.2f);
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
+    PVector[] raw = extractPoints(gv.getOutline());
+    this.flatness = savedFlatness;
+    if (raw.length < 2) return raw;
+    return resample(raw, targetCount);
+  }
+
+  /**
+   * Lays out a string of glyphs along an arbitrary path.
+   *
+   * <p>Characters are placed sequentially along the supplied {@code path}
+   * array (any {@code PVector[]} — e.g. from {@link #getOuterContour(char, float)}
+   * or {@link #distributeAlongOutline(char, float, int)}). Each glyph is rotated
+   * to align with the local tangent of the path at its placement point.</p>
+   *
+   * <p>The advance width from the font's own glyph metrics () is used for spacing,
+   * so kerning is respected if the font provides it. Characters that exceed the
+   * remaining path length are silently omitted.</p>
+   *
+   * <pre>
+   * PVector[] oval = glyph.getOuterContour('O', 700);
+   * PShape label = glyph.textOnPath("DESIGN", oval, 48);
+   * shape(label, 0, 0);
+   * </pre>
+   *
+   * @param text     the string to lay out along the path
+   * @param path     the array of path points (must have at least 2 entries)
+   * @param fontSize the size of each glyph in points
+   * @return a {@code PShape} GROUP containing one child per character, positioned
+   *         and rotated along the path; ready to be drawn with {@code shape()}
+   */
+  public PShape textOnPath(String text, PVector[] path, float fontSize) {
+    PShape group = parent.createShape(PConstants.GROUP);
+    if (text == null || text.isEmpty() || path == null || path.length < 2) return group;
+
+    // Build a cumulative arc-length table for the path
+    int n = path.length;
+    float[] arcLen = new float[n];
+    arcLen[0] = 0;
+    for (int i = 1; i < n; i++) {
+      arcLen[i] = arcLen[i - 1] + PVector.dist(path[i - 1], path[i]);
+    }
+    float totalLen = arcLen[n - 1];
+
+    Font sized        = awtFont.deriveFont(fontSize);
+    char[] chars      = text.toCharArray();
+    GlyphVector fullGv = sized.createGlyphVector(frc, chars);
+
+    float cursor = 0; // position along the path in pixels
+
+    for (int c = 0; c < chars.length; c++) {
+      float advance = (float) fullGv.getGlyphMetrics(c).getAdvance();
+      if (advance <= 0) advance = fontSize * 0.5f;
+
+      float placementAt = cursor + advance * 0.5f; // centre of glyph on path
+      if (placementAt > totalLen) break;
+
+      // Interpolate position along path
+      PVector pos    = arcLengthPoint(path, arcLen, placementAt);
+      PVector posAlt = arcLengthPoint(path, arcLen, Math.min(placementAt + 1f, totalLen));
+      PVector tangent = PVector.sub(posAlt, pos);
+      float angle = (tangent.mag() < 1e-6f) ? 0 : (float) Math.atan2(tangent.y, tangent.x);
+
+      // Extract, centre, rotate, and translate the glyph
+      PShape glyph = extractChar(chars[c], fontSize);
+      glyph.disableStyle();
+      float[] b = getBounds(chars[c], fontSize);
+      float localOx = -b[0] - b[2] * 0.5f;
+      float localOy = -b[1] - b[3] * 0.5f;
+
+      PShape placed = parent.createShape(PConstants.GROUP);
+      // Wrap in a group so we can apply a matrix without affecting the child's style
+      PShape proxy = parent.createShape();
+      proxy.beginShape();
+      // Re-extract points from the glyph and apply rotation+translation manually
+      List<PVector[]> contours = getContours(chars[c], fontSize);
+      boolean first = true;
+      for (PVector[] ctour : contours) {
+        if (!first) proxy.beginContour();
+        for (PVector pt : ctour) {
+          float rx = localOx + pt.x;
+          float ry = localOy + pt.y;
+          float cosA = (float) Math.cos(angle);
+          float sinA = (float) Math.sin(angle);
+          proxy.vertex(pos.x + cosA * rx - sinA * ry,
+                       pos.y + sinA * rx + cosA * ry);
+        }
+        if (!first) proxy.endContour();
+        first = false;
+      }
+      proxy.endShape(PConstants.CLOSE);
+      group.addChild(proxy);
+
+      cursor += advance;
+    }
+    return group;
+  }
+
+  /**
+   * Lays a string of glyphs along an arbitrary path with extra letter-spacing.
+   *
+   * <p>Identical to {@link #textOnPath(String, PVector[], float)} except that
+   * {@code spacing} pixels are added to every advance width before placing the
+   * next character. Positive values spread the text out; negative values
+   * tighten it (characters may overlap if spacing is sufficiently negative).</p>
+   *
+   * @param text     the string to lay out along the path
+   * @param path     the array of path points (must have at least 2 entries)
+   * @param fontSize the size of each glyph in points
+   * @param spacing  extra pixels between each character (may be negative)
+   * @return a {@code PShape} GROUP containing one child per character
+   */
+  public PShape textOnPath(String text, PVector[] path, float fontSize, float spacing) {
+    PShape group = parent.createShape(PConstants.GROUP);
+    if (text == null || text.isEmpty() || path == null || path.length < 2) return group;
+
+    int n = path.length;
+    float[] arcLen = new float[n];
+    arcLen[0] = 0;
+    for (int i = 1; i < n; i++) {
+      arcLen[i] = arcLen[i - 1] + PVector.dist(path[i - 1], path[i]);
+    }
+    float totalLen = arcLen[n - 1];
+
+    Font sized       = awtFont.deriveFont(fontSize);
+    char[] chars     = text.toCharArray();
+    GlyphVector fullGv = sized.createGlyphVector(frc, chars);
+
+    float cursor = 0;
+
+    for (int c = 0; c < chars.length; c++) {
+      float advance = (float) fullGv.getGlyphMetrics(c).getAdvance() + spacing;
+      if (advance <= 0) advance = fontSize * 0.5f + spacing;
+
+      float placementAt = cursor + advance * 0.5f;
+      if (placementAt > totalLen) break;
+
+      PVector pos    = arcLengthPoint(path, arcLen, placementAt);
+      PVector posAlt = arcLengthPoint(path, arcLen, Math.min(placementAt + 1f, totalLen));
+      PVector tangent = PVector.sub(posAlt, pos);
+      float angle = (tangent.mag() < 1e-6f) ? 0 : (float) Math.atan2(tangent.y, tangent.x);
+
+      float[] b = getBounds(chars[c], fontSize);
+      float localOx = -b[0] - b[2] * 0.5f;
+      float localOy = -b[1] - b[3] * 0.5f;
+
+      PShape proxy = parent.createShape();
+      proxy.beginShape();
+      List<PVector[]> contours = getContours(chars[c], fontSize);
+      boolean first = true;
+      for (PVector[] ctour : contours) {
+        if (!first) proxy.beginContour();
+        for (PVector pt : ctour) {
+          float rx = localOx + pt.x;
+          float ry = localOy + pt.y;
+          float cosA = (float) Math.cos(angle);
+          float sinA = (float) Math.sin(angle);
+          proxy.vertex(pos.x + cosA * rx - sinA * ry,
+                       pos.y + sinA * rx + cosA * ry);
+        }
+        if (!first) proxy.endContour();
+        first = false;
+      }
+      proxy.endShape(PConstants.CLOSE);
+      group.addChild(proxy);
+
+      cursor += advance;
+    }
+    return group;
+  }
+
+  // ── Type DNA (v0.2.5) ──────────────────────────────────────────
+
+  /**
+   * Returns the dominant stroke-stress angle of the letterform in degrees [0, 180).
+   *
+   * <p>The stress axis is the direction along which strokes thin and thicken:
+   * roughly 0° in old-style italics, near 90° in vertical-stress moderns, and
+   * close to zero in monolines. Computed via PCA on the inner contour vertices;
+   * returns 90° (vertical stress) for glyphs with no inner contours.</p>
+   *
+   * <p><b>Note:</b> This is a geometric approximation. Results are reliable for
+   * well-hinted text faces but may be less accurate for highly decorative or
+   * irregular display typefaces.</p>
+   *
+   * <pre>
+   * float stress = glyph.getStressAxis('O', 600);
+   * at.setWaveAngle(stress); // wave follows the typeface's own optical axis
+   * </pre>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @return stress angle in degrees [0, 180) — 90° means vertical stress
+   */
+  public float getStressAxis(char ch, float fontSize) {
+    List<PVector[]> inner = getInnerContours(ch, fontSize);
+    if (inner.isEmpty()) {
+      // Use full outline for monolinear / no-counter glyphs
+      Font sized = awtFont.deriveFont(fontSize);
+      GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
+      PVector[] pts = extractPoints(gv.getOutline());
+      if (pts.length < 3) return 90f;
+      inner = new ArrayList<>();
+      inner.add(pts);
+    }
+    // Pool all inner-contour points for PCA
+    List<PVector> all = new ArrayList<>();
+    for (PVector[] c : inner) for (PVector p : c) all.add(p);
+    return pcaAngle(all);
+  }
+
+  /**
+   * Returns the optical centroid of the letterform — the ink-density-weighted
+   * centre of mass.
+   *
+   * <p>Unlike the geometric bounding-box centre, the optical centroid is biased
+   * toward the interior regions of the letterform that carry the most ink. Use
+   * it as a pivot for rotation, orbit origins, or magnetic field anchors so that
+   * glyphs feel visually balanced rather than mechanically centred.</p>
+   *
+   * <pre>
+   * PVector centre = glyph.getOpticalCentroid('A', 600);
+   * // orbit anchor at the ink centre rather than the bounding-box centre
+   * </pre>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @return a {@code PVector} at the ink-density-weighted perceptual centre
+   */
+  public PVector getOpticalCentroid(char ch, float fontSize) {
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
+    Shape outline = gv.getOutline();
+
+    // Sample interior points and weight each by its approximate distance
+    // to the nearest contour point (deeper inside = higher ink density).
+    PVector[] interior = fillWithPoints(ch, fontSize, 800);
+    PVector[] contour  = distributeAlongOutline(ch, fontSize, 512);
+    if (interior.length == 0) {
+      // Fallback: plain bounding-box centre
+      float[] b = getBounds(ch, fontSize);
+      return new PVector(b[0] + b[2] * 0.5f, b[1] + b[3] * 0.5f);
+    }
+
+    float wx = 0, wy = 0, wTotal = 0;
+    for (PVector p : interior) {
+      float minDist = Float.MAX_VALUE;
+      for (PVector c : contour) {
+        float d = PVector.dist(p, c);
+        if (d < minDist) minDist = d;
+      }
+      float weight = minDist + 1f; // +1 avoids zero weight on boundary points
+      wx += p.x * weight;
+      wy += p.y * weight;
+      wTotal += weight;
+    }
+    return new PVector(wx / wTotal, wy / wTotal);
+  }
+
+  /**
+   * Returns the counter ratio of a character: the proportion of the glyph's
+   * bounding box area that is enclosed white space (counter-forms).
+   *
+   * <p>Open glyphs like 'O' return a high ratio (≈ 0.3–0.5); dense glyphs like
+   * 'I' return 0. Map to wave amplitude, breathing rate, or motion radius: open
+   * glyphs breathe more, dense glyphs move less, automatically.</p>
+   *
+   * <pre>
+   * float ratio = glyph.getCounterRatio('O', 600);
+   * at.getConfiguration().setWaveAmplitudeMin(-200 * ratio);
+   * </pre>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @return counter area / bounding-box area in [0, 1]; 0 = no counter-forms
+   */
+  public float getCounterRatio(char ch, float fontSize) {
+    List<PVector[]> inners = getInnerContours(ch, fontSize);
+    if (inners.isEmpty()) return 0f;
+    float[] b = getBounds(ch, fontSize);
+    float bboxArea = b[2] * b[3];
+    if (bboxArea <= 0) return 0f;
+    float counterArea = 0;
+    for (PVector[] c : inners) counterArea += Math.abs(signedArea(c));
+    return Math.min(1f, counterArea / bboxArea);
+  }
+
+  /**
+   * Estimates the dominant stroke weight of a character in pixels.
+   *
+   * <p>Computed as twice the mean distance from the approximate medial axis to
+   * the nearest outline point — a proxy for the average stroke width. Map to
+   * physics mass, brightness, or saturation: light glyphs behave differently
+   * from bold ones without any manual tuning.</p>
+   *
+   * <pre>
+   * float sw = glyph.getStrokeWeight('H', 600);
+   * // heavy glyphs (sw large) move more slowly
+   * </pre>
+   *
+   * @param ch       the character
+   * @param fontSize the font size
+   * @return estimated stroke width in pixels; returns 0 if the axis is degenerate
+   */
+  public float getStrokeWeight(char ch, float fontSize) {
+    PVector[] axis    = getMedialAxis(ch, fontSize, 80);
+    PVector[] contour = distributeAlongOutline(ch, fontSize, 512);
+    if (axis.length == 0 || contour.length == 0) return 0f;
+
+    float totalDist = 0;
+    for (PVector axPt : axis) {
+      float minD = Float.MAX_VALUE;
+      for (PVector cPt : contour) {
+        float d = PVector.dist(axPt, cPt);
+        if (d < minD) minD = d;
+      }
+      totalDist += minD;
+    }
+    // × 2 because the axis-to-outline distance is half the stroke width
+    return 2f * totalDist / axis.length;
+  }
+
+  /**
+   * Builds a {@link TypeDNAProfile} by averaging all four Type DNA measurements
+   * across a character set.
+   *
+   * <p>A profile captures the typographic fingerprint of the loaded font at the
+   * given size. Call {@link algorithmic.typography.AlgorithmicTypography#applyTypeDNA(TypeDNAProfile)}
+   * to apply it as an animation preset.</p>
+   *
+   * <pre>
+   * TypeDNAProfile profile = glyph.buildTypeDNAProfile(
+   *     new char[]{'A','B','C','H','O','R'}, 600);
+   * at.applyTypeDNA(profile);
+   * profile.toJSON().save(sketchPath("data/dna.json"));
+   * </pre>
+   *
+   * @param chars    the characters to measure (should be a representative sample)
+   * @param fontSize the font size applied to all measurements
+   * @return a {@code TypeDNAProfile} averaging the measurements across {@code chars}
+   */
+  public TypeDNAProfile buildTypeDNAProfile(char[] chars, float fontSize) {
+    if (chars == null || chars.length == 0) {
+      return new TypeDNAProfile(90f, new PVector(), 0f, 0f);
+    }
+    float stressSum = 0, ratioSum = 0, weightSum = 0;
+    float cx = 0, cy = 0;
+    int n = chars.length;
+    for (char ch : chars) {
+      stressSum  += getStressAxis(ch, fontSize);
+      ratioSum   += getCounterRatio(ch, fontSize);
+      weightSum  += getStrokeWeight(ch, fontSize);
+      PVector oc  = getOpticalCentroid(ch, fontSize);
+      cx += oc.x;
+      cy += oc.y;
+    }
+    return new TypeDNAProfile(
+        stressSum  / n,
+        new PVector(cx / n, cy / n),
+        ratioSum   / n,
+        weightSum  / n
+    );
+  }
+
+  // ── Internal v0.2.3 helpers ────────────────────────────────────
+  /**
    * Lines are produced in the shape's coordinate space (same as the
    * glyph outline) at the given angle and spacing.
    */
@@ -1206,52 +2138,100 @@ public class GlyphExtractor {
    * Converts a Java AWT Shape to a Processing PShape.
    */
   private PShape shapeToProcessing(Shape awtShape) {
-    PShape group = parent.createShape(PConstants.GROUP);
-    
-    PathIterator pi = new FlatteningPathIterator(
-        awtShape.getPathIterator(null), flatness);
-    
+    // Collect all closed sub-path contours from the flattened path.
+    List<List<float[]>> contours = new ArrayList<>();
+    PathIterator pi = new FlatteningPathIterator(awtShape.getPathIterator(null), flatness);
     float[] coords = new float[6];
-    PShape currentContour = null;
-    
+    List<float[]> current = null;
+
     while (!pi.isDone()) {
-      int type = pi.currentSegment(coords);
-      
-      switch (type) {
-        case PathIterator.SEG_MOVETO:
-          // Start a new contour
-          if (currentContour != null) {
-            currentContour.endShape(PConstants.CLOSE);
-            group.addChild(currentContour);
-          }
-          currentContour = parent.createShape();
-          currentContour.beginShape();
-          currentContour.noStroke();
-          currentContour.fill(255);
-          currentContour.vertex(coords[0], coords[1]);
-          break;
-          
-        case PathIterator.SEG_LINETO:
-          if (currentContour != null) {
-            currentContour.vertex(coords[0], coords[1]);
-          }
-          break;
-          
-        case PathIterator.SEG_CLOSE:
-          // Contour will be closed in endShape(CLOSE)
-          break;
+      int seg = pi.currentSegment(coords);
+      if (seg == PathIterator.SEG_MOVETO) {
+        if (current != null && !current.isEmpty()) contours.add(current);
+        current = new ArrayList<>();
+        current.add(new float[]{coords[0], coords[1]});
+      } else if (seg == PathIterator.SEG_LINETO && current != null) {
+        current.add(new float[]{coords[0], coords[1]});
       }
-      
       pi.next();
     }
-    
-    // Close last contour
-    if (currentContour != null) {
-      currentContour.endShape(PConstants.CLOSE);
-      group.addChild(currentContour);
+    if (current != null && !current.isEmpty()) contours.add(current);
+
+    if (contours.isEmpty()) return parent.createShape();
+
+    // Classify contours by winding direction (signed area in y-down screen space):
+    // TrueType/OpenType fonts on macOS wind outer boundaries CCW (negative
+    // signed area in y-down coords) and counter-forms CW (positive).
+    List<List<float[]>> outers = new ArrayList<>();
+    List<List<float[]>> holes  = new ArrayList<>();
+    for (List<float[]> c : contours) {
+      if (signedPolygonArea(c) <= 0) outers.add(c);
+      else                           holes.add(c);
     }
-    
+
+    // Fall back: if classification yields no outers, render everything filled.
+    if (outers.isEmpty()) {
+      PShape group = parent.createShape(PConstants.GROUP);
+      for (List<float[]> c : contours) {
+        PShape s = parent.createShape();
+        s.beginShape(); s.noStroke(); s.fill(255);
+        for (float[] pt : c) s.vertex(pt[0], pt[1]);
+        s.endShape(PConstants.CLOSE);
+        group.addChild(s);
+      }
+      return group;
+    }
+
+    // Build one PShape per outer contour; embed any hole that lies inside it
+    // via beginContour/endContour so Processing's non-zero fill rule treats it
+    // as a transparent cutout.  AWT Area holes are already wound CCW — the
+    // opposite of the CW outer — so they are added as-is (no reversal needed).
+    PShape group = parent.createShape(PConstants.GROUP);
+    for (List<float[]> outer : outers) {
+      PShape s = parent.createShape();
+      s.beginShape(); s.noStroke(); s.fill(255);
+      for (float[] pt : outer) s.vertex(pt[0], pt[1]);
+
+      for (List<float[]> hole : holes) {
+        float[] hp = hole.get(0);
+        if (isPointInContour(hp[0], hp[1], outer)) {
+          s.beginContour();
+          for (float[] pt : hole) s.vertex(pt[0], pt[1]);
+          s.endContour();
+        }
+      }
+      s.endShape(PConstants.CLOSE);
+      group.addChild(s);
+    }
     return group;
+  }
+
+  /** Signed polygon area via shoelace formula.
+   *  Positive = CW in screen y-down coordinates (outer boundary).
+   *  Negative = CCW = counter-form / hole. */
+  private float signedPolygonArea(List<float[]> pts) {
+    double sum = 0;
+    int n = pts.size();
+    for (int i = 0; i < n; i++) {
+      float[] a = pts.get(i), b = pts.get((i + 1) % n);
+      sum += (double) a[0] * b[1] - (double) b[0] * a[1];
+    }
+    return (float) (sum * 0.5);
+  }
+
+  /** Ray-casting point-in-polygon test (works for any simple polygon). */
+  private boolean isPointInContour(float px, float py, List<float[]> contour) {
+    boolean inside = false;
+    int n = contour.size();
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      float xi = contour.get(i)[0], yi = contour.get(i)[1];
+      float xj = contour.get(j)[0], yj = contour.get(j)[1];
+      if ((yi > py) != (yj > py) &&
+          px < (xj - xi) * (py - yi) / (yj - yi) + xi) {
+        inside = !inside;
+      }
+    }
+    return inside;
   }
   
   /**
@@ -1259,19 +2239,30 @@ public class GlyphExtractor {
    */
   private PVector[] extractPoints(Shape awtShape) {
     List<PVector> points = new ArrayList<>();
-    
+    float[] subPathOrigin = new float[2];
+
     PathIterator pi = new FlatteningPathIterator(
         awtShape.getPathIterator(null), flatness);
     float[] coords = new float[6];
-    
+
     while (!pi.isDone()) {
       int type = pi.currentSegment(coords);
-      if (type == PathIterator.SEG_MOVETO || type == PathIterator.SEG_LINETO) {
+      if (type == PathIterator.SEG_MOVETO) {
+        subPathOrigin[0] = coords[0];
+        subPathOrigin[1] = coords[1];
         points.add(new PVector(coords[0], coords[1]));
+      } else if (type == PathIterator.SEG_LINETO) {
+        points.add(new PVector(coords[0], coords[1]));
+      } else if (type == PathIterator.SEG_CLOSE && !points.isEmpty()) {
+        // Close the sub-path: append origin if not already there
+        PVector prev = points.get(points.size() - 1);
+        if (PVector.dist(prev, new PVector(subPathOrigin[0], subPathOrigin[1])) > 0.01f) {
+          points.add(new PVector(subPathOrigin[0], subPathOrigin[1]));
+        }
       }
       pi.next();
     }
-    
+
     return points.toArray(new PVector[0]);
   }
   
@@ -1297,13 +2288,19 @@ public class GlyphExtractor {
           }
           current.add(new PVector(coords[0], coords[1]));
           break;
-          
+
         case PathIterator.SEG_LINETO:
           current.add(new PVector(coords[0], coords[1]));
           break;
-          
+
         case PathIterator.SEG_CLOSE:
           if (!current.isEmpty()) {
+            // Close the loop: append first point if not already there
+            PVector first = current.get(0);
+            PVector last  = current.get(current.size() - 1);
+            if (PVector.dist(first, last) > 0.01f) {
+              current.add(new PVector(first.x, first.y));
+            }
             contours.add(current.toArray(new PVector[0]));
             current = new ArrayList<>();
           }
@@ -1326,26 +2323,74 @@ public class GlyphExtractor {
   private PShape buildDeformedShape(List<PVector[]> contours,
                                      float amplitude, float frequency, float time) {
     PShape group = parent.createShape(PConstants.GROUP);
-    
-    for (PVector[] contour : contours) {
+    if (contours.isEmpty()) return group;
+
+    // Classify contours using the same signed-area convention as shapeToProcessing:
+    // negative signed area (CCW in y-down) = outer; positive (CW) = hole.
+    List<PVector[]> outers = new ArrayList<>();
+    List<PVector[]> holes  = new ArrayList<>();
+    for (PVector[] c : contours) {
+      if (signedPolygonAreaVec(c) <= 0) outers.add(c);
+      else                              holes.add(c);
+    }
+    if (outers.isEmpty()) { outers = contours; holes = new ArrayList<>(); }
+
+    for (PVector[] outer : outers) {
       PShape s = parent.createShape();
       s.beginShape();
       s.noStroke();
       s.fill(255);
-      
-      for (int i = 0; i < contour.length; i++) {
-        PVector p = contour[i];
+
+      for (int i = 0; i < outer.length; i++) {
+        PVector p = outer[i];
         float angle = (p.x + p.y) * frequency + time;
-        float dx = PApplet.sin(angle) * amplitude;
-        float dy = PApplet.cos(angle * 0.7f) * amplitude;
-        s.vertex(p.x + dx, p.y + dy);
+        s.vertex(p.x + PApplet.sin(angle) * amplitude,
+                 p.y + PApplet.cos(angle * 0.7f) * amplitude);
       }
-      
+
+      for (PVector[] hole : holes) {
+        if (isPointInContourVec(hole[0].x, hole[0].y, outer)) {
+          s.beginContour();
+          for (int i = 0; i < hole.length; i++) {
+            PVector p = hole[i];
+            float angle = (p.x + p.y) * frequency + time;
+            s.vertex(p.x + PApplet.sin(angle) * amplitude,
+                     p.y + PApplet.cos(angle * 0.7f) * amplitude);
+          }
+          s.endContour();
+        }
+      }
+
       s.endShape(PConstants.CLOSE);
       group.addChild(s);
     }
-    
     return group;
+  }
+
+  /** Signed polygon area via shoelace over PVector list. */
+  private float signedPolygonAreaVec(PVector[] pts) {
+    double sum = 0;
+    int n = pts.length;
+    for (int i = 0; i < n; i++) {
+      PVector a = pts[i], b = pts[(i + 1) % n];
+      sum += (double) a.x * b.y - (double) b.x * a.y;
+    }
+    return (float) (sum * 0.5);
+  }
+
+  /** Ray-casting point-in-polygon over PVector array. */
+  private boolean isPointInContourVec(float px, float py, PVector[] contour) {
+    boolean inside = false;
+    int n = contour.length;
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      float xi = contour[i].x, yi = contour[i].y;
+      float xj = contour[j].x, yj = contour[j].y;
+      if ((yi > py) != (yj > py) &&
+          px < (xj - xi) * (py - yi) / (yj - yi) + xi) {
+        inside = !inside;
+      }
+    }
+    return inside;
   }
   
   /**
@@ -1405,10 +2450,19 @@ public class GlyphExtractor {
       // Close the contour before resampling so the arc back to [0] is covered.
       // resample(n+1) gives n evenly-spaced points + a duplicate of [0] at the
       // tail; we keep only the first n so there is no repeated start point.
+      // Guard: if extractContours already closed the contour (first == last),
+      // do not append another copy — that would create a triple-duplicate.
       PVector[] c = contours.get(i);
-      PVector[] closed = new PVector[c.length + 1];
-      System.arraycopy(c, 0, closed, 0, c.length);
-      closed[c.length] = c[0].copy();
+      boolean alreadyClosed = c.length > 1 &&
+          PVector.dist(c[c.length - 1], c[0]) < 0.01f;
+      PVector[] closed;
+      if (alreadyClosed) {
+        closed = c;
+      } else {
+        closed = new PVector[c.length + 1];
+        System.arraycopy(c, 0, closed, 0, c.length);
+        closed[c.length] = c[0].copy();
+      }
       PVector[] resampled = resample(closed, n + 1);
       for (int j = 0; j < n; j++) result.add(resampled[j]);
     }
@@ -1430,6 +2484,13 @@ public class GlyphExtractor {
     return area * 0.5f;
   }
   
+  /** Reverses the point order of a path array. */
+  private PVector[] reversePath(PVector[] path) {
+    PVector[] rev = new PVector[path.length];
+    for (int i = 0; i < path.length; i++) rev[i] = path[path.length - 1 - i];
+    return rev;
+  }
+
   /**
    * Returns the contour with the largest absolute area (the outer boundary).
    */
@@ -1465,4 +2526,62 @@ public class GlyphExtractor {
     result.remove(largestIdx);
     return result;
   }
+
+  // ── Internal v0.2.5 helpers ────────────────────────────────────
+
+  /**
+   * Returns an AWT Area for a single character at the given font size.
+   * Shared by all boolean-operation methods.
+   */
+  private Area glyphArea(char ch, float fontSize) {
+    Font sized = awtFont.deriveFont(fontSize);
+    GlyphVector gv = sized.createGlyphVector(frc, new char[]{ch});
+    return new Area(gv.getOutline());
+  }
+
+  /**
+   * Linearly interpolates a point along a polyline at a given arc-length position.
+   * {@code arcLen} must be the cumulative arc-length table computed externally.
+   */
+  private PVector arcLengthPoint(PVector[] path, float[] arcLen, float target) {
+    if (target <= arcLen[0]) return path[0].copy();
+    int n = path.length;
+    if (target >= arcLen[n - 1]) return path[n - 1].copy();
+    // Binary search for the segment containing target
+    int lo = 0, hi = n - 1;
+    while (hi - lo > 1) {
+      int mid = (lo + hi) >>> 1;
+      if (arcLen[mid] <= target) lo = mid; else hi = mid;
+    }
+    float segLen = arcLen[hi] - arcLen[lo];
+    float t = (segLen < 1e-6f) ? 0 : (target - arcLen[lo]) / segLen;
+    return PVector.lerp(path[lo], path[hi], t);
+  }
+
+  /**
+   * Computes the dominant axis angle (in degrees, [0, 180)) of a point cloud
+   * using 2×2 PCA (principal component analysis).
+   * Used by {@link #getStressAxis(char, float)}.
+   */
+  private float pcaAngle(List<PVector> pts) {
+    if (pts.size() < 2) return 90f;
+    float mx = 0, my = 0;
+    for (PVector p : pts) { mx += p.x; my += p.y; }
+    mx /= pts.size(); my /= pts.size();
+
+    double xx = 0, xy = 0, yy = 0;
+    for (PVector p : pts) {
+      double dx = p.x - mx, dy = p.y - my;
+      xx += dx * dx;
+      xy += dx * dy;
+      yy += dy * dy;
+    }
+    // Angle of the eigenvector corresponding to the larger eigenvalue
+    double angle = 0.5 * Math.atan2(2.0 * xy, xx - yy);
+    // atan2 returns [-π/2, π/2]; map to [0, 180)
+    float deg = (float) Math.toDegrees(angle);
+    if (deg < 0) deg += 180f;
+    return deg;
+  }
 }
+

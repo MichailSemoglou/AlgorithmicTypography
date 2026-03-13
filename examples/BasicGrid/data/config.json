@@ -9,8 +9,8 @@
     "changeTime": 6000,
     "secondChangeTime": 12000,
     "fadeDuration": 2000,
-    "character": "A",
-    "textScale": 0.8,
+    "character": "HELLO",
+    "textScale": 0.5,
     "saveFrames": false,
     "waveSpeed": 1,
     "waveAngle": 45,
@@ -19,11 +19,11 @@
     "waveMultiplierMax": 2
   },
   "grid": {
-    "initialTilesX": 16,
+    "initialTilesX": 8,
     "initialTilesY": 16,
-    "changedTilesX": 8,
+    "changedTilesX": 4,
     "changedTilesY": 8,
-    "finalTilesX": 4,
+    "finalTilesX": 2,
     "finalTilesY": 4
   },
   "colors": {

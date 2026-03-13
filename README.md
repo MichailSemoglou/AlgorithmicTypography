@@ -4,13 +4,13 @@
 
 [![Processing](https://img.shields.io/badge/Processing-4.x-blue)](https://processing.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.2.4-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+[![Version](https://img.shields.io/badge/Version-0.2.5-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
 ![AlgorithmicTypography showcase](docs/showcase.gif)
 ![AlgorithmicTypography showcase_2](docs/showcase_2.gif)
 
 > [!NOTE]
-> **Version 0.2.4** makes the library significantly more expressive from `config.json` alone. A new `"cellMotion"` JSON block configures any of the 10 built-in motion styles (`"perlin"`, `"circular"`, `"lissajous"`, `"spring"`, `"gravity"`, `"magnetic"`, `"ripple"`, `"flowfield"`, `"orbital"`, `"none"`) directly from the file, unifying wave, colour, and motion into a single declarative config. New `"waveType"` field selects the wave shape (`SINE`, `TANGENT`, `SQUARE`, `TRIANGLE`, `SAWTOOTH`) without any code changes; `waveAngle` is now present in all shipped example configs. A new `"cellBorder"` JSON block (plus matching `setCellBorder*()` API and `BORDER_*` bitmask constants) draws per-cell border strokes on any combination of sides with either a static colour or a wave-reactive colour mode that pulses in sync with glyph brightness. Several example sketches were also refined in this release: TrailEffect now focuses purely on motion and trail behaviour (wave angle controls removed to keep the demonstration clear), and its colour transitions were tuned for a smoother, more organic feel. Built on v0.2.3, which deepened the `GlyphExtractor` toolkit (`fillWithLines()`, `offsetOutline()`, `interpolateTo()`, `getMedialAxis()`, `sampleAlongPath()`, `getBoundingContour()`, and the fluent `GlyphBuilder` API) and added three `CellMotion` types (`RippleMotion`, `FlowFieldMotion`, `OrbitalMotion`). This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
+> **Version 0.2.5** brings boolean letterform operations, path-based text layout, Type DNA, config-driven glyph outline rendering, winding-correct counter-form rendering, and single-word support in the `"character"` config field. `GlyphExtractor` now supports `union()`, `intersect()`, and `subtract()` between any two characters (all via AWT `Area` boolean algebra on the font's native outlines, with both `PShape` and `PVector[]` return types). `textOnPath()` lays out a full string of glyphs along any arbitrary polyline or extracted contour, rotating each character to follow the local tangent. `getTangent()` and `getDashedOutline()` complete the path-utility additions — both now have `String` overloads that accept a full word rather than a single character. The new **Type DNA** system analyses typeface geometry to produce animation parameters automatically: `getStressAxis()`, `getOpticalCentroid()`, `getCounterRatio()`, and `getStrokeWeight()` compute typographic intelligence from outline geometry; `buildTypeDNAProfile()` aggregates them into a `TypeDNAProfile` data class (serialisable to JSON); and `applyTypeDNA(profile)` turns a full font analysis into a ready-to-use animation preset in one call. A new **`glyphOutline` config.json block** renders solid, dashed, or fill-suppressed dashed-only per-contour strokes on every glyph cell automatically — four outline styles (`"none"` / `"solid"` / `"dashed"` / `"dashedOnly"`), zero sketch code required; `getDashedOutline()` walks each sub-contour independently so inner counter-forms (A, B, O, P, R) never produce a connector line to the outer path. A winding-correction cascade in `GlyphExtractor` fixes counter-form rendering (holes in A, B, D, O, P, Q, R) across `shapeToProcessing`, `extractChar`, `getContours`, `buildDeformedShape`, and `getOuterContour`. The `GlyphBoolean` example has been rewritten as a dual-mode interactive showcase (Letter×Letter and Shape×Letter, `TAB` to switch). `GlyphWander` now cycles nine motion modes (Gravity and Magnetic removed — both have dedicated standalone examples). Three examples — `GlyphBoolean`, `TextOnPath`, and `GlyphOutline` — demonstrate all additions interactively. Built on v0.2.4, which made the library significantly more expressive from `config.json` alone (`"cellMotion"` block, `"waveType"` field, `"cellBorder"` block). This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. AlgorithmicTypography is an ongoing project built for the Processing community. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
 
 ## Overview
 
@@ -26,9 +26,9 @@ What makes this library distinctive is that it was designed from the ground up w
 
 **For newcomers,** it is one of the most accessible entry points into generative typography in the Processing ecosystem. A working sketch requires just four lines of code; a JSON file handles the rest. From there, the API grows with you — every new concept (physics, audio, custom waves) builds on the same foundation rather than requiring a fresh start.
 
-**As an alternative to Geomerative,** AlgorithmicTypography covers the same core use cases — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, and letterform morphing — without requiring an external dependency, and with a few architectural differences worth knowing about. Geomerative parses font files directly through its own SVG/font engine; AlgorithmicTypography goes through Java2D's own `FlatteningPathIterator` on the raw AWT font outline, which means outer vs. inner contour separation is determined by contour area (deterministic and font-agnostic) rather than winding order, and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods express design intent directly, with no glyph-bounds arithmetic or matrix boilerplate at the sketch level. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in, making it a more complete toolkit for animated and interactive typographic work.
+**As an alternative to Geomerative,** AlgorithmicTypography covers every core use case Geomerative is known for — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, letterform morphing, boolean area operations, and text-on-path layout — without requiring an external dependency, and in several areas it goes further. Geomerative parses font files directly through its own SVG/font engine; AlgorithmicTypography goes through Java2D's own `FlatteningPathIterator` on the raw AWT font outline, which means outer vs. inner contour separation is determined by contour area (deterministic and font-agnostic) rather than winding order, and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods express design intent directly, with no glyph-bounds arithmetic or matrix boilerplate at the sketch level. The v0.2.5 **Type DNA** system — stress axis, optical centroid, counter ratio, stroke weight, and the `buildTypeDNAProfile` / `applyTypeDNA` pipeline — has no equivalent in Geomerative or any other Processing typography library: it extracts typographic intelligence from the font's own outlines and maps it directly to animation parameters. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in, making it a substantially more complete toolkit for animated and interactive typographic work.
 
-The long-term goal is to make AlgorithmicTypography the definitive library for generative typography in Processing. The current release focuses on integration and accessibility, bringing tools that previously required multiple libraries or significant boilerplate into a single, designer-friendly API. Genuinely new capabilities are on the roadmap.
+The long-term goal is to make AlgorithmicTypography the definitive library for generative typography in Processing. Each release delivers both integration — consolidating tools that previously required multiple libraries or significant boilerplate — and genuinely new capabilities that do not exist elsewhere in the Processing ecosystem. That work is well underway.
 
 ## Features
 
@@ -36,7 +36,11 @@ The long-term goal is to make AlgorithmicTypography the definitive library for g
 - **HSB colour mapping** — Configurable hue, saturation, and brightness ranges across the grid
 - **Wave angle** — Control the propagation direction of the colour wave (0–360°) — now available in `config.json` via `waveAngle`
 - **Cell borders** — Draw optional per-cell border lines (top, bottom, left, right, or any bitmask combination) with configurable colour, weight, and a wave-reactive colour mode (`cellBorder`)
+- **Glyph outline rendering** — Draw solid, dashed, or fill-suppressed dashed-only per-contour strokes on every glyph cell via the `"glyphOutline"` JSON block (`style: "solid"/"dashed"/"dashedOnly"`, `r/g/b`, `weight`, `dashLength`, `gapLength`) — zero sketch code required; or set at runtime via `setGlyphOutlineStyle()`, `setGlyphOutlineColor()`, `setGlyphOutlineDash()`. Four style constants: `OUTLINE_NONE`, `OUTLINE_SOLID`, `OUTLINE_DASHED`, `OUTLINE_DASHED_ONLY`. Inner counter-forms (A, B, O, P, R) are walked independently so no connector line appears between outer and inner paths.
 - **Glyph extraction** — Extract glyph outlines as vertices (built-in alternative to Geomerative)
+- **Boolean letterform ops** — `union()`, `intersect()`, `subtract()` between any two characters via AWT `Area` (both `PShape` and `PVector[]` return types)
+- **Path utilities** — `textOnPath()` for string-along-curve layout, `getTangent()` for tangent-oriented ornaments, `getDashedOutline()` for print-style dashed strokes, `subdivide()` for on-demand tessellation density; `centerOf(String, …)` and `getDashedOutline(String, …)` word overloads extend all these capabilities to multi-character strings
+- **Type DNA** — `getStressAxis()`, `getOpticalCentroid()`, `getCounterRatio()`, `getStrokeWeight()`, `buildTypeDNAProfile()`, and `applyTypeDNA()` let the typeface's own geometry drive animation parameters automatically
 - **Glyph physics** — Treat glyph vertices as particles with mouse attraction/repulsion
 - **Cell motion** — Ten built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), Mouse-magnetic (repel/attract), Ripple (click-triggered concentric rings), FlowField (spatially coherent Perlin vector field), and Orbital (constellation orbit patterns) — all configurable via code _or_ the new `"cellMotion"` JSON block
 - **Trail effects** — Semi-transparent overlay trails with temporal displacement
@@ -127,8 +131,10 @@ algorithmic.typography
 │   ├── GridRenderer               Offscreen PGraphics rendering
 │   ├── ExportController           Async PNG frame export
 │   ├── VectorExporter             SVG/PDF vector export
-│   ├── GlyphExtractor             Glyph outline extraction (vertices, contours, deformation)
-│   └── GlyphPhysics               Particle-based physics for glyph vertices
+│   ├── GlyphExtractor             Glyph outline extraction (vertices, contours, boolean ops, Type DNA)
+│   ├── GlyphBuilder               Fluent chainable builder for common glyph-extraction patterns
+│   ├── GlyphPhysics               Particle-based physics for glyph vertices
+│   └── TypeDNAProfile             Typographic fingerprint data class (serialisable to JSON)
 │
 ├── audio/
 │   └── AudioBridge                Real-time FFT, beat detection, parameter mapping
@@ -147,6 +153,7 @@ algorithmic.typography
 ├── ui/
 │   ├── ControlPanel               GUI sliders and keyboard controls
 │   ├── Slider                     Individual slider widget
+│   ├── ProgressBar                Read-only horizontal progress indicator
 │   └── OSCBridge                  OSC network control
 │
 ├── ml/
@@ -214,6 +221,15 @@ Create a `config.json` file in your sketch's `data/` folder:
     "style": "none",
     "radius": 12,
     "speed": 1.0
+  },
+  "glyphOutline": {
+    "style": "none",
+    "r": 255,
+    "g": 255,
+    "b": 255,
+    "weight": 1.5,
+    "dashLength": 8.0,
+    "gapLength": 4.0
   }
 }
 ```
@@ -233,7 +249,7 @@ Create a `config.json` file in your sketch's `data/` folder:
 
 | Parameter           | Type    | Description                                                             | Default  |
 | ------------------- | ------- | ----------------------------------------------------------------------- | -------- |
-| `character`         | String  | Character to render in the grid                                         | `"A"`    |
+| `character`         | String  | Character **or word** to render in the grid                             | `"A"`    |
 | `textScale`         | float   | Text size relative to tile (0–1)                                        | 0.8      |
 | `duration`          | int     | Animation duration in seconds                                           | 18       |
 | `fps`               | int     | Frames per second                                                       | 30       |
@@ -314,6 +330,20 @@ Side bitmask constants in code: `Configuration.BORDER_TOP`, `BORDER_BOTTOM`, `BO
 | `phaseRange`      | float   | **flowfield only** — maximum inter-cell Z-axis phase spread; `0` restores fully synchronised (block) behaviour                                 | 8.0      |
 
 Omit the `cellMotion` block entirely, or set `"style": "none"`, for no per-cell motion. `magnetic` and `ripple` are wired to the sketch automatically using the canvas dimensions and tile counts already in the config.
+
+**glyphOutline**
+
+| Parameter    | Type   | Description                                                                                                                              | Default  |
+| ------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `style`      | String | `"none"` (off), `"solid"` (continuous stroke), `"dashed"` (per-contour dash walk), `"dashedOnly"` (dashed stroke only — fill suppressed) | `"none"` |
+| `r`          | int    | Stroke colour red channel (0–255)                                                                                                        | 255      |
+| `g`          | int    | Stroke colour green channel (0–255)                                                                                                      | 255      |
+| `b`          | int    | Stroke colour blue channel (0–255)                                                                                                       | 255      |
+| `weight`     | float  | Stroke weight in pixels                                                                                                                  | 1.5      |
+| `dashLength` | float  | Visible dash length in pixels (**dashed** only)                                                                                          | 8.0      |
+| `gapLength`  | float  | Gap length in pixels between dashes (**dashed** only)                                                                                    | 4.0      |
+
+Style integer constants in code: `Configuration.OUTLINE_NONE`, `OUTLINE_SOLID`, `OUTLINE_DASHED`, `OUTLINE_DASHED_ONLY`. Set at runtime via `config.setGlyphOutlineStyle(Configuration.OUTLINE_DASHED_ONLY)`. Builder: `.glyphOutlineSolid(r,g,b,weight)` and `.glyphOutlineDashed(r,g,b,weight,dashLen,gapLen)`.
 
 ## Examples
 
@@ -409,7 +439,7 @@ Particle-based physics — each glyph vertex becomes a particle with mouse repul
 
 ### GlyphWander
 
-Demonstrates per-glyph cell motion via `config.setCellMotion()`. Cycles through eleven motion modes — None, Perlin, Circular CW, Circular CCW, Lissajous, Spring, Gravity, Magnetic, Ripple, FlowField, and Orbital — with live radius and speed adjustment. In Ripple mode, clicking triggers a concentric ring at the cursor position.
+Demonstrates per-glyph cell motion via `config.setCellMotion()`. Cycles through nine motion modes — None, Perlin, Circular CW, Circular CCW, Lissajous, Spring, Ripple, FlowField, and Orbital — with live radius and speed adjustment. (Gravity and Magnetic are covered by the standalone `GravityDynamics` and `MagneticDynamics` examples.) In Ripple mode, clicking triggers a concentric ring at the cursor position.
 
 ### TrailEffect
 
@@ -419,13 +449,25 @@ Glyphs move within their grid cells and leave fading trails via semi-transparent
 
 A full showcase for `GravityMotion`. Two side-by-side control panels — library `ControlPanel` on the left, a custom gravity panel on the right with live sliders for Gravity, Restitution, Lateral force, Air Drag, Phase Spread, Radius, and Jump Strength. Four presets (Default / Heavy / Floaty / Pinball); `SPACE` to kick all glyphs back into the air.
 
+### GlyphBoolean
+
+Dual-mode interactive showcase for the v0.2.5 boolean area operations. **Mode A (Letter × Letter):** boolean ops — union, intersect, subtract (keys 1/2/3) — applied across six curated character pairs. **Mode B (Shape × Letter):** a geometric shape (circle, diamond, horizontal band) is composited with a letterform; mode 4 adds a band-cutter pass unique to Shape × Letter. `TAB` switches modes; `SPACE` cycles character pairs or shapes; `S` saves PNG.
+
+### GlyphOutline
+
+Dedicated showcase for the config-driven glyph outline system introduced in v0.2.5. Loads `data/config.json` (default `"style": "dashed"`); press `O` to cycle None → Solid → Dashed → Dashed Only at runtime via `config.setGlyphOutlineStyle()` (four modes); `←/→` cycles 16 test characters chosen for diverse inner counter-form geometry (A, B, D, G, O, P, Q, R, a, b, e, g, o, p, &, 8); `S` saves PNG. Dashed and Dashed Only modes walk each sub-contour independently so the outer letterform and inner counter-form each carry their own rhythmic dash pattern without a connector line. Dashed Only suppresses the glyph fill entirely so only the stroke outline is visible.
+
+### TextOnPath
+
+Two-mode sketch demonstrating the v0.2.5 path utilities. Mode 1 flows a full text string around the outer contour of a large letterform via `textOnPath()`, rotating each character to follow the local tangent. Mode 2 draws 48 `getTangent()`-oriented chevron ornaments that orbit the outline continuously with an animated hue wave. `SPACE` cycles the base character; `T` cycles the text string; `S` saves PNG.
+
 ### MagneticDynamics
 
 A full showcase for `MagneticMotion`. Live sliders for Strength, Falloff, Smoothing, and Radius. Three presets (Repel / Attract / Rubber Band); `SPACE` to switch between repel and attract modes.
 
 ## Documentation
 
-A four-page printable cheat sheet is available in:
+A six-page printable cheat sheet is available in:
 
 - **Online:** [qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html](https://qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html)
 - **HTML:** [`docs/CHEAT_SHEET.html`](docs/CHEAT_SHEET.html)
@@ -482,6 +524,50 @@ glyph.drawAt('A', 400, width/2, height/2);  // draw centred, current fill/stroke
 PShape ms = glyph.morphShape('A', 'B', 400, 0.5);  // ready-to-draw PShape for morph
 ms.disableStyle(); fill(200); shape(ms, o.x, o.y);
 List<PVector[]> mc = glyph.interpolateContours('A', 'B', 400, 0.5);  // raw contours for point effects
+
+// config-driven glyph outline rendering (no sketch code required)
+config.setGlyphOutlineStyle(Configuration.OUTLINE_DASHED);
+config.setGlyphOutlineColor(255, 80, 0);       // RGB stroke colour
+config.setGlyphOutlineWeight(2.0f);
+config.setGlyphOutlineDash(10.0f, 5.0f);       // dash length, gap length
+// or via Builder:
+Configuration cfg = new Configuration.Builder()
+  .glyphOutlineDashed(255, 80, 0, 2.0f, 10.0f, 5.0f)
+  .build();
+
+// v0.2.5 — boolean area operations
+PShape merged   = glyph.union('O', 'C', 600);          // merge two letterforms
+PShape overlap  = glyph.intersect('O', 'C', 600);       // shared region only
+PShape knockout = glyph.subtract('O', 'C', 600);        // cut C out of O
+PVector[] uPts  = glyph.getUnionContour('O', 'C', 600); // PVector[] overloads
+PVector[] iPts  = glyph.getIntersectContour('O', 'C', 600);
+PVector[] sPts  = glyph.getSubtractContour('O', 'C', 600);
+
+// v0.2.5 — path utilities
+PVector tan        = glyph.getTangent('O', 600, 0.25);          // unit tangent at t=0.25
+float[][] dashes   = glyph.getDashedOutline('A', 600, 12, 6);   // {x1,y1,x2,y2} pairs, 12 px dash / 6 px gap
+PVector[] dense    = glyph.subdivide('A', 600, 1200);            // at least 1200 vertices
+PVector[] path     = glyph.getOuterContour('O', 600);
+PShape onPath      = glyph.textOnPath("DESIGN", path, 36);       // string laid along the contour
+
+// v0.2.5 — word support (String overloads accept full words anywhere a char was accepted)
+PVector wo         = glyph.centerOf("TYPE", 400, width/2, height/2);  // centre a full word
+float[][] wd       = glyph.getDashedOutline("TYPE", 400, 12, 6);       // dashed outline for a word
+// config.json: set "character" to "TYPE" (or any word) — no sketch code change required
+
+// v0.2.5 — Type DNA
+float stress    = glyph.getStressAxis('A', 600);         // dominant stroke angle, degrees [0,180)
+PVector centroid = glyph.getOpticalCentroid('O', 600);  // ink-weighted perceptual centre
+float counter   = glyph.getCounterRatio('O', 600);      // counter area / bbox area (≈0 for I, >0.1 for O)
+float sw        = glyph.getStrokeWeight('H', 600);      // estimated stroke width in px
+
+TypeDNAProfile profile = glyph.buildTypeDNAProfile(
+    new char[]{'A','O','H','n','e'}, 600);              // full-font fingerprint
+processing.data.JSONObject json = profile.toJSON();     // serialise
+TypeDNAProfile restored = TypeDNAProfile.fromJSON(json); // deserialise
+
+// Apply profile as a one-call animation preset:
+at.applyTypeDNA(profile);  // sets waveAngle, waveAmplitudeRange, brightnessRange
 ```
 
 ### Glyph Physics

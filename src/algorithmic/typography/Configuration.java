@@ -6,7 +6,7 @@
  * settings.
  *
  * @author Michail Semoglou
- * @version 0.2.4
+ * @version 0.2.5
  * @since 1.0.0
  */
 
@@ -60,6 +60,16 @@ public class Configuration {
   public static final int BORDER_COLOR_STATIC = 0;
   /** Border colour follows the wave value of each cell — the grid pulses in sync with the glyphs. */
   public static final int BORDER_COLOR_WAVE   = 1;
+
+  // Glyph outline style constants
+  /** No glyph outline rendered. Default. */
+  public static final int OUTLINE_NONE         = 0;
+  /** Continuous solid stroke drawn along every glyph contour. */
+  public static final int OUTLINE_SOLID        = 1;
+  /** Dashed stroke drawn along every glyph contour; inner counter-forms are independent. */
+  public static final int OUTLINE_DASHED       = 2;
+  /** Dashed stroke only — glyph fill is suppressed, only the outline is visible. */
+  public static final int OUTLINE_DASHED_ONLY  = 3;
 
   // Canvas configuration
   /** Width of the canvas in pixels. Default: 1080 */
@@ -187,6 +197,28 @@ public class Configuration {
   /** Colour mode for cell border lines. Default: BORDER_COLOR_STATIC */
   private int cellBorderColorMode = BORDER_COLOR_STATIC;
 
+  // Glyph outline configuration
+  /** Outline style: OUTLINE_NONE, OUTLINE_SOLID, or OUTLINE_DASHED. Default: OUTLINE_NONE */
+  private int glyphOutlineStyle = OUTLINE_NONE;
+
+  /** Red channel of the glyph outline colour. Default: 255 (white) */
+  private int glyphOutlineR = 255;
+
+  /** Green channel of the glyph outline colour. Default: 255 (white) */
+  private int glyphOutlineG = 255;
+
+  /** Blue channel of the glyph outline colour. Default: 255 (white) */
+  private int glyphOutlineB = 255;
+
+  /** Stroke weight for the glyph outline in pixels. Default: 1.5 */
+  private float glyphOutlineWeight = 1.5f;
+
+  /** Dash length in pixels (OUTLINE_DASHED only). Default: 8 */
+  private float glyphOutlineDashLength = 8.0f;
+
+  /** Gap length in pixels (OUTLINE_DASHED only). Default: 4 */
+  private float glyphOutlineGapLength = 4.0f;
+
   /**
    * Creates a new Configuration with default values.
    */
@@ -278,6 +310,34 @@ public class Configuration {
   /** Returns the cell border colour mode ({@code BORDER_COLOR_STATIC} or {@code BORDER_COLOR_WAVE}).
    *  @return cell border colour mode */
   public int getCellBorderColorMode() { return cellBorderColorMode; }
+
+  /** Returns the glyph outline style (OUTLINE_NONE, OUTLINE_SOLID, or OUTLINE_DASHED).
+   *  @return the glyph outline style constant */
+  public int getGlyphOutlineStyle()  { return glyphOutlineStyle; }
+
+  /** Returns the red channel of the glyph outline colour (0-255).
+   *  @return red channel */
+  public int getGlyphOutlineRed()    { return glyphOutlineR; }
+
+  /** Returns the green channel of the glyph outline colour (0-255).
+   *  @return green channel */
+  public int getGlyphOutlineGreen()  { return glyphOutlineG; }
+
+  /** Returns the blue channel of the glyph outline colour (0-255).
+   *  @return blue channel */
+  public int getGlyphOutlineBlue()   { return glyphOutlineB; }
+
+  /** Returns the glyph outline stroke weight in pixels.
+   *  @return stroke weight */
+  public float getGlyphOutlineWeight()     { return glyphOutlineWeight; }
+
+  /** Returns the dash length in pixels (used when style is OUTLINE_DASHED).
+   *  @return dash length in pixels */
+  public float getGlyphOutlineDashLength() { return glyphOutlineDashLength; }
+
+  /** Returns the gap length in pixels (used when style is OUTLINE_DASHED).
+   *  @return gap length in pixels */
+  public float getGlyphOutlineGapLength()  { return glyphOutlineGapLength; }
 
   /** Returns the wave speed multiplier.
    *  @return the wave speed multiplier */
@@ -1024,6 +1084,64 @@ public class Configuration {
   }
 
   /**
+   * Sets the glyph outline style.
+   *
+   * @param style {@code OUTLINE_NONE}, {@code OUTLINE_SOLID}, or {@code OUTLINE_DASHED}
+   * @return this instance for method chaining
+   */
+  public Configuration setGlyphOutlineStyle(int style) {
+    if (style == OUTLINE_SOLID || style == OUTLINE_DASHED || style == OUTLINE_DASHED_ONLY) {
+      this.glyphOutlineStyle = style;
+    } else {
+      this.glyphOutlineStyle = OUTLINE_NONE;
+    }
+    onChange("glyphOutlineStyle", this.glyphOutlineStyle);
+    return this;
+  }
+
+  /**
+   * Sets the glyph outline colour.
+   *
+   * @param r red channel (0-255)
+   * @param g green channel (0-255)
+   * @param b blue channel (0-255)
+   * @return this instance for method chaining
+   */
+  public Configuration setGlyphOutlineColor(int r, int g, int b) {
+    this.glyphOutlineR = Math.max(0, Math.min(255, r));
+    this.glyphOutlineG = Math.max(0, Math.min(255, g));
+    this.glyphOutlineB = Math.max(0, Math.min(255, b));
+    onChange("glyphOutlineColor", r + "," + g + "," + b);
+    return this;
+  }
+
+  /**
+   * Sets the glyph outline stroke weight.
+   *
+   * @param weight stroke weight in pixels (must be positive)
+   * @return this instance for method chaining
+   */
+  public Configuration setGlyphOutlineWeight(float weight) {
+    if (weight > 0) { this.glyphOutlineWeight = weight; }
+    onChange("glyphOutlineWeight", this.glyphOutlineWeight);
+    return this;
+  }
+
+  /**
+   * Sets the dash and gap lengths for {@code OUTLINE_DASHED}.
+   *
+   * @param dashLength length of each visible dash in pixels (must be positive)
+   * @param gapLength  length of each gap between dashes in pixels (must be positive)
+   * @return this instance for method chaining
+   */
+  public Configuration setGlyphOutlineDash(float dashLength, float gapLength) {
+    if (dashLength > 0) this.glyphOutlineDashLength = dashLength;
+    if (gapLength  > 0) this.glyphOutlineGapLength  = gapLength;
+    onChange("glyphOutlineDash", dashLength + "/" + gapLength);
+    return this;
+  }
+
+  /**
    * Loads configuration from a JSON object.
    * 
    * This method parses a JSONObject and applies its values to this
@@ -1143,6 +1261,33 @@ public class Configuration {
       if (cb.hasKey("colorMode")) {
         int m = cb.getInt("colorMode", cellBorderColorMode);
         cellBorderColorMode = (m == BORDER_COLOR_WAVE) ? BORDER_COLOR_WAVE : BORDER_COLOR_STATIC;
+      }
+    }
+
+    // Load glyph outline configuration
+    if (json.hasKey("glyphOutline")) {
+      JSONObject go = json.getJSONObject("glyphOutline");
+      if (go.hasKey("style")) {
+        String styleStr = go.getString("style", "none").toLowerCase();
+        if      (styleStr.equals("solid"))        glyphOutlineStyle = OUTLINE_SOLID;
+        else if (styleStr.equals("dashed"))        glyphOutlineStyle = OUTLINE_DASHED;
+        else if (styleStr.equals("dashed-only"))   glyphOutlineStyle = OUTLINE_DASHED_ONLY;
+        else                                       glyphOutlineStyle = OUTLINE_NONE;
+      }
+      if (go.hasKey("r"))          glyphOutlineR          = Math.max(0, Math.min(255, go.getInt("r", glyphOutlineR)));
+      if (go.hasKey("g"))          glyphOutlineG          = Math.max(0, Math.min(255, go.getInt("g", glyphOutlineG)));
+      if (go.hasKey("b"))          glyphOutlineB          = Math.max(0, Math.min(255, go.getInt("b", glyphOutlineB)));
+      if (go.hasKey("weight")) {
+        float w = go.getFloat("weight", glyphOutlineWeight);
+        if (w > 0) glyphOutlineWeight = w;
+      }
+      if (go.hasKey("dashLength")) {
+        float d = go.getFloat("dashLength", glyphOutlineDashLength);
+        if (d > 0) glyphOutlineDashLength = d;
+      }
+      if (go.hasKey("gapLength")) {
+        float g = go.getFloat("gapLength", glyphOutlineGapLength);
+        if (g > 0) glyphOutlineGapLength = g;
       }
     }
 
@@ -1755,6 +1900,54 @@ public class Configuration {
       config.cellBorderColorMode = (colorMode == Configuration.BORDER_COLOR_WAVE)
                                     ? Configuration.BORDER_COLOR_WAVE
                                     : Configuration.BORDER_COLOR_STATIC;
+      return this;
+    }
+
+    /**
+     * Configures a solid glyph outline drawn over each cell character.
+     *
+     * <p>In Processing, {@code text()} ignores stroke — this is the only way
+     * to add a stroke colour to a letterform.</p>
+     *
+     * @param r      red channel (0-255)
+     * @param g      green channel (0-255)
+     * @param b      blue channel (0-255)
+     * @param weight stroke weight in pixels
+     * @return this builder for method chaining
+     */
+    public Builder glyphOutlineSolid(int r, int g, int b, float weight) {
+      config.glyphOutlineStyle  = Configuration.OUTLINE_SOLID;
+      config.glyphOutlineR      = Math.max(0, Math.min(255, r));
+      config.glyphOutlineG      = Math.max(0, Math.min(255, g));
+      config.glyphOutlineB      = Math.max(0, Math.min(255, b));
+      config.glyphOutlineWeight = weight > 0 ? weight : 1.5f;
+      return this;
+    }
+
+    /**
+     * Configures a dashed glyph outline drawn over each cell character.
+     *
+     * <p>Each sub-contour (outer shape and inner counter-forms such as the
+     * triangle of 'A' or the bowl of 'B') is walked independently, so no
+     * connector line appears between the outer and inner paths.</p>
+     *
+     * @param r          red channel (0-255)
+     * @param g          green channel (0-255)
+     * @param b          blue channel (0-255)
+     * @param weight     stroke weight in pixels
+     * @param dashLength length of each visible dash in pixels
+     * @param gapLength  length of each gap in pixels
+     * @return this builder for method chaining
+     */
+    public Builder glyphOutlineDashed(int r, int g, int b, float weight,
+                                      float dashLength, float gapLength) {
+      config.glyphOutlineStyle      = Configuration.OUTLINE_DASHED;
+      config.glyphOutlineR          = Math.max(0, Math.min(255, r));
+      config.glyphOutlineG          = Math.max(0, Math.min(255, g));
+      config.glyphOutlineB          = Math.max(0, Math.min(255, b));
+      config.glyphOutlineWeight     = weight > 0 ? weight : 1.5f;
+      config.glyphOutlineDashLength = dashLength > 0 ? dashLength : 8f;
+      config.glyphOutlineGapLength  = gapLength  > 0 ? gapLength  : 4f;
       return this;
     }
 

@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 0.2.4
+ * @version 0.2.5
  * @since 1.0.0
  */
 
@@ -29,6 +29,8 @@ import algorithmic.typography.core.WaveFunction;
 import algorithmic.typography.core.WavePresets;
 import algorithmic.typography.system.DesignSystem;
 import algorithmic.typography.system.VibePreset;
+import algorithmic.typography.render.TypeDNAProfile;
+import algorithmic.typography.render.GlyphExtractor;
 
 /**
  * The main class for the Algorithmic Typography library.
@@ -86,7 +88,7 @@ import algorithmic.typography.system.VibePreset;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 0.2.4
+ * @version 0.2.5
  * @see Configuration
  * @see WaveEngine
  */
@@ -100,6 +102,9 @@ public class AlgorithmicTypography {
   
   // Wave engine for mathematical calculations
   private WaveEngine waveEngine;
+
+  // Lazily instantiated for glyph outline rendering (null when unused)
+  private GlyphExtractor glyphExtractor;
   
   // Animation state
   private int startTime;
@@ -523,6 +528,33 @@ public class AlgorithmicTypography {
     float borderWeight    = config.getCellBorderWeight();
     int   borderColorMode = config.getCellBorderColorMode();
     parent.noStroke();
+
+    // Glyph outline setup
+    int   outlineStyle  = config.getGlyphOutlineStyle();
+    float[][] outlineSegs = null;
+    PShape outlineFillShape = null;
+    if (outlineStyle != Configuration.OUTLINE_NONE) {
+      if (glyphExtractor == null) {
+        glyphExtractor = new GlyphExtractor(parent, "Helvetica", 72);
+        glyphExtractor.setFlatness(0.3f);
+      }
+    }
+    // Use PShape whenever extractor is available so font/centering stays consistent
+    // when cycling between None/Solid/Dashed at runtime.
+    if (glyphExtractor != null && !ch.isEmpty()) {
+      outlineFillShape = ch.length() == 1
+          ? glyphExtractor.extractChar(ch.charAt(0), textSize)
+          : glyphExtractor.extractString(ch, textSize);
+      outlineFillShape.disableStyle();
+      if (outlineStyle == Configuration.OUTLINE_DASHED
+          || outlineStyle == Configuration.OUTLINE_DASHED_ONLY) {
+        outlineSegs = ch.length() == 1
+            ? glyphExtractor.getDashedOutline(ch.charAt(0), textSize,
+                config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength())
+            : glyphExtractor.getDashedOutline(ch, textSize,
+                config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength());
+      }
+    }
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
@@ -537,7 +569,44 @@ public class AlgorithmicTypography {
           cx += off.x;
           cy += off.y;
         }
-        parent.text(ch, cx, cy);
+        if (outlineFillShape != null && outlineStyle != Configuration.OUTLINE_DASHED_ONLY) {
+          // Render fill as shape — same Helvetica font and centerOf() centering as the outline
+          PVector fillOrigin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+          parent.noStroke();
+          parent.pushMatrix();
+          parent.translate(fillOrigin.x, fillOrigin.y);
+          parent.shape(outlineFillShape, 0, 0);
+          parent.popMatrix();
+        } else if (outlineFillShape == null) {
+          parent.text(ch, cx, cy);
+        }
+
+        // Glyph outline overlay
+        if (outlineStyle != Configuration.OUTLINE_NONE && !ch.isEmpty()) {
+          parent.colorMode(PApplet.RGB, 255);
+          parent.stroke(config.getGlyphOutlineRed(),
+                        config.getGlyphOutlineGreen(),
+                        config.getGlyphOutlineBlue(), clampedAlpha);
+          parent.strokeWeight(config.getGlyphOutlineWeight());
+          parent.noFill();
+          if (outlineStyle == Configuration.OUTLINE_SOLID) {
+            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+            parent.pushMatrix();
+            parent.translate(origin.x, origin.y);
+            parent.shape(outlineFillShape, 0, 0);
+            parent.popMatrix();
+          } else if (outlineSegs != null) {
+            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+            for (float[] seg : outlineSegs) {
+              parent.line(origin.x + seg[0], origin.y + seg[1],
+                          origin.x + seg[2], origin.y + seg[3]);
+            }
+          }
+          parent.noStroke();
+          parent.colorMode(PApplet.HSB, 360, 255, 255, 255);
+          parent.fill(h, s, b, clampedAlpha);
+        }
+
         if (borderSides != 0) {
           parent.strokeWeight(borderWeight);
           if (borderColorMode == Configuration.BORDER_COLOR_WAVE) {
@@ -595,6 +664,33 @@ public class AlgorithmicTypography {
     float borderWeight    = config.getCellBorderWeight();
     int   borderColorMode = config.getCellBorderColorMode();
     parent.noStroke();
+
+    // Glyph outline setup
+    int   outlineStyle  = config.getGlyphOutlineStyle();
+    float[][] outlineSegs = null;
+    PShape outlineFillShape = null;
+    if (outlineStyle != Configuration.OUTLINE_NONE) {
+      if (glyphExtractor == null) {
+        glyphExtractor = new GlyphExtractor(parent, "Helvetica", 72);
+        glyphExtractor.setFlatness(0.3f);
+      }
+    }
+    // Use PShape whenever extractor is available so font/centering stays consistent
+    // when cycling between None/Solid/Dashed at runtime.
+    if (glyphExtractor != null && !ch.isEmpty()) {
+      outlineFillShape = ch.length() == 1
+          ? glyphExtractor.extractChar(ch.charAt(0), textSize)
+          : glyphExtractor.extractString(ch, textSize);
+      outlineFillShape.disableStyle();
+      if (outlineStyle == Configuration.OUTLINE_DASHED
+          || outlineStyle == Configuration.OUTLINE_DASHED_ONLY) {
+        outlineSegs = ch.length() == 1
+            ? glyphExtractor.getDashedOutline(ch.charAt(0), textSize,
+                config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength())
+            : glyphExtractor.getDashedOutline(ch, textSize,
+                config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength());
+      }
+    }
     
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
@@ -609,7 +705,44 @@ public class AlgorithmicTypography {
           cx += off.x;
           cy += off.y;
         }
-        parent.text(ch, cx, cy);
+        if (outlineFillShape != null && outlineStyle != Configuration.OUTLINE_DASHED_ONLY) {
+          // Render fill as shape — same Helvetica font and centerOf() centering as the outline
+          PVector fillOrigin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+          parent.noStroke();
+          parent.pushMatrix();
+          parent.translate(fillOrigin.x, fillOrigin.y);
+          parent.shape(outlineFillShape, 0, 0);
+          parent.popMatrix();
+        } else if (outlineFillShape == null) {
+          parent.text(ch, cx, cy);
+        }
+
+        // Glyph outline overlay
+        if (outlineStyle != Configuration.OUTLINE_NONE && !ch.isEmpty()) {
+          parent.colorMode(PApplet.RGB, 255);
+          parent.stroke(config.getGlyphOutlineRed(),
+                        config.getGlyphOutlineGreen(),
+                        config.getGlyphOutlineBlue(), clampedAlpha);
+          parent.strokeWeight(config.getGlyphOutlineWeight());
+          parent.noFill();
+          if (outlineStyle == Configuration.OUTLINE_SOLID) {
+            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+            parent.pushMatrix();
+            parent.translate(origin.x, origin.y);
+            parent.shape(outlineFillShape, 0, 0);
+            parent.popMatrix();
+          } else if (outlineSegs != null) {
+            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+            for (float[] seg : outlineSegs) {
+              parent.line(origin.x + seg[0], origin.y + seg[1],
+                          origin.x + seg[2], origin.y + seg[3]);
+            }
+          }
+          parent.noStroke();
+          parent.colorMode(PApplet.HSB, 360, 255, 255, 255);
+          parent.fill(hue, sat, bri, clampedAlpha);
+        }
+
         if (borderSides != 0) {
           parent.strokeWeight(borderWeight);
           if (borderColorMode == Configuration.BORDER_COLOR_WAVE) {
@@ -931,6 +1064,55 @@ public class AlgorithmicTypography {
     if (motion != null) {
       config.setCellMotion(motion);
     }
+  }
+
+  /**
+   * Applies a {@link TypeDNAProfile} as an animation preset.
+   *
+   * <p>Maps each of the four Type DNA measurements to a corresponding
+   * animation or wave parameter:</p>
+   * <ul>
+   *   <li>{@code stressAxis} → {@link Configuration#setWaveAngle(float)}
+   *       so the wave propagates along the typeface's own optical axis</li>
+   *   <li>{@code counterRatio} → wave amplitude range — open glyphs breathe
+   *       more; dense glyphs move less</li>
+   *   <li>{@code strokeWeight} (normalised to [0, 1] assuming max ~100 px) →
+   *       brightness minimum — heavier strokes stay brighter</li>
+   * </ul>
+   *
+   * <pre>
+   * GlyphExtractor ge = new GlyphExtractor(this, "Helvetica", 72);
+   * TypeDNAProfile profile = ge.buildTypeDNAProfile(
+   *     new char[]{'A','B','H','O','R'}, 600);
+   * at.applyTypeDNA(profile);
+   * </pre>
+   *
+   * @param profile the TypeDNAProfile to apply; must not be {@code null}
+   * @return this instance for method chaining
+   */
+  public AlgorithmicTypography applyTypeDNA(TypeDNAProfile profile) {
+    if (profile == null) {
+      parent.println("applyTypeDNA: profile is null — no changes applied");
+      return this;
+    }
+    // Wave propagates along the typeface's own stress axis
+    config.setWaveAngle(profile.getStressAxis());
+
+    // Counter ratio scales the amplitude range: open glyphs get a wider range
+    float ratio     = PApplet.constrain(profile.getCounterRatio(), 0, 1);
+    float ampBase   = 80f;
+    float ampSpread = 200f * ratio;
+    config.setWaveAmplitudeRange(-(ampBase + ampSpread), ampBase + ampSpread);
+
+    // Stroke weight (assumed max ~120 px for 600-pt font) drives brightness floor
+    float swNorm = PApplet.constrain(profile.getStrokeWeight() / 120f, 0, 1);
+    int   briMin = (int)(20 + swNorm * 80);
+    config.setBrightnessRange(briMin, 255);
+
+    parent.println("TypeDNA applied: angle=" + profile.getStressAxis() + "° "
+        + "counterRatio=" + String.format("%.3f", profile.getCounterRatio()) + " "
+        + "strokeWeight=" + String.format("%.1f", profile.getStrokeWeight()) + "px");
+    return this;
   }
 
   /**

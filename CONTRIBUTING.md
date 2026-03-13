@@ -93,18 +93,23 @@ private void drawGrid(float tilesX, float tilesY) {
 
 #### Priority Areas
 
-High-impact areas right now (v0.2.5 targets — Boolean Operations & Path Utilities):
+All v0.2.5 targets are shipped. High-impact areas for v0.2.6 (Parameter Legibility):
 
-- [ ] **`GlyphExtractor.union/intersect/subtract`** — boolean operations on overlapping letterform outlines; closes the last practical gap with Geomerative
-- [ ] **`textOnPath`** — lay out a string of glyphs along any arbitrary extracted contour
-- [ ] **`getTangent`** — direction vector at a normalised arc-length position for orienting objects along an outline
-- [ ] **`subdivide`** — increase tessellation density on demand for physics-heavy sketches
-- [ ] **Normalised parameter overloads** — `setStrength(0.6)` alongside raw-value setters; named intensity presets (`GENTLE`, `MODERATE`, `STRONG`) for `MagneticMotion` and `RippleMotion`
+- [x] ~~**`GlyphExtractor.union/intersect/subtract`**~~ ✅ — shipped in v0.2.5
+- [x] ~~**`textOnPath`**~~ ✅ — shipped in v0.2.5
+- [x] ~~**`getTangent`**~~ ✅ — shipped in v0.2.5
+- [x] ~~**`subdivide`**~~ ✅ — shipped in v0.2.5
+- [x] ~~**`glyphOutline` config.json block**~~ ✅ — shipped in v0.2.5 (`OUTLINE_NONE/SOLID/DASHED`, solid + dashed per-contour rendering in `drawGrid`/`drawGridAt`)
+- [x] ~~**`GlyphOutline` example**~~ ✅ — shipped in v0.2.5 (config-driven showcase; `O` to cycle outline modes)
+- [ ] **Normalised 0–1 overloads** — `setStrength(0.6)` alongside every raw-value setter; maps internally to a sensible physical range
+- [ ] **Named intensity presets** — `SUBTLE`, `EXPRESSIVE`, `FULL` constants for `AudioBridge` semantic mapping; `GENTLE`, `MODERATE`, `STRONG` for `MagneticMotion` and `RippleMotion`
+- [ ] **`AudioBridge` semantic mapping** — `audio.mapBassTo(config::setWaveSpeed, AudioBridge.SUBTLE)` replaces bare numeric ranges
+- [ ] **`PerlinVertexMotion`** — per-vertex Perlin noise displacement applied directly to extracted glyph outline vertices; amplitude, spatial scale, and time speed configurable per character
 - [ ] **Documentation** — tutorials, video guides, type-specimen showcase examples
 
 _`waveType` in config.json, cell border system, and `waveAngle` in all example configs are implemented in v0.2.4._
 
-#### GlyphExtractor — Current Status (v0.2.3)
+#### GlyphExtractor — Current Status (v0.2.5)
 
 The `GlyphExtractor` class extracts outline data from any system font at any size. All methods below are currently implemented:
 
@@ -127,14 +132,25 @@ The `GlyphExtractor` class extracts outline data from any system font at any siz
 - ~~`sampleAlongPath(char, float, float)`~~ ✅ — point at a normalised arc-length position (v0.2.3)
 - ~~`getBoundingContour(char[], float, float)`~~ ✅ — union outline of multiple characters as one closed path (v0.2.3)
 - ~~`of(char, float)` / `GlyphBuilder`~~ ✅ — fluent chainable builder for common draw patterns (v0.2.3)
+- ~~`union(char, char, float)` / `getUnionContour(char, char, float)`~~ ✅ — AWT `Area` boolean union of two letterforms; returns `PShape` or `PVector[]` (v0.2.5)
+- ~~`intersect(char, char, float)` / `getIntersectContour(char, char, float)`~~ ✅ — boolean intersection (v0.2.5)
+- ~~`subtract(char, char, float)` / `getSubtractContour(char, char, float)`~~ ✅ — boolean subtraction (v0.2.5)
+- ~~`getTangent(char, float, float)`~~ ✅ — unit direction vector at a normalised arc-length position; orients objects travelling along an outline (v0.2.5)
+- ~~`getDashedOutline(char, float, float, float)`~~ ✅ — arc-length-sampled dashed stroke as `PVector[]` segments; **per-contour bug fixed in v0.2.5** (each sub-contour walks independently — no cross-connecting line between outer and inner paths) (v0.2.5)
+- ~~`subdivide(char, float, int)`~~ ✅ — increase tessellation density on demand for physics-heavy sketches (v0.2.5)
+- ~~`textOnPath(String, PVector[], float)`~~ ✅ — lay out a string of glyphs along any arbitrary extracted contour (v0.2.5)
+- ~~`getStressAxis(char, float)`~~ ✅ — PCA-derived stress angle of the letterform (v0.2.5)
+- ~~`getOpticalCentroid(char, float)`~~ ✅ — area-weighted centroid of the filled outline (v0.2.5)
+- ~~`getCounterRatio(char, float)`~~ ✅ — ratio of counter (hole) area to total glyph area (v0.2.5)
+- ~~`getStrokeWeight(char, float)`~~ ✅ — estimated average stroke width from area / perimeter (v0.2.5)
+- ~~`buildTypeDNAProfile(char, float)`~~ ✅ — aggregates all four Type DNA metrics into a `TypeDNAProfile` (serialisable to JSON) (v0.2.5)
 
 **Ideas for new methods:**
 
-- `getTangent(char, float, float)` — direction vector at a normalised arc-length position; needed for orienting objects along an outline
-- `textOnPath(String, PVector[], float)` — lay out a string of glyphs along any arbitrary curve
-- `subdivide(char, float, int)` — increase tessellation density on demand for physics-heavy sketches
+- `PerlinVertexMotion` integration — apply per-vertex Perlin displacement directly to extracted outline vertices
+- Word / sentence layout mode — `textOnPath` variant that respects word spacing and optical kerning
 
-#### Configuration System — Current Status (v0.2.4)
+#### Configuration System — Current Status (v0.2.5)
 
 The `Configuration` class and its JSON schema are the primary interface between designers and the library. All parameters in the `config.json` file map 1-to-1 to fields in `Configuration` with matching getters, setters, Builder methods, `loadFromJSON`, `toJSON`, and `copy` implementations. Follow this pattern when adding any new parameter.
 
@@ -145,6 +161,7 @@ The `Configuration` class and its JSON schema are the primary interface between 
 - ~~`grid`~~ ✅ — `initialTilesX/Y`, `changedTilesX/Y`, `finalTilesX/Y`
 - ~~`colors`~~ ✅ — `hueMin/Max`, `saturationMin/Max`, `brightnessMin/Max`, `waveAmplitudeMin/Max`, `backgroundR/G/B`
 - ~~`cellBorder`~~ ✅ (v0.2.4) — `sides` (bitmask: `BORDER_TOP=1`, `BORDER_BOTTOM=2`, `BORDER_LEFT=4`, `BORDER_RIGHT=8`, `BORDER_ALL=15`), `r/g/b`, `weight`, `colorMode` (`BORDER_COLOR_STATIC=0`, `BORDER_COLOR_WAVE=1`)
+- ~~`glyphOutline`~~ ✅ (v0.2.5) — `style` (string: `"none"` / `"solid"` / `"dashed"`), `r/g/b`, `weight`, `dashLength`, `gapLength`; constants `OUTLINE_NONE=0`, `OUTLINE_SOLID=1`, `OUTLINE_DASHED=2`; seven getters; setters `setGlyphOutlineStyle(int)`, `setGlyphOutlineColor(int,int,int)`, `setGlyphOutlineWeight(float)`, `setGlyphOutlineDash(float,float)`; Builder methods `glyphOutlineSolid(r,g,b,weight)` and `glyphOutlineDashed(r,g,b,weight,dashLen,gapLen)`; rendering wired into `AlgorithmicTypography.drawGrid()` / `drawGridAt()` with lazy `GlyphExtractor` instantiation
 
 **Ideas for new config blocks:**
 

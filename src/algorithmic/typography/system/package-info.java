@@ -9,7 +9,7 @@
  * - VibePreset: Natural language to animation mapping
  * 
  * @author Michail Semoglou
- * @version 0.2.4
+ * @version 0.2.5
  * @since 1.0.0
  */
 package algorithmic.typography.system;

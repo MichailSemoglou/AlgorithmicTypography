@@ -1,0 +1,43 @@
+{
+  "canvas": {
+    "width": 1080,
+    "height": 1080
+  },
+  "animation": {
+    "character": "A",
+    "textScale": 0.85,
+    "waveSpeed": 0.6,
+    "waveAngle": 0,
+    "waveType": "SINE",
+    "waveMultiplierMin": 0,
+    "waveMultiplierMax": 1.5
+  },
+  "grid": {
+    "initialTilesX": 1,
+    "initialTilesY": 1,
+    "changedTilesX": 1,
+    "changedTilesY": 1,
+    "finalTilesX": 1,
+    "finalTilesY": 1
+  },
+  "colors": {
+    "brightnessMin": 120,
+    "brightnessMax": 220,
+    "saturationMin": 180,
+    "saturationMax": 220,
+    "hueMin": 200,
+    "hueMax": 260,
+    "backgroundR": 0,
+    "backgroundG": 0,
+    "backgroundB": 0
+  },
+  "glyphOutline": {
+    "style": "dashed",
+    "r": 255,
+    "g": 80,
+    "b": 0,
+    "weight": 3.0,
+    "dashLength": 10.0,
+    "gapLength": 5.0
+  }
+}
