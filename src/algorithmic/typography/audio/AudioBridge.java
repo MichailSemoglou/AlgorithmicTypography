@@ -10,7 +10,7 @@
  *   Sketch > Import Library > Sound
  *
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @since 1.0.0
  */
 
@@ -48,6 +48,34 @@ import java.util.function.Consumer;
  * </pre>
  */
 public class AudioBridge {
+
+  // ── Semantic intensity constants ─────────────────────────────
+
+  /**
+   * Subtle intensity: conservative ranges; audio drives only minor variation.
+   * Ideal for ambient, background typography.
+   */
+  public static final int SUBTLE     = 0;
+
+  /**
+   * Expressive intensity: balanced ranges; audio drives clear but controlled variation.
+   * Good all-purpose default for performances.
+   */
+  public static final int EXPRESSIVE = 1;
+
+  /**
+   * Full intensity: wide ranges; audio drives the full parameter space.
+   * Use for high-energy, maximally reactive visuals.
+   */
+  public static final int FULL       = 2;
+
+  // ── Semantic range tables (per-band, per-intensity) ───────────
+
+  // Index [intensity][0]=min, [intensity][1]=max
+  private static final float[][] BASS_RANGES    = {{0.8f, 1.5f}, {0.3f, 3.0f}, {0.0f, 6.0f}};
+  private static final float[][] MID_RANGES     = {{70f, 140f},  {30f, 200f},  {0f, 255f}};
+  private static final float[][] TREBLE_RANGES  = {{150f, 220f}, {80f, 240f},  {50f, 255f}};
+  private static final float[][] OVERALL_RANGES = {{0.5f, 1.5f}, {0.2f, 3.0f}, {0.0f, 6.0f}};
 
   private final PApplet parent;
   private final ObservableConfiguration config;
@@ -358,6 +386,80 @@ public class AudioBridge {
    */
   public void mapOverallTo(Consumer<Float> setter, float min, float max) {
     mappings.put("overall", new ParameterMapping(setter, min, max));
+  }
+
+  // ── Semantic overloads ──────────────────────────────────────────
+
+  /**
+   * Maps bass frequency to a parameter using a semantic intensity level.
+   *
+   * <p>Applied ranges per intensity:
+   * <ul>
+   *   <li>{@link #SUBTLE}     → [0.8, 1.5]  (subtle variation around unity)</li>
+   *   <li>{@link #EXPRESSIVE} → [0.3, 3.0]  (expressive but controlled)</li>
+   *   <li>{@link #FULL}       → [0.0, 6.0]  (full range, maximally reactive)</li>
+   * </ul></p>
+   *
+   * @param setter    the parameter setter (e.g., {@code config::setWaveSpeed})
+   * @param intensity one of {@link #SUBTLE}, {@link #EXPRESSIVE}, {@link #FULL}
+   */
+  public void mapBassTo(Consumer<Float> setter, int intensity) {
+    int i = PApplet.constrain(intensity, SUBTLE, FULL);
+    mappings.put("bass", new ParameterMapping(setter, BASS_RANGES[i][0], BASS_RANGES[i][1]));
+  }
+
+  /**
+   * Maps mid frequency to a parameter using a semantic intensity level.
+   *
+   * <p>Applied ranges per intensity:
+   * <ul>
+   *   <li>{@link #SUBTLE}     → [70, 140]</li>
+   *   <li>{@link #EXPRESSIVE} → [30, 200]</li>
+   *   <li>{@link #FULL}       → [0, 255]</li>
+   * </ul></p>
+   *
+   * @param setter    the parameter setter (e.g., {@code config::setSaturationMax})
+   * @param intensity one of {@link #SUBTLE}, {@link #EXPRESSIVE}, {@link #FULL}
+   */
+  public void mapMidTo(Consumer<Float> setter, int intensity) {
+    int i = PApplet.constrain(intensity, SUBTLE, FULL);
+    mappings.put("mid", new ParameterMapping(setter, MID_RANGES[i][0], MID_RANGES[i][1]));
+  }
+
+  /**
+   * Maps treble frequency to a parameter using a semantic intensity level.
+   *
+   * <p>Applied ranges per intensity:
+   * <ul>
+   *   <li>{@link #SUBTLE}     → [150, 220]</li>
+   *   <li>{@link #EXPRESSIVE} → [80, 240]</li>
+   *   <li>{@link #FULL}       → [50, 255]</li>
+   * </ul></p>
+   *
+   * @param setter    the parameter setter (e.g., {@code config::setBrightnessMax})
+   * @param intensity one of {@link #SUBTLE}, {@link #EXPRESSIVE}, {@link #FULL}
+   */
+  public void mapTrebleTo(Consumer<Float> setter, int intensity) {
+    int i = PApplet.constrain(intensity, SUBTLE, FULL);
+    mappings.put("treble", new ParameterMapping(setter, TREBLE_RANGES[i][0], TREBLE_RANGES[i][1]));
+  }
+
+  /**
+   * Maps overall audio level to a parameter using a semantic intensity level.
+   *
+   * <p>Applied ranges per intensity:
+   * <ul>
+   *   <li>{@link #SUBTLE}     → [0.5, 1.5]</li>
+   *   <li>{@link #EXPRESSIVE} → [0.2, 3.0]</li>
+   *   <li>{@link #FULL}       → [0.0, 6.0]</li>
+   * </ul></p>
+   *
+   * @param setter    the parameter setter
+   * @param intensity one of {@link #SUBTLE}, {@link #EXPRESSIVE}, {@link #FULL}
+   */
+  public void mapOverallTo(Consumer<Float> setter, int intensity) {
+    int i = PApplet.constrain(intensity, SUBTLE, FULL);
+    mappings.put("overall", new ParameterMapping(setter, OVERALL_RANGES[i][0], OVERALL_RANGES[i][1]));
   }
 
   /**

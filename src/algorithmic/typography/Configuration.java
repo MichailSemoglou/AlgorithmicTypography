@@ -6,7 +6,7 @@
  * settings.
  *
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @since 1.0.0
  */
 
@@ -17,6 +17,7 @@ import algorithmic.typography.core.CellMotion;
 import algorithmic.typography.core.CircularMotion;
 import algorithmic.typography.core.FlowFieldMotion;
 import algorithmic.typography.core.GravityMotion;
+import algorithmic.typography.core.GridStripMotion;
 import algorithmic.typography.core.LissajousMotion;
 import algorithmic.typography.core.MagneticMotion;
 import algorithmic.typography.core.OrbitalMotion;
@@ -168,6 +169,9 @@ public class Configuration {
   /** Optional per-glyph motion applied during rendering. Null = no motion. */
   private CellMotion cellMotion = null;
 
+  /** Optional grid-strip motion applied during rendering. Null = no strip motion. */
+  private GridStripMotion gridStripMotion = null;
+
   // Background color (RGB, 0-255 per channel)
   /** Red channel of the background colour. Default: 0 (black) */
   private int backgroundR = 0;
@@ -273,6 +277,10 @@ public class Configuration {
   /** Returns the optional per-glyph cell motion, or null if none is set.
    *  @return the CellMotion instance, or null */
   public CellMotion getCellMotion() { return cellMotion; }
+
+  /** Returns the optional grid-strip motion, or null if none is set.
+   *  @return the GridStripMotion instance, or null */
+  public GridStripMotion getGridStripMotion() { return gridStripMotion; }
 
   /** Returns the red channel of the background colour (0-255).
    *  @return background red channel */
@@ -974,6 +982,18 @@ public class Configuration {
   }
 
   /**
+   * Sets the grid-strip motion applied across rows and/or columns during rendering.
+   * Pass {@code null} to disable strip motion.
+   *
+   * @param gsm the GridStripMotion instance, or null to disable
+   * @return this instance for method chaining
+   */
+  public Configuration setGridStripMotion(GridStripMotion gsm) {
+    this.gridStripMotion = gsm;
+    return this;
+  }
+
+  /**
    * Sets the background colour using separate R, G, B channels (0-255 each).
    *
    * @param r red channel (0-255)
@@ -1291,6 +1311,20 @@ public class Configuration {
       }
     }
 
+    // Load grid-strip motion configuration
+    if (json.hasKey("gridStripMotion")) {
+      JSONObject gsm = json.getJSONObject("gridStripMotion");
+      GridStripMotion strip = new GridStripMotion();
+      if (gsm.hasKey("axis"))          strip.setAxis(gsm.getInt("axis", GridStripMotion.ROW));
+      if (gsm.hasKey("amplitude"))     strip.setAmplitude(gsm.getFloat("amplitude", 0.3f));
+      if (gsm.hasKey("phaseStep"))     strip.setPhaseStep(gsm.getFloat("phaseStep", 0.3f));
+      if (gsm.hasKey("rowSpeed"))      strip.setRowSpeed(gsm.getFloat("rowSpeed", 1.0f));
+      if (gsm.hasKey("columnSpeed"))   strip.setColumnSpeed(gsm.getFloat("columnSpeed", 1.0f));
+      if (gsm.hasKey("rowWaveType"))   strip.setRowWaveType(gsm.getString("rowWaveType", "SINE"));
+      if (gsm.hasKey("columnWaveType")) strip.setColumnWaveType(gsm.getString("columnWaveType", "SINE"));
+      this.gridStripMotion = strip;
+    }
+
     // Validate overall configuration
     validate();
   }
@@ -1525,6 +1559,19 @@ public class Configuration {
       json.setJSONObject("cellMotion", motionJson);
     }
 
+    // Serialize grid-strip motion (if one has been configured)
+    if (gridStripMotion != null) {
+      JSONObject gsmJson = new JSONObject();
+      gsmJson.setInt("axis",         gridStripMotion.getAxis());
+      gsmJson.setFloat("amplitude",  gridStripMotion.getAmplitude());
+      gsmJson.setFloat("phaseStep",  gridStripMotion.getPhaseStep());
+      gsmJson.setFloat("rowSpeed",   gridStripMotion.getRowSpeed());
+      gsmJson.setFloat("columnSpeed", gridStripMotion.getColumnSpeed());
+      gsmJson.setString("rowWaveType",    gridStripMotion.getRowWaveType());
+      gsmJson.setString("columnWaveType", gridStripMotion.getColumnWaveType());
+      json.setJSONObject("gridStripMotion", gsmJson);
+    }
+
     return json;
   }
   
@@ -1573,6 +1620,7 @@ public class Configuration {
     copy.cellBorderB         = this.cellBorderB;
     copy.cellBorderWeight    = this.cellBorderWeight;
     copy.cellBorderColorMode = this.cellBorderColorMode;
+    copy.gridStripMotion     = this.gridStripMotion;
     return copy;
   }
   
@@ -1960,6 +2008,17 @@ public class Configuration {
     public Configuration build() {
       config.validate();
       return config;
+    }
+
+    /**
+     * Sets the grid-strip motion for the configuration.
+     *
+     * @param gsm the GridStripMotion instance (pass {@code null} to disable)
+     * @return this builder for method chaining
+     */
+    public Builder gridStripMotion(GridStripMotion gsm) {
+      config.gridStripMotion = gsm;
+      return this;
     }
   }
 }

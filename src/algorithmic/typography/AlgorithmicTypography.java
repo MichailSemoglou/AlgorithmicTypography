@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @since 1.0.0
  */
 
@@ -18,6 +18,7 @@ import algorithmic.typography.core.CellMotion;
 import algorithmic.typography.core.CircularMotion;
 import algorithmic.typography.core.FlowFieldMotion;
 import algorithmic.typography.core.GravityMotion;
+import algorithmic.typography.core.GridStripMotion;
 import algorithmic.typography.core.LissajousMotion;
 import algorithmic.typography.core.MagneticMotion;
 import algorithmic.typography.core.OrbitalMotion;
@@ -88,7 +89,7 @@ import algorithmic.typography.render.GlyphExtractor;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @see Configuration
  * @see WaveEngine
  */
@@ -184,6 +185,7 @@ public class AlgorithmicTypography {
       if (json != null) {
         config.loadFromJSON(json);
         buildCellMotionFromJSON(json);
+        buildGridStripMotionFromJSON(json);
         parent.println("Configuration loaded successfully from " + filename);
       } else {
         parent.println("Warning: Could not load configuration file " + filename + ". Using defaults.");
@@ -519,6 +521,7 @@ public class AlgorithmicTypography {
     
     float clampedAlpha = Math.max(0, Math.min(255, alpha));
     CellMotion motion = config.getCellMotion();
+    GridStripMotion stripMotion = config.getGridStripMotion();
 
     // Border setup
     int   borderSides     = config.getCellBorderSides();
@@ -564,6 +567,11 @@ public class AlgorithmicTypography {
         parent.fill(h, s, b, clampedAlpha);
         float cx = x * tileW + tileW / 2;
         float cy = y * tileH + tileH / 2;
+        if (stripMotion != null) {
+          PVector soff = stripMotion.getStripOffset(x, y, (int)tilesX, (int)tilesY, tileW, tileH, parent.frameCount);
+          cx += soff.x;
+          cy += soff.y;
+        }
         if (motion != null) {
           PVector off = motion.getOffset(x, y, parent.frameCount);
           cx += off.x;
@@ -655,6 +663,7 @@ public class AlgorithmicTypography {
     
     float clampedAlpha = Math.max(0, Math.min(255, alpha));
     CellMotion motion = config.getCellMotion();
+    GridStripMotion stripMotion = config.getGridStripMotion();
 
     // Border setup
     int   borderSides     = config.getCellBorderSides();
@@ -700,6 +709,11 @@ public class AlgorithmicTypography {
         parent.fill(hue, sat, bri, clampedAlpha);
         float cx = ox + x * tileW + tileW / 2;
         float cy = oy + y * tileH + tileH / 2;
+        if (stripMotion != null) {
+          PVector soff = stripMotion.getStripOffset(x, y, (int)tilesX, (int)tilesY, tileW, tileH, parent.frameCount);
+          cx += soff.x;
+          cy += soff.y;
+        }
         if (motion != null) {
           PVector off = motion.getOffset(x, y, parent.frameCount);
           cx += off.x;
@@ -1064,6 +1078,51 @@ public class AlgorithmicTypography {
     if (motion != null) {
       config.setCellMotion(motion);
     }
+  }
+
+  /**
+   * Parses and installs a {@link GridStripMotion} from the JSON configuration object.
+   *
+   * <p>Called automatically from {@link #loadConfiguration(String)} when the JSON
+   * contains a {@code "gridStripMotion"} block.</p>
+   */
+  private void buildGridStripMotionFromJSON(JSONObject json) {
+    if (!json.hasKey("gridStripMotion")) return;
+    JSONObject g = json.getJSONObject("gridStripMotion");
+    if (g == null) return;
+
+    GridStripMotion strip = new GridStripMotion();
+    if (g.hasKey("axis"))           strip.setAxis(g.getInt("axis", GridStripMotion.ROW));
+    if (g.hasKey("amplitude"))      strip.setAmplitude(g.getFloat("amplitude", 0.3f));
+    if (g.hasKey("phaseStep"))      strip.setPhaseStep(g.getFloat("phaseStep", 0.3f));
+    if (g.hasKey("rowSpeed"))       strip.setRowSpeed(g.getFloat("rowSpeed", 1.0f));
+    if (g.hasKey("columnSpeed"))    strip.setColumnSpeed(g.getFloat("columnSpeed", 1.0f));
+    if (g.hasKey("rowWaveType"))    strip.setRowWaveType(g.getString("rowWaveType", "SINE"));
+    if (g.hasKey("columnWaveType")) strip.setColumnWaveType(g.getString("columnWaveType", "SINE"));
+    config.setGridStripMotion(strip);
+  }
+
+  /**
+   * Sets the grid-strip motion directly.
+   *
+   * <p>This provides a programmatic alternative to JSON configuration.
+   * Pass {@code null} to remove strip motion.</p>
+   *
+   * @param gsm the GridStripMotion instance, or {@code null} to disable
+   * @return this instance for method chaining
+   */
+  public AlgorithmicTypography setGridStripMotion(GridStripMotion gsm) {
+    config.setGridStripMotion(gsm);
+    return this;
+  }
+
+  /**
+   * Returns the currently active grid-strip motion, or {@code null} if none is set.
+   *
+   * @return the active {@link GridStripMotion}, or {@code null}
+   */
+  public GridStripMotion getGridStripMotion() {
+    return config.getGridStripMotion();
   }
 
   /**

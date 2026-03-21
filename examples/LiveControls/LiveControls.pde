@@ -18,7 +18,7 @@
  *   9/0 — Text scale down/up
  *   B   — Cycle cell border sides: None → Horizontal rules → All sides
  *   V   — Toggle cell border colour: Static ⇄ Wave (grid lines pulse with the wave)
- *   H   — Toggle control panel
+ *   H   — Toggle both panels
  *   R   — Restart
  *   S   — Toggle frame saving
  */
@@ -35,6 +35,7 @@ OSCBridge osc;
 Slider borderWeightSlider;
 int    borderSideMode  = 0;   // 0=NONE, 1=TOP+BOTTOM, 2=ALL
 boolean borderWaveMode = false;
+boolean showPanels     = true;
 
 // Layout: ControlPanel is 10,10 : 320 wide, 8 sliders
 // panelHeight = 24 + 10 + 8*(18+6) + 40 = 266  → bottom at y=276
@@ -78,25 +79,29 @@ void draw() {
   at.render();
   panel.draw();
 
-  // Border mini-panel
-  fill(0, 180);
-  noStroke();
-  rect(10, BORDER_PANEL_Y, BORDER_PANEL_W, 60, 6);
-  fill(255);
-  textAlign(LEFT, TOP);
-  textSize(12);
-  String[] sideLabels  = { "None", "Horiz rules", "All sides" };
-  text("BORDERS  sides:" + sideLabels[borderSideMode]
-     + "  colour:" + (borderWaveMode ? "Wave" : "Static")
-     + "  [B / V]",
-       20, BORDER_PANEL_Y + 6);
-  borderWeightSlider.display(g);
+  if (showPanels) {
+    // Border mini-panel
+    fill(0, 180);
+    noStroke();
+    rect(10, BORDER_PANEL_Y, BORDER_PANEL_W, 60, 6);
+    fill(255);
+    textAlign(LEFT, TOP);
+    textSize(12);
+    String[] sideLabels  = { "None", "Horiz rules", "All sides" };
+    text("BORDERS  sides:" + sideLabels[borderSideMode]
+       + "  colour:" + (borderWaveMode ? "Wave" : "Static")
+       + "  [B / V]",
+         20, BORDER_PANEL_Y + 6);
+    borderWeightSlider.display(g);
+  }
 }
 
 void keyPressed() {
   panel.handleKeyPress(key);
 
-  if (key == 'r' || key == 'R') {
+  if (key == 'h' || key == 'H') {
+    showPanels = !showPanels;
+  } else if (key == 'r' || key == 'R') {
     at.restart();
   } else if (key == 's' || key == 'S') {
     at.toggleFrameSaving();

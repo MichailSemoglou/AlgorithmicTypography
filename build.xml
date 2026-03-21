@@ -15,7 +15,7 @@
   
   <!-- Library properties -->
   <property name="library.name" value="AlgorithmicTypography"/>
-  <property name="library.version" value="0.2.5"/>
+  <property name="library.version" value="0.2.6"/>
   <property name="library.author" value="Michail Semoglou, Qídé Studio, TJ D&amp;I"/>
   
   <!-- Directories -->

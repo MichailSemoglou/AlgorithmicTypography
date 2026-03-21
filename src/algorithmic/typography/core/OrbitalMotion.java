@@ -29,7 +29,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @since 0.2.3
  * @see CellMotion
  * @see RippleMotion

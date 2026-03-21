@@ -1,5 +1,5 @@
 /*
- * GlyphBoolean  —  v0.2.5
+ * GlyphBoolean
  *
  * Demonstrates two families of boolean Area operations in GlyphExtractor:
  *

@@ -12,9 +12,9 @@
  *   3  Circular CCW   — counter-clockwise orbits
  *   4  Lissajous      — figure-8 and knot-shaped orbits
  *   5  Spring         — spring-damped glyphs pulled toward a drifting target
- *   6  Ripple         — click to trigger concentric displacement rings (v0.2.3)
- *   7  FlowField      — glyphs drift in a slowly evolving Perlin noise field (v0.2.3)
- *   8  Orbital        — glyphs orbit neighbours in a constellation pattern (v0.2.3)
+ *   6  Ripple         — click to trigger concentric displacement rings
+ *   7  FlowField      — glyphs drift in a slowly evolving Perlin noise field
+ *   8  Orbital        — glyphs orbit neighbours in a constellation pattern
  *
  * Controls:
  *   M / click   Cycle motion mode

@@ -31,7 +31,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @since 0.2.3
  * @see CellMotion
  * @see FlowFieldMotion
@@ -51,7 +51,16 @@ import java.util.List;
  * Click-triggered concentric displacement rings that expand and decay.
  */
 public class RippleMotion extends CellMotion {
+  // ── Named intensity presets ──────────────────────────────────
 
+  /** Slow, wide swell — glyphs rock gently as the ring passes. */
+  public static final int GENTLE   = 0;
+
+  /** Balanced ripple — noticeable but not overwhelming (default). */
+  public static final int MODERATE = 1;
+
+  /** Fast, tight wave — sharp punchy displacement per ring. */
+  public static final int STRONG   = 2;
   // ── Grid geometry ─────────────────────────────────────────────
 
   /** Width of one grid tile in pixels. */
@@ -258,4 +267,61 @@ public class RippleMotion extends CellMotion {
 
   /** Returns the per-frame amplitude decay rate. @return decayRate */
   public float getDecayRate()   { return decayRate; }
+
+  // ── Preset convenience ────────────────────────────────────────
+
+  /**
+   * Applies a named intensity preset, adjusting expandSpeed, waveWidth,
+   * and decayRate to a coordinated combination.
+   *
+   * <p>Presets:
+   * <table>
+   *   <tr><th>Name</th>    <th>Constant</th>          <th>expandSpeed</th><th>waveWidth</th><th>decayRate</th></tr>
+   *   <tr><td>Gentle  </td><td>{@link #GENTLE}  </td> <td>120 </td>       <td>180</td>      <td>0.985</td></tr>
+   *   <tr><td>Moderate</td><td>{@link #MODERATE}</td> <td>200 </td>       <td> 80</td>      <td>0.975</td></tr>
+   *   <tr><td>Strong  </td><td>{@link #STRONG}  </td> <td>320 </td>       <td> 60</td>      <td>0.960</td></tr>
+   * </table></p>
+   *
+   * @param preset one of {@link #GENTLE}, {@link #MODERATE}, {@link #STRONG}
+   * @return this instance for fluent chaining
+   */
+  public RippleMotion setPreset(int preset) {
+    switch (preset) {
+      case GENTLE:
+        this.expandSpeed = 120.0f;
+        this.waveWidth   = 180.0f;
+        this.decayRate   = 0.985f;
+        break;
+      case STRONG:
+        this.expandSpeed = 320.0f;
+        this.waveWidth   = 60.0f;
+        this.decayRate   = 0.960f;
+        break;
+      default: // MODERATE
+        this.expandSpeed = 200.0f;
+        this.waveWidth   = 80.0f;
+        this.decayRate   = 0.975f;
+        break;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the ring expansion speed using a normalised 0-1 designer value,
+   * linearly mapped to the physical range 60–400 px/s.
+   *
+   * <pre>
+   * ripple.setExpandSpeedNormalized(0.0f);  // expandSpeed = 60   (slow swell)
+   * ripple.setExpandSpeedNormalized(0.5f);  // expandSpeed = 230  (balanced)
+   * ripple.setExpandSpeedNormalized(1.0f);  // expandSpeed = 400  (fast burst)
+   * </pre>
+   *
+   * @param t normalised speed in [0, 1]
+   * @return this instance for fluent chaining
+   */
+  public RippleMotion setExpandSpeedNormalized(float t) {
+    float clamped = PApplet.constrain(t, 0.0f, 1.0f);
+    this.expandSpeed = 60.0f + clamped * 340.0f;
+    return this;
+  }
 }

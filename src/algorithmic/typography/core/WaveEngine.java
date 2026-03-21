@@ -6,7 +6,7 @@
  * wave functions and provides normalized output values.
  * 
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  */
 
 package algorithmic.typography.core;

@@ -1,0 +1,51 @@
+{
+  "canvas": {
+    "width": 1080,
+    "height": 1080
+  },
+  "animation": {
+    "duration": 60,
+    "fps": 60,
+    "changeTime": 3000,
+    "secondChangeTime": 7000,
+    "fadeDuration": 600,
+    "character": "A",
+    "textScale": 0.72,
+    "saveFrames": false,
+    "waveSpeed": 1.0,
+    "waveAngle": 0.0,
+    "waveType": "SINE",
+    "waveMultiplierMin": 0.6,
+    "waveMultiplierMax": 1.4
+  },
+  "grid": {
+    "initialTilesX": 18,
+    "initialTilesY": 18,
+    "changedTilesX": 12,
+    "changedTilesY": 12,
+    "finalTilesX": 24,
+    "finalTilesY": 24
+  },
+  "colors": {
+    "hueMin": 200,
+    "hueMax": 280,
+    "saturationMin": 160,
+    "saturationMax": 240,
+    "brightnessMin": 180,
+    "brightnessMax": 255,
+    "waveAmplitudeMin": -120,
+    "waveAmplitudeMax": 120,
+    "backgroundR": 0,
+    "backgroundG": 0,
+    "backgroundB": 0
+  },
+  "gridStripMotion": {
+    "axis": 0,
+    "amplitude": 0.4,
+    "phaseStep": 0.3,
+    "rowSpeed": 1.0,
+    "columnSpeed": 0.8,
+    "rowWaveType": "SINE",
+    "columnWaveType": "SINE"
+  }
+}

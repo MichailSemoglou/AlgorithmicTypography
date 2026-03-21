@@ -1,7 +1,7 @@
 /*
- * TextOnPath  —  v0.2.5
+ * TextOnPath
  *
- * Demonstrates two new GlyphExtractor capabilities added in v0.2.5:
+ * Demonstrates two GlyphExtractor capabilities:
  *
  *   textOnPath(String, PVector[], float, float)
  *       — Lays a string of glyphs along any polyline path,

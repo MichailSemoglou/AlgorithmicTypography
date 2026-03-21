@@ -1,7 +1,7 @@
 /*
  * GlyphDesign
  *
- * Demonstrates three designer-oriented GlyphExtractor methods new in v0.2.2:
+ * Demonstrates three designer-oriented GlyphExtractor methods:
  *
  *   fillWithPoints()         — scattered points inside the letterform interior
  *   distributeAlongOutline() — evenly spaced points along the full perimeter

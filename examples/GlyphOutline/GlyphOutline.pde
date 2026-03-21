@@ -1,5 +1,5 @@
 /*
- * GlyphOutline  —  v0.2.5
+ * GlyphOutline
  *
  * Demonstrates solid and dashed stroke outlines on letterforms — something
  * Processing's built-in text() function cannot do at all: stroke colour is

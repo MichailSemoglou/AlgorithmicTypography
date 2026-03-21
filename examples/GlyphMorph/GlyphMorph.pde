@@ -1,5 +1,5 @@
 /*
- * GlyphMorph  —  v0.2.3
+ * GlyphMorph
  *
  * A designer-focused showcase of GlyphExtractor.morphShape(),
  * which returns a ready-to-draw PShape morphing one letterform

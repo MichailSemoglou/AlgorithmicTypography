@@ -93,7 +93,7 @@ private void drawGrid(float tilesX, float tilesY) {
 
 #### Priority Areas
 
-All v0.2.5 targets are shipped. High-impact areas for v0.2.6 (Parameter Legibility):
+All v0.2.6 targets are shipped. High-impact areas for v0.3 (Typography as Material):
 
 - [x] ~~**`GlyphExtractor.union/intersect/subtract`**~~ ✅ — shipped in v0.2.5
 - [x] ~~**`textOnPath`**~~ ✅ — shipped in v0.2.5
@@ -101,15 +101,17 @@ All v0.2.5 targets are shipped. High-impact areas for v0.2.6 (Parameter Legibili
 - [x] ~~**`subdivide`**~~ ✅ — shipped in v0.2.5
 - [x] ~~**`glyphOutline` config.json block**~~ ✅ — shipped in v0.2.5 (`OUTLINE_NONE/SOLID/DASHED`, solid + dashed per-contour rendering in `drawGrid`/`drawGridAt`)
 - [x] ~~**`GlyphOutline` example**~~ ✅ — shipped in v0.2.5 (config-driven showcase; `O` to cycle outline modes)
-- [ ] **Normalised 0–1 overloads** — `setStrength(0.6)` alongside every raw-value setter; maps internally to a sensible physical range
-- [ ] **Named intensity presets** — `SUBTLE`, `EXPRESSIVE`, `FULL` constants for `AudioBridge` semantic mapping; `GENTLE`, `MODERATE`, `STRONG` for `MagneticMotion` and `RippleMotion`
-- [ ] **`AudioBridge` semantic mapping** — `audio.mapBassTo(config::setWaveSpeed, AudioBridge.SUBTLE)` replaces bare numeric ranges
-- [ ] **`PerlinVertexMotion`** — per-vertex Perlin noise displacement applied directly to extracted glyph outline vertices; amplitude, spatial scale, and time speed configurable per character
+- [x] ~~**Normalised 0–1 overloads**~~ ✅ — shipped in v0.2.6 (`setStrengthNormalized(float)` on `MagneticMotion`, `setExpandSpeedNormalized(float)` on `RippleMotion`)
+- [x] ~~**Named intensity presets**~~ ✅ — shipped in v0.2.6 (`GENTLE/MODERATE/STRONG/SNAPPING` on `MagneticMotion`; `GENTLE/MODERATE/STRONG` on `RippleMotion`; all via `setPreset(int)`)
+- [x] ~~**`AudioBridge` semantic mapping**~~ ✅ — shipped in v0.2.6 (`SUBTLE/EXPRESSIVE/FULL` constants; `mapBassTo/mapMidTo/mapTrebleTo/mapOverallTo(setter, intensity)` overloads)
+- [x] ~~**`PerlinVertexMotion`**~~ ✅ — shipped in v0.2.6 (`deform(PVector[], int)` non-destructive; `deformContours(PVector[][], int)` batch; amplitude, spatialScale, timeSpeed configurable)
+- [x] ~~**`GridStripMotion`**~~ ✅ — shipped in v0.2.6 (`ROW/COLUMN/BOTH` axis; seven wave types; `\"gridStripMotion\"` JSON block; `setGridStripMotion()` API; `GridStripWave` example)
+- [ ] **Letterform Curvature Field** — `GlyphCurvatureField.from(extractor, char, fontSize)` projects per-point curvature as a spatial scalar field; `wave.setAmplitudeField(field)` modulates wave amplitude cell-by-cell from the typeface's own geometry
+- [ ] **Typographic Counterpoint** — independent wave systems for glyph positive form and counter-forms; `CounterpointEngine(mainWave, counterWave)` API
+- [ ] **Optical Rhythm Sync** — derive wave period from stem width, counter aperture, and advance width; `config.setRhythmFromFont(extractor, char)`
 - [ ] **Documentation** — tutorials, video guides, type-specimen showcase examples
 
-_`waveType` in config.json, cell border system, and `waveAngle` in all example configs are implemented in v0.2.4._
-
-#### GlyphExtractor — Current Status (v0.2.5)
+#### GlyphExtractor — Current Status (v0.2.6)
 
 The `GlyphExtractor` class extracts outline data from any system font at any size. All methods below are currently implemented:
 
@@ -147,10 +149,11 @@ The `GlyphExtractor` class extracts outline data from any system font at any siz
 
 **Ideas for new methods:**
 
-- `PerlinVertexMotion` integration — apply per-vertex Perlin displacement directly to extracted outline vertices
+- `GlyphCurvatureField` — project per-point outline curvature as a scalar field for wave amplitude modulation
+- Calligraphic stroke sequencing — animate letterforms being drawn stroke-by-stroke from the medial axis
 - Word / sentence layout mode — `textOnPath` variant that respects word spacing and optical kerning
 
-#### Configuration System — Current Status (v0.2.5)
+#### Configuration System — Current Status (v0.2.6)
 
 The `Configuration` class and its JSON schema are the primary interface between designers and the library. All parameters in the `config.json` file map 1-to-1 to fields in `Configuration` with matching getters, setters, Builder methods, `loadFromJSON`, `toJSON`, and `copy` implementations. Follow this pattern when adding any new parameter.
 

@@ -6,7 +6,7 @@
  * multiple output formats including raster and vector.
  * 
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  */
 
 package algorithmic.typography.render;

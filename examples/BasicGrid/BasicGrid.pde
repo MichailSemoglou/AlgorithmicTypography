@@ -5,11 +5,12 @@
  * Loads a configuration from a JSON file and renders a
  * three-stage animation with smooth fade transitions:
  *
- *   Stage 1 (0-6s)    — 16x16 grid (beginning)
- *   Stage 2 (6-12s)   — 8x8 grid   (middle)
- *   Stage 3 (12-18s)  — 4x4 grid   (final)
+ *   Stage 1 (0-6s)    — 8x16 grid (beginning)
+ *   Stage 2 (6-12s)   — 4x8 grid  (middle)
+ *   Stage 3 (12-18s)  — 2x4 grid  (final)
  *
  * Each transition cross-fades over 2 seconds.
+ * The word "HELLO" is rendered across all cells.
  *
  * Controls:
  *   R - Restart the animation

@@ -7,7 +7,7 @@
  * quality loss and includes embedded metadata.
  * 
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  */
 
 package algorithmic.typography.render;

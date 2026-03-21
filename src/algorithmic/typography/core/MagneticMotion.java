@@ -44,7 +44,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.5
+ * @version 0.2.6
  * @since 0.2.1
  * @see CellMotion
  * @see GravityMotion
@@ -61,6 +61,20 @@ import processing.core.PVector;
  * Mouse-driven repel / attract motion within a grid cell.
  */
 public class MagneticMotion extends CellMotion {
+
+  // ── Named intensity presets ───────────────────────────────────
+
+  /** Gentle drift: glyphs drift away slowly with a wide, soft field. */
+  public static final int GENTLE   = 0;
+
+  /** Moderate effect: balanced strength and falloff (default feel). */
+  public static final int MODERATE = 1;
+
+  /** Strong push: glyphs are pushed forcefully with a tighter field. */
+  public static final int STRONG   = 2;
+
+  /** Snap repel: glyphs jump away instantly; ideal for sharp, reactive visuals. */
+  public static final int SNAPPING = 3;
 
   // ── Reference to host sketch ──────────────────────────────────
 
@@ -313,4 +327,71 @@ public class MagneticMotion extends CellMotion {
   /** Returns the current tile height.
    *  @return tile height in pixels */
   public float getTileHeight() { return tileHeight; }
+
+  // ── Preset convenience ────────────────────────────────────────
+
+  /**
+   * Applies a named intensity preset, adjusting strength, falloff,
+   * smoothing, and radius to a coordinated combination.
+   *
+   * <p>Presets:
+   * <table>
+   *   <tr><th>Name</th><th>Constant</th><th>strength</th><th>falloff</th><th>smoothing</th><th>radius</th></tr>
+   *   <tr><td>Gentle  </td><td>{@link #GENTLE}  </td><td>600 </td><td>120</td><td>0.06</td><td>20</td></tr>
+   *   <tr><td>Moderate</td><td>{@link #MODERATE}</td><td>1800</td><td> 80</td><td>0.12</td><td>20</td></tr>
+   *   <tr><td>Strong  </td><td>{@link #STRONG}  </td><td>3000</td><td> 50</td><td>0.20</td><td>30</td></tr>
+   *   <tr><td>Snapping</td><td>{@link #SNAPPING}</td><td>4000</td><td> 30</td><td>0.40</td><td>40</td></tr>
+   * </table></p>
+   *
+   * @param preset one of {@link #GENTLE}, {@link #MODERATE}, {@link #STRONG}, {@link #SNAPPING}
+   * @return this instance for fluent chaining
+   */
+  public MagneticMotion setPreset(int preset) {
+    switch (preset) {
+      case GENTLE:
+        this.strength  = 600.0f;
+        this.falloff   = 120.0f;
+        this.smoothing = 0.06f;
+        this.radius    = 20.0f;
+        break;
+      case STRONG:
+        this.strength  = 3000.0f;
+        this.falloff   = 50.0f;
+        this.smoothing = 0.20f;
+        this.radius    = 30.0f;
+        break;
+      case SNAPPING:
+        this.strength  = 4000.0f;
+        this.falloff   = 30.0f;
+        this.smoothing = 0.40f;
+        this.radius    = 40.0f;
+        break;
+      default: // MODERATE
+        this.strength  = 1800.0f;
+        this.falloff   = 80.0f;
+        this.smoothing = 0.12f;
+        this.radius    = 20.0f;
+        break;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the field strength using a normalised 0-1 designer value,
+   * linearly mapped to the physical range 400–4000.
+   *
+   * <pre>
+   * mag.setStrengthNormalized(0.0f);  // strength = 400  (very gentle)
+   * mag.setStrengthNormalized(0.5f);  // strength = 2200 (balanced)
+   * mag.setStrengthNormalized(1.0f);  // strength = 4000 (maximum)
+   * </pre>
+   *
+   * @param t normalised strength in [0, 1]
+   * @return this instance for fluent chaining
+   */
+  public MagneticMotion setStrengthNormalized(float t) {
+    float clamped = PApplet.constrain(t, 0.0f, 1.0f);
+    this.strength = 400.0f + clamped * 3600.0f;
+    return this;
+  }
 }

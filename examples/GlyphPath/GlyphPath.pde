@@ -6,18 +6,18 @@
  *
  * Extract glyph outlines as vertices, apply real-time wave
  * deformation to letterforms, and explore the designer-oriented
- * v0.2.2 + v0.2.3 API:
+ * API:
  *
  *   fillWithPoints()         — scattered points inside the letterform interior
  *   distributeAlongOutline() — evenly spaced points along the full perimeter
  *   getOuterContour()        — the outer boundary contour only
  *   getInnerContours()       — counter-forms only (holes in 'B', 'O', 'P', 'R')
- *   fillWithLines()          — hatch lines clipped to the letterform (v0.2.3)
- *   sampleAlongPath()        — animate a particle along the outline (v0.2.3)
+ *   fillWithLines()          — hatch lines clipped to the letterform
+ *   sampleAlongPath()        — animate a particle along the outline
  *
  * Controls:
- *   1-8    Switch display mode (outline/deformation/v0.2.2 designer modes)
- *   9/q    Switch display mode (v0.2.3 modes: hatch / path particle)
+ *   1-8    Switch display mode (outline/deformation/designer modes)
+ *   9/q    Switch display mode (hatch / path particle)
  *   UP     Increase deformation amplitude
  *   DOWN   Decrease deformation amplitude
  *   LEFT   Decrease point density (higher flatness)
@@ -73,8 +73,8 @@ void draw() {
     case 5: drawFillPoints(ch);     break;
     case 6: drawOuter(ch);          break;
     case 7: drawOuterInner(ch);     break;
-    case 8: drawHatchFill(ch);      break;   // v0.2.3
-    case 9: drawPathParticle(ch);   break;   // v0.2.3
+    case 8: drawHatchFill(ch);      break;
+    case 9: drawPathParticle(ch);   break;
   }
 
   if (saveSVG) {
@@ -278,7 +278,7 @@ void drawOuterInner(char ch) {
   noStroke();
 }
 
-// ── Mode 9: fillWithLines hatch fill (v0.2.3) ───────────────
+// ── Mode 9: fillWithLines hatch fill ────────────────────────
 void drawHatchFill(char ch) {
   float angle   = frameCount * 0.3f;
   float spacing = 8 + sin(frameCount * 0.04f) * 4;
@@ -298,7 +298,7 @@ void drawHatchFill(char ch) {
   noStroke();
 }
 
-// ── Mode 10 (key q): sampleAlongPath comet trail (v0.2.3) ──
+// ── Mode 10 (key q): sampleAlongPath comet trail ───────────
 void drawPathParticle(char ch) {
   PVector o   = glyph.centerOf(ch, 600, width / 2, height / 2);
   float   t   = (frameCount * 0.003f) % 1.0f;
