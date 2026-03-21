@@ -475,10 +475,9 @@ Interactive showcase for `GridStripMotion`, the v0.2.6 grid-level strip displace
 
 ## Documentation
 
-A six-page printable cheat sheet is available in:
+An eight-page printable cheat sheet is available in:
 
 - **Online:** [qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html](https://qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html)
-- **HTML:** [`docs/CHEAT_SHEET.html`](docs/CHEAT_SHEET.html)
 - **PDF:** [`docs/CHEAT_SHEET.pdf`](docs/CHEAT_SHEET.pdf)
 
 Full Javadoc is in the [`reference/`](reference/index.html) directory.
