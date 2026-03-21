@@ -127,7 +127,9 @@ algorithmic.typography
 │   ├── MagneticMotion             Mouse-driven repel / attract field
 │   ├── RippleMotion               Click-triggered concentric displacement rings
 │   ├── FlowFieldMotion            Spatially coherent Perlin-noise vector field
-│   └── OrbitalMotion              Glyphs orbit neighbour-derived anchors (constellation)
+│   ├── OrbitalMotion              Glyphs orbit neighbour-derived anchors (constellation)
+│   ├── GridStripMotion            Row/column strip displacement by any wave function (grid-level, not per-cell)
+│   └── PerlinVertexMotion         Per-vertex Perlin noise deformation for glyph outline sculpting
 │
 ├── render/
 │   ├── GridRenderer               Offscreen PGraphics rendering
@@ -467,6 +469,10 @@ Two-mode sketch demonstrating the v0.2.5 path utilities. Mode 1 flows a full tex
 
 A full showcase for `MagneticMotion`. Live sliders for Strength, Falloff, Smoothing, and Radius. Three presets (Repel / Attract / Rubber Band); `SPACE` to switch between repel and attract modes.
 
+### GridStripWave
+
+Interactive showcase for `GridStripMotion`, the v0.2.6 grid-level strip displacement engine. Unlike `CellMotion` (which moves individual glyphs), `GridStripMotion` shifts entire rows and/or columns in unison — the whole grid undulates like a ribbon or banner. Three axis modes: `1`/`2`/`3` switch between ROW, COLUMN, and BOTH. `UP`/`DOWN` adjust amplitude (0–1); `LEFT`/`RIGHT` adjust phase step (wave frequency); `W` cycles through all five row wave types (SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT); `SPACE` pauses the animation; `R` resets to defaults. Loads `data/config.json` for the base typography parameters.
+
 ## Documentation
 
 A six-page printable cheat sheet is available in:
@@ -640,7 +646,35 @@ flow.setSeedOffset(42.0);      // seed for field isolation
 OrbitalMotion orbital = new OrbitalMotion(10, 1.0);
 orbital.setWobble(0.3);        // radial wobble magnitude (0 = perfect circle)
 
-// Apply any motion via config (works with VibePreset pipeline too)
+// Grid Strip Motion: displace entire rows/columns by a wave function (v0.2.6)
+// Unlike CellMotion (per-glyph), GridStripMotion operates at the grid level.
+GridStripMotion strip = new GridStripMotion();
+strip.setAxis(GridStripMotion.BOTH)   // ROW | COLUMN | BOTH
+     .setAmplitude(0.4f)              // designer-friendly 0–1 range
+     .setPhaseStep(0.3f)              // phase shift between consecutive strips
+     .setRowSpeed(1.0f)
+     .setColumnSpeed(0.8f)
+     .setRowWaveType("SINE")          // SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT
+     .setColumnWaveType("TRIANGLE");
+at.setGridStripMotion(strip);         // pass to the main library instance
+// or via config.json: add a "gridStripMotion" block
+// or via Builder: new Configuration.Builder().gridStripMotion(strip).build()
+
+// Perlin Vertex Motion: deform glyph outline vertices with noise (v0.2.6)
+PerlinVertexMotion pvm = new PerlinVertexMotion();
+pvm.setAmplitude(6.0f);       // pixel displacement magnitude
+pvm.setSpatialScale(0.018f);  // noise field spatial frequency
+pvm.setTimeSpeed(0.6f);       // temporal evolution rate
+pvm.setSeed(42.0f);           // isolate field from other noise calls
+
+PVector[] outline    = glyph.getOuterContour('A', 400);
+PVector[] deformed   = pvm.deform(outline, frameCount);   // non-destructive
+
+List<PVector[]> contours = glyph.getContours('A', 400);
+PVector[][] all          = contours.toArray(new PVector[0][]);
+PVector[][] deformedAll  = pvm.deformContours(all, frameCount);
+
+// Apply any CellMotion via config (works with VibePreset pipeline too)
 config.setCellMotion(spring);
 
 // Or compute offset manually in draw():
