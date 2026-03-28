@@ -26,18 +26,18 @@ import algorithmic.typography.render.GlyphExtractor;
 import algorithmic.typography.ui.ProgressBar;
 
 GlyphExtractor glyph;
-ProgressBar    progressBar;
+ProgressBar progressBar;
 
 // ── Curated character pairs ───────────────────────────────────
 // Any pair works — mismatched holes gracefully collapse to their
 // own centroid so both endpoints are always complete characters.
 char[][] pairs = {
-  { 'A', 'R' },   // 2 contours → 2  (counter shifts from triangle to eye)
-  { 'B', '8' },   // 3 contours → 3  (two holes swap geometry)
-  { 'O', 'Q' },   // 2 contours → 2  (round hole gains tail)
-  { 'C', 'G' },   // 1 contour  → 1
-  { 'P', 'D' },   // 2 contours → 2
-  { 'S', '5' }    // 1 contour  → 1
+  { 'A', 'R' },  // 2 contours → 2  (counter shifts from triangle to eye)
+  { 'B', '8' },  // 3 contours → 3  (two holes swap geometry)
+  { 'O', 'Q' },  // 2 contours → 2  (round hole gains tail)
+  { 'C', 'G' },  // 1 contour  → 1
+  { 'P', 'D' },  // 2 contours → 2
+  { 'S', '5' }   // 1 contour  → 1
 };
 int pairIdx = 0;
 
@@ -158,7 +158,7 @@ void styleFilled(char a, char b, float mt, float ox, float oy, float hue) {
 // count (TOTAL_DOTS) is distributed across all contours proportionally by
 // arc length, so the outer boundary gets most dots and each inner counter
 // gets its fair share — no flat per-contour cap, no gaps on straight stems.
-static final int TOTAL_DOTS = 800;
+static final int TOTAL_DOTS = 400;
 
 void styleDots(char a, char b, float mt, float ox, float oy, float hue) {
   java.util.List<PVector[]> contours = glyph.interpolateContours(a, b, FONT_MAIN, mt);
@@ -204,8 +204,6 @@ void styleDots(char a, char b, float mt, float ox, float oy, float hue) {
   }
 }
 
-
-
 // ══════════════════════════════════════════════════════════════
 //  THUMBNAIL STRIP
 // ══════════════════════════════════════════════════════════════
@@ -226,8 +224,8 @@ void drawThumbnailStrip(char a, char b) {
     boolean hot = abs(tval - t) < (1.0f / (THUMBS - 1) * 0.52f);
 
     PVector o = glyph.morphCenterOf(a, b, FONT_THUMB, tval, cx, cy);
-    float ox    = o.x;
-    float oy    = o.y;
+    float ox  = o.x;
+    float oy  = o.y;
 
     PShape s = glyph.morphShape(a, b, FONT_THUMB, tval);
     s.disableStyle();

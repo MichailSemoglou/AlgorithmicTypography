@@ -1,0 +1,57 @@
+{
+  "canvas": {
+    "width": 1080,
+    "height": 1080
+  },
+  "animation": {
+    "duration": 18,
+    "fps": 30,
+    "changeTime": 0,
+    "secondChangeTime": 0,
+    "fadeDuration": 0,
+    "character": "B",
+    "textScale": 0.82,
+    "saveFrames": false,
+    "waveSpeed": 1.2,
+    "waveAngle": 45,
+    "waveType": "SINE",
+    "waveMultiplierMin": 1.5,
+    "waveMultiplierMax": 3.5
+  },
+  "grid": {
+    "initialTilesX": 20,
+    "initialTilesY": 20,
+    "changedTilesX": 20,
+    "changedTilesY": 20,
+    "finalTilesX": 20,
+    "finalTilesY": 20
+  },
+  "colors": {
+    "hueMin": 200,
+    "hueMax": 260,
+    "saturationMin": 120,
+    "saturationMax": 220,
+    "brightnessMin": 30,
+    "brightnessMax": 255,
+    "waveAmplitudeMin": -300,
+    "waveAmplitudeMax": 300,
+    "backgroundR": 10,
+    "backgroundG": 10,
+    "backgroundB": 20
+  },
+  "cellBorder": {
+    "sides": 0,
+    "r": 255,
+    "g": 255,
+    "b": 255,
+    "weight": 1.0,
+    "colorMode": 0
+  },
+  "glyphOutline": {
+    "style": "none",
+    "r": 255,
+    "g": 255,
+    "b": 255,
+    "weight": 1.2
+  }
+}

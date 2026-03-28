@@ -93,7 +93,7 @@ private void drawGrid(float tilesX, float tilesY) {
 
 #### Priority Areas
 
-All v0.2.6 targets are shipped. High-impact areas for v0.3 (Typography as Material):
+All v0.3.0 targets are shipped. High-impact areas for v0.4:
 
 - [x] ~~**`GlyphExtractor.union/intersect/subtract`**~~ ✅ — shipped in v0.2.5
 - [x] ~~**`textOnPath`**~~ ✅ — shipped in v0.2.5
@@ -106,12 +106,13 @@ All v0.2.6 targets are shipped. High-impact areas for v0.3 (Typography as Materi
 - [x] ~~**`AudioBridge` semantic mapping**~~ ✅ — shipped in v0.2.6 (`SUBTLE/EXPRESSIVE/FULL` constants; `mapBassTo/mapMidTo/mapTrebleTo/mapOverallTo(setter, intensity)` overloads)
 - [x] ~~**`PerlinVertexMotion`**~~ ✅ — shipped in v0.2.6 (`deform(PVector[], int)` non-destructive; `deformContours(PVector[][], int)` batch; amplitude, spatialScale, timeSpeed configurable)
 - [x] ~~**`GridStripMotion`**~~ ✅ — shipped in v0.2.6 (`ROW/COLUMN/BOTH` axis; seven wave types; `\"gridStripMotion\"` JSON block; `setGridStripMotion()` API; `GridStripWave` example)
-- [ ] **Letterform Curvature Field** — `GlyphCurvatureField.from(extractor, char, fontSize)` projects per-point curvature as a spatial scalar field; `wave.setAmplitudeField(field)` modulates wave amplitude cell-by-cell from the typeface's own geometry
-- [ ] **Typographic Counterpoint** — independent wave systems for glyph positive form and counter-forms; `CounterpointEngine(mainWave, counterWave)` API
-- [ ] **Optical Rhythm Sync** — derive wave period from stem width, counter aperture, and advance width; `config.setRhythmFromFont(extractor, char)`
+- [x] ~~**Letterform Curvature Field**~~ ✅ — shipped in v0.3.0 (`GlyphCurvatureField.from(extractor, char, fontSize)` projects per-point curvature as a spatial scalar field; `at.setCurvatureField(field)` modulates wave amplitude cell-by-cell from the typeface's own geometry)
+- [x] ~~**Typographic Counterpoint**~~ ✅ — shipped in v0.3.0 (`CounterpointEngine(mainWave, counterWave)` drives the outer letterform and inner counter-forms on two independent wave systems; `at.setCounterpointEngine(engine)`)
+- [x] ~~**Optical Rhythm Sync**~~ ✅ — shipped in v0.3.0 (`at.setRhythmFromFont(char)` derives `waveSpeed` from stem weight and counter ratio; `config.setRhythmScale(float)` scales the result)
+- [x] ~~**Word / Sentence Mode**~~ ✅ — shipped in v0.3.0 (`at.setContent(String)` fills the tile grid L→R top→bottom with successive characters from a string; `null` or `""` restores single-character mode)
 - [ ] **Documentation** — tutorials, video guides, type-specimen showcase examples
 
-#### GlyphExtractor — Current Status (v0.2.6)
+#### GlyphExtractor — Current Status (v0.3.0)
 
 The `GlyphExtractor` class extracts outline data from any system font at any size. All methods below are currently implemented:
 
@@ -146,14 +147,17 @@ The `GlyphExtractor` class extracts outline data from any system font at any siz
 - ~~`getCounterRatio(char, float)`~~ ✅ — ratio of counter (hole) area to total glyph area (v0.2.5)
 - ~~`getStrokeWeight(char, float)`~~ ✅ — estimated average stroke width from area / perimeter (v0.2.5)
 - ~~`buildTypeDNAProfile(char, float)`~~ ✅ — aggregates all four Type DNA metrics into a `TypeDNAProfile` (serialisable to JSON) (v0.2.5)
+- ~~`GlyphCurvatureField.from(extractor, char, fontSize)`~~ ✅ — projects per-point outline curvature as a spatial scalar field; `at.setCurvatureField(field)` modulates wave amplitude cell-by-cell from the typeface's own geometry (v0.3.0)
 
 **Ideas for new methods:**
 
-- `GlyphCurvatureField` — project per-point outline curvature as a scalar field for wave amplitude modulation
 - Calligraphic stroke sequencing — animate letterforms being drawn stroke-by-stroke from the medial axis
-- Word / sentence layout mode — `textOnPath` variant that respects word spacing and optical kerning
+- `getFourierContour(char, float, int harmonics)` — decompose the glyph outline into Fourier epicycles; animate by gradually revealing harmonics from fundamental to complex, reconstructing the letterform in real time
+- `getInkTrapPoints(char, float)` — detect tight concave vertices where strokes join (ink traps); expose them as anchor points for physics or light-source effects
+- `getKernPair(char, char, float)` — optical kerning via counter-space overlap analysis between two extracted glyphs; useful for layout-aware multi-character grids
+- `getStemSegments(char, float)` — decompose the outline into classified stroke segments (horizontal stems, vertical stems, diagonals) based on local tangent direction
 
-#### Configuration System — Current Status (v0.2.6)
+#### Configuration System — Current Status (v0.3.0)
 
 The `Configuration` class and its JSON schema are the primary interface between designers and the library. All parameters in the `config.json` file map 1-to-1 to fields in `Configuration` with matching getters, setters, Builder methods, `loadFromJSON`, `toJSON`, and `copy` implementations. Follow this pattern when adding any new parameter.
 
@@ -168,8 +172,9 @@ The `Configuration` class and its JSON schema are the primary interface between 
 
 **Ideas for new config blocks:**
 
-- `typography` — word/sentence mode (`content`, `wordWrap`, `leading`)
 - `optical` — weight-driven animation toggles (`weightDriven`, `kernAware`)
+- `reactionDiffusion` — Gray-Scott parameters (`feed`, `kill`, `diffuseU`, `diffuseV`) for `ReactionDiffusionWave`
+- `halftone` — dot pattern renderer config (`dotShape`, `angleOffset`, `minRadius`, `maxRadius`) for `HalftoneRenderer`
 
 #### Motion System — Current Status (v0.2.3)
 
@@ -193,6 +198,20 @@ To add one, extend `CellMotion`, implement `getOffset(col, row, frameCount)`, an
 - `SwarmMotion` — emergent flocking behaviour (separation, alignment, cohesion) per glyph agent
 - `WaveCollapseMotion` — glyphs lock into quantised angle states and flip between them using WFC-inspired rules
 - `PhysicsChainMotion` — glyphs hang from a verlet chain; gravity + mouse drag creates pendulum cascades
+- `SlimeMotion` — Physarum/slime-mould simulation: each glyph deposits a pheromone trail that nearby glyphs follow, organically forming network paths across the grid
+- `ThermalConvectionMotion` — hot/cold zones defined by the mouse position drive buoyancy vectors; glyphs rise and sink in slow plumes with turbulence noise
+- `EchoMotion` — N ghost copies of each glyph rendered at decaying offsets driven by past wave state, producing a genuine motion-trail effect without post-processing
+
+**Ideas for new wave types:**
+
+- `ReactionDiffusionWave` — Gray-Scott equations evolve a spot/stripe pattern over the tile grid; wave amplitude is driven by the `v` field concentration, creating organic morphology tied to the letterform
+- `ChladniWave` — standing wave modes derived from the glyph's bounding eigenfrequency; tiles vibrate into the same nodal patterns seen in Chladni figures on physical plates
+- `TypeDNAWave` — each character's `TypeDNAProfile` (stress angle, counter ratio, stroke weight) auto-configures its own wave speed, amplitude, and frequency — every letter moves according to its own geometry
+
+**Ideas for new renderers:**
+
+- `HalftoneRenderer` — replaces filled glyph tiles with halftone dot grids where dot radius is wave-amplitude-modulated; switchable between circular, elliptical, and line-screen patterns
+- `EpicycleRenderer` — draws the rotating Fourier vector arms as they trace the glyph outline, exposing the mathematical reconstruction as a live visual element
 
 #### Example Sketches — Frame-Saving Convention
 

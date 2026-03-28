@@ -6,7 +6,7 @@
  * into the WaveEngine to replace or augment default wave calculations.
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  */
 
 package algorithmic.typography.core;

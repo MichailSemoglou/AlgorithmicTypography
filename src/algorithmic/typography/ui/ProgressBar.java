@@ -26,7 +26,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 0.2.3
  */
 package algorithmic.typography.ui;

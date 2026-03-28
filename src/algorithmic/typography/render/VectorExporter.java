@@ -7,7 +7,7 @@
  * quality loss and includes embedded metadata.
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  */
 
 package algorithmic.typography.render;
@@ -101,6 +101,72 @@ public class VectorExporter {
     parent.beginRecord(PApplet.SVG, fullPath);
     
     System.out.println("Recording SVG to: " + fullPath);
+  }
+
+  // ── Artboard dimension fix ──────────────────────────────────────────────
+
+  /**
+   * Fixes the SVG root element so the file opens at the correct artboard
+   * size in Affinity Designer, Adobe Illustrator, and Inkscape.
+   *
+   * <p>Processing's SVG renderer writes unitless {@code width} / {@code height}
+   * attributes (e.g. {@code width="1080"}) with no {@code viewBox}. Design
+   * applications apply a 96 → 72 DPI conversion to unitless values, shrinking
+   * a 1080-unit canvas to ~810 pt — the wrong artboard size. Additionally,
+   * on Retina / HiDPI displays Processing may emit a {@code scale(2,2)}
+   * transform on the root {@code <g>} element, doubling the coordinate space.</p>
+   *
+   * <p>This method post-processes the saved file to:</p>
+   * <ol>
+   *   <li>Replace unitless numbers with {@code pt} units
+   *       ({@code width="1080pt"}) — 1 pt = 1 unit at 72 dpi, so the artboard
+   *       opens at exactly {@code canvasW × canvasH} in any 72-dpi-native
+   *       design application with no DPI conversion.</li>
+   *   <li>Inject a {@code viewBox="0 0 W H"} attribute if absent, locking the
+   *       SVG coordinate space to the Processing canvas dimensions.</li>
+   * </ol>
+   *
+   * <p>Call this immediately after {@code svg.dispose()} or
+   * {@code endRecord()} to ensure the file on disk is fully written
+   * before it is read back:</p>
+   * <pre>
+   * PGraphics svg = createGraphics(width, height, SVG, filename);
+   * svg.beginDraw();
+   * // ... draw ...
+   * svg.endDraw();
+   * svg.dispose();
+   * VectorExporter.fixArtboardDimensions(this, filename, width, height);
+   * </pre>
+   *
+   * @param parent    the parent {@link PApplet} (used for file I/O)
+   * @param filepath  path to the SVG file, relative to the sketch or absolute
+   * @param canvasW   intended artboard width  in pixels / points
+   * @param canvasH   intended artboard height in pixels / points
+   */
+  public static void fixArtboardDimensions(PApplet parent,
+                                            String filepath,
+                                            int canvasW, int canvasH) {
+    String[] lines = parent.loadStrings(filepath);
+    if (lines == null) {
+      System.err.println("VectorExporter.fixArtboardDimensions: could not read " + filepath);
+      return;
+    }
+    for (int i = 0; i < lines.length; i++) {
+      if (lines[i].contains("<svg ")) {
+        // Replace unitless width/height with pt units so design apps
+        // open the artboard at the exact canvas size (no DPI scaling).
+        lines[i] = lines[i]
+          .replaceAll("width=\"(\\d+(\\.\\d+)?)\"",  "width=\"$1pt\"")
+          .replaceAll("height=\"(\\d+(\\.\\d+)?)\"", "height=\"$1pt\"");
+        // Inject viewBox if absent so the SVG coordinate space is explicit.
+        if (!lines[i].contains("viewBox")) {
+          lines[i] = lines[i].replace("<svg ",
+              "<svg viewBox=\"0 0 " + canvasW + " " + canvasH + "\" ");
+        }
+        break;
+      }
+    }
+    parent.saveStrings(filepath, lines);
   }
   
   /**

@@ -1,0 +1,2436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgorithmicTypography — Cheat Sheet</title>
+    <style>
+      /* ── Reset & base ─────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --border: #334155;
+        --text: #e2e8f0;
+        --text-dim: #94a3b8;
+        --accent: #a3e635;
+        --accent-dim: rgba(163, 230, 53, 0.15);
+        --code-bg: #0f172a;
+        --radius: 8px;
+      }
+
+      html {
+        font-size: 9.5px;
+      }
+
+      body {
+        font-family:
+          "SF Mono", "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.35;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── Page layout (print / screen) ─────────────────── */
+      .page {
+        width: 297mm;
+        height: 210mm;
+        padding: 10mm 14mm;
+        page-break-after: always;
+        position: relative;
+        overflow: hidden;
+      }
+      @media screen {
+        .page {
+          margin: 20px auto;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+        }
+      }
+      @media print {
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
+        .page {
+          border: none;
+          margin: 0;
+        }
+      }
+
+      /* ── Grid columns ─────────────────────────────────── */
+      .cols-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .cols-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+      .cols-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 7px;
+      }
+
+      .col-span-2 {
+        grid-column: span 2;
+      }
+
+      /* ── Card ──────────────────────────────────────────── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .card-header {
+        background: var(--accent-dim);
+        color: var(--accent);
+        padding: 3px 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border);
+      }
+      .card-body {
+        padding: 5px 8px;
+      }
+      .card-body p {
+        margin-bottom: 2px;
+        color: var(--text-dim);
+        font-size: 0.92rem;
+      }
+
+      /* ── Code blocks ──────────────────────────────────── */
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 4px 6px;
+        font-size: 0.88rem;
+        line-height: 1.3;
+        overflow-x: auto;
+        white-space: pre;
+      }
+      code {
+        font-family: inherit;
+      }
+
+      /* ── Syntax colours ───────────────────────────────── */
+      .kw {
+        color: #c084fc;
+      }
+      .ty {
+        color: #67e8f9;
+      }
+      .fn {
+        color: #fbbf24;
+      }
+      .str {
+        color: #86efac;
+      }
+      .num {
+        color: #f472b6;
+      }
+      .cm {
+        color: #64748b;
+      }
+      .op {
+        color: #94a3b8;
+      }
+      .key {
+        color: #7dd3fc;
+      }
+
+      /* ── Tables ───────────────────────────────────────── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 2px 5px;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .vtop td,
+      .vtop th {
+        vertical-align: top;
+      }
+      td:first-child {
+        font-weight: 600;
+        white-space: nowrap;
+        color: #7dd3fc;
+      }
+
+      /* ── Inline utilities ─────────────────────────────── */
+      .tag {
+        display: inline-block;
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: var(--accent-dim);
+        color: var(--accent);
+      }
+
+      .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin: 6px 0 5px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* ── Page header / footer ─────────────────────────── */
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 7px;
+        padding-bottom: 4px;
+        border-bottom: 2px solid var(--accent);
+      }
+      .page-header h1 {
+        font-size: 1.4rem;
+        color: var(--accent);
+      }
+      .page-header .sub {
+        color: var(--text-dim);
+        font-size: 0.9rem;
+      }
+      .page-footer {
+        position: absolute;
+        bottom: 5mm;
+        right: 14mm;
+        font-size: 0.82rem;
+        color: var(--text-dim);
+      }
+
+      /* ── Example gallery cards ────────────────────────── */
+      .example-card {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 3px 6px;
+      }
+      .example-card .name {
+        color: #7dd3fc;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      .example-card .desc {
+        color: var(--text-dim);
+        font-size: 0.8rem;
+        line-height: 1.25;
+      }
+      .example-card.inactive {
+        opacity: 0.35;
+        border-style: dashed;
+      }
+      .example-card.inactive .name {
+        color: var(--text-dim);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 1  —  Setup, Core API & config.json Schema
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >Processing Library v0.3.0 &nbsp;|&nbsp; Page 1 / 10</span
+        >
+      </div>
+
+      <div class="cols-3">
+        <!-- ── SETUP ──────────────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Setup &amp; Lifecycle</div>
+          <div class="card-body">
+            <p>Minimal sketch — auto-render mode</p>
+            <pre><code><span class="kw">import</span> <span class="ty">algorithmic.typography.*</span>;
+
+<span class="ty">AlgorithmicTypography</span> at;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">size</span>(<span class="num">800</span>, <span class="num">800</span>);
+  at = <span class="kw">new</span> <span class="ty">AlgorithmicTypography</span>(<span class="kw">this</span>);
+  at.<span class="fn">loadConfiguration</span>(<span class="str">"config.json"</span>);
+  at.<span class="fn">initialize</span>();
+}
+
+<span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="cm">// auto-renders — nothing to add</span>
+}
+</code></pre>
+
+            <p style="margin-top: 5px">Programmatic config (no JSON file)</p>
+            <pre><code><span class="ty">Configuration</span> cfg = <span class="kw">new</span> <span class="ty">Configuration.Builder</span>()
+  .<span class="fn">initialTiles</span>(<span class="num">12</span>, <span class="num">12</span>)
+  .<span class="fn">changedTiles</span>(<span class="num">6</span>, <span class="num">6</span>)
+  .<span class="fn">changeTime</span>(<span class="num">5000</span>)
+  .<span class="fn">character</span>(<span class="str">"@"</span>)
+  .<span class="fn">build</span>();
+
+at.<span class="fn">setConfiguration</span>(cfg);
+at.<span class="fn">initialize</span>();
+</code></pre>
+
+            <p style="margin-top: 5px">Restart &amp; keyboard</p>
+            <pre><code><span class="kw">void</span> <span class="fn">keyPressed</span>() {
+  <span class="kw">if</span> (key == <span class="str">'r'</span>) at.<span class="fn">restart</span>();
+  <span class="kw">if</span> (key == <span class="str">'s'</span>) at.<span class="fn">toggleFrameSaving</span>();
+}
+</code></pre>
+          </div>
+        </div>
+
+        <!-- ── CORE API ───────────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Core API</div>
+          <div class="card-body">
+            <table class="vtop">
+              <tr>
+                <th>Method</th>
+                <th>Returns</th>
+                <th>Description</th>
+              </tr>
+              <tr>
+                <td>loadConfiguration(file)</td>
+                <td>this</td>
+                <td>Load JSON config</td>
+              </tr>
+              <tr>
+                <td>setConfiguration(cfg)</td>
+                <td>this</td>
+                <td>Set Configuration object</td>
+              </tr>
+              <tr>
+                <td>getConfiguration()</td>
+                <td>Configuration</td>
+                <td>Get current config</td>
+              </tr>
+              <tr>
+                <td>initialize()</td>
+                <td>this</td>
+                <td>Build grid &amp; start</td>
+              </tr>
+              <tr>
+                <td>render()</td>
+                <td>void</td>
+                <td>Draw full-window grid</td>
+              </tr>
+              <tr>
+                <td>renderAt(x,y,w,h)</td>
+                <td>void</td>
+                <td>Draw into rectangle</td>
+              </tr>
+              <tr>
+                <td>restart()</td>
+                <td>void</td>
+                <td>Reset animation timer</td>
+              </tr>
+              <tr>
+                <td>setAutoRender(bool)</td>
+                <td>this</td>
+                <td>Enable/disable auto draw</td>
+              </tr>
+              <tr>
+                <td>isAutoRender()</td>
+                <td>boolean</td>
+                <td>Check auto-render state</td>
+              </tr>
+              <tr>
+                <td>isRunning()</td>
+                <td>boolean</td>
+                <td>Animation still playing?</td>
+              </tr>
+              <tr>
+                <td>getProgress()</td>
+                <td>float</td>
+                <td>0.0 → 1.0 progress</td>
+              </tr>
+              <tr>
+                <td>getFrameCount()</td>
+                <td>int</td>
+                <td>Current frame index</td>
+              </tr>
+              <tr>
+                <td>getTotalFrames()</td>
+                <td>int</td>
+                <td>Total frames in anim</td>
+              </tr>
+              <tr>
+                <td>toggleFrameSaving()</td>
+                <td>this</td>
+                <td>Toggle frame export</td>
+              </tr>
+              <tr>
+                <td>setFrameSaving(bool)</td>
+                <td>this</td>
+                <td>Set frame export on/off</td>
+              </tr>
+              <tr>
+                <td>getFramesDirectory()</td>
+                <td>String</td>
+                <td>Output folder path</td>
+              </tr>
+              <tr>
+                <td>dispose()</td>
+                <td>void</td>
+                <td>Clean up resources</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── JSON SCHEMA ────────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">config.json Schema</div>
+          <div class="card-body">
+            <pre><code>{
+  <span class="key">"canvas"</span>: { <span class="key">"width"</span>: <span class="num">1080</span>, <span class="key">"height"</span>: <span class="num">1080</span> },
+  <span class="key">"animation"</span>: {
+    <span class="key">"duration"</span>: <span class="num">18</span>,
+    <span class="key">"fps"</span>: <span class="num">30</span>,
+    <span class="key">"changeTime"</span>: <span class="num">6000</span>,
+    <span class="key">"secondChangeTime"</span>: <span class="num">12000</span>,
+    <span class="key">"fadeDuration"</span>: <span class="num">2000</span>,
+    <span class="key">"character"</span>: <span class="str">"A"</span>, <span class="cm">// or a word: "TYPE"</span>
+    <span class="key">"textScale"</span>: <span class="num">0.8</span>,
+    <span class="key">"waveSpeed"</span>: <span class="num">1.0</span>, <span class="key">"waveAngle"</span>: <span class="num">45</span>,
+    <span class="key">"waveType"</span>: <span class="str">"SINE"</span>,
+    <span class="key">"waveMultiplierMin"</span>: <span class="num">0.0</span>, <span class="key">"waveMultiplierMax"</span>: <span class="num">2.0</span>,
+    <span class="key">"saveFrames"</span>: <span class="num">false</span>
+  },
+  <span class="key">"grid"</span>: {
+    <span class="key">"initialTilesX"</span>: <span class="num">16</span>, <span class="key">"initialTilesY"</span>: <span class="num">16</span>,
+    <span class="key">"changedTilesX"</span>: <span class="num">8</span>,  <span class="key">"changedTilesY"</span>: <span class="num">8</span>,
+    <span class="key">"finalTilesX"</span>: <span class="num">4</span>,    <span class="key">"finalTilesY"</span>: <span class="num">4</span>
+  },
+  <span class="key">"colors"</span>: {
+    <span class="key">"hueMin"</span>: <span class="num">0</span>, <span class="key">"hueMax"</span>: <span class="num">0</span>,
+    <span class="key">"saturationMin"</span>: <span class="num">0</span>, <span class="key">"saturationMax"</span>: <span class="num">0</span>,
+    <span class="key">"brightnessMin"</span>: <span class="num">50</span>, <span class="key">"brightnessMax"</span>: <span class="num">255</span>,
+    <span class="key">"waveAmplitudeMin"</span>: <span class="num">-200</span>, <span class="key">"waveAmplitudeMax"</span>: <span class="num">200</span>,
+    <span class="key">"backgroundR"</span>: <span class="num">0</span>, <span class="key">"backgroundG"</span>: <span class="num">0</span>, <span class="key">"backgroundB"</span>: <span class="num">0</span>
+  },
+  <span class="key">"cellBorder"</span>: {
+    <span class="key">"sides"</span>: <span class="num">0</span>,
+    <span class="key">"r"</span>: <span class="num">255</span>, <span class="key">"g"</span>: <span class="num">255</span>, <span class="key">"b"</span>: <span class="num">255</span>,
+    <span class="key">"weight"</span>: <span class="num">1.0</span>, <span class="key">"colorMode"</span>: <span class="num">0</span>
+  },
+  <span class="key">"cellMotion"</span>: {
+    <span class="key">"style"</span>: <span class="str">"perlin"</span>,
+    <span class="key">"radius"</span>: <span class="num">12</span>,
+    <span class="key">"speed"</span>: <span class="num">1.0</span>
+  },
+  <span class="key">"glyphOutline"</span>: {
+    <span class="key">"style"</span>: <span class="str">"none"</span>,
+    <span class="key">"r"</span>: <span class="num">255</span>, <span class="key">"g"</span>: <span class="num">255</span>, <span class="key">"b"</span>: <span class="num">255</span>,
+    <span class="key">"weight"</span>: <span class="num">1.5</span>,
+    <span class="key">"dashLength"</span>: <span class="num">8.0</span>,
+    <span class="key">"gapLength"</span>: <span class="num">4.0</span>
+  },
+  <span class="key">"gridStripMotion"</span>: { <span class="cm">// v0.3.0</span>
+    <span class="key">"axis"</span>: <span class="str">"row"</span>, <span class="cm">// "row" · "column" · "both"</span>
+    <span class="key">"amplitude"</span>: <span class="num">0.3</span>,
+    <span class="key">"phaseStep"</span>: <span class="num">0.4</span>,
+    <span class="key">"rowWaveType"</span>: <span class="str">"SINE"</span>,
+    <span class="key">"columnWaveType"</span>: <span class="str">"SINE"</span>,
+    <span class="key">"rowSpeed"</span>: <span class="num">1.0</span>,
+    <span class="key">"columnSpeed"</span>: <span class="num">1.0</span>,
+    <span class="key">"enabled"</span>: <span class="kw">true</span>
+  }
+}
+</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 1 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 2  —  Wave & Style, Grid Stages, Configuration Getters
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >Wave, Style &amp; Grid &nbsp;|&nbsp; Page 2 / 10</span
+        >
+      </div>
+
+      <div class="cols-3">
+        <!-- ── WAVE & STYLE ───────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Wave &amp; Style</div>
+          <div class="card-body">
+            <p>Wave presets</p>
+            <pre><code>at.<span class="fn">setWaveType</span>(<span class="ty">WavePresets.Type</span>.<span class="num">SINE</span>);
+<span class="cm">// SINE · TANGENT · SQUARE · TRIANGLE · SAWTOOTH</span>
+at.<span class="fn">setWaveType</span>(<span class="str">"SQUARE"</span>); <span class="cm">// string overload</span>
+<span class="cm">// or via config.json: "waveType": "TANGENT"</span>
+</code></pre>
+
+            <p style="margin-top: 5px">Custom wave function (lambda)</p>
+            <pre><code>at.<span class="fn">setWaveFunction</span>(
+  (x, y, time, angle) -> {
+    <span class="kw">return</span> (<span class="kw">float</span>)Math.<span class="fn">sin</span>(
+      x * <span class="num">0.1</span> + time
+    );
+  }
+);
+</code></pre>
+
+            <p style="margin-top: 5px">Design system presets</p>
+            <pre><code>at.<span class="fn">useDesignSystem</span>(
+  <span class="ty">DesignSystem.SystemType</span>.<span class="num">SWISS</span>
+);
+<span class="cm">// SWISS · BAUHAUS · JAPANESE
+// BRUTALIST · MINIMAL</span>
+</code></pre>
+
+            <p style="margin-top: 5px">Vibe coding — natural language</p>
+            <pre><code>at.<span class="fn">setVibe</span>(<span class="str">"calm ocean waves"</span>);
+at.<span class="fn">setVibe</span>(<span class="str">"chaos energy"</span>);
+at.<span class="fn">setVibe</span>(<span class="str">"geometric minimal"</span>);
+</code></pre>
+
+            <p style="margin-top: 5px">Glyph motion (v0.2.1 – v0.2.4)</p>
+            <pre><code><span class="cm">// Perlin noise wander</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">PerlinMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>));
+<span class="cm">// Circular orbital (CW / CCW)</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">CircularMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>, <span class="kw">true</span>));
+<span class="cm">// Lissajous figure-8 (1:2) or knot (3:2)</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">LissajousMotion</span>(<span class="num">10</span>, <span class="num">1.0f</span>));
+<span class="cm">// Spring-damped glyphs</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">SpringMotion</span>(<span class="num">0.35f</span>, <span class="num">0.12f</span>));
+<span class="cm">// Gravity + bounce  (kick() for impulse)</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">GravityMotion</span>(<span class="num">0.4f</span>, <span class="num">0.7f</span>));
+<span class="cm">// Mouse repel/attract field</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">MagneticMotion</span>(<span class="kw">this</span>));
+<span class="cm">// ── v0.2.3 ──────────────────────────────────</span>
+<span class="cm">// Ripple: click-triggered concentric rings</span>
+<span class="ty">RippleMotion</span> r = <span class="kw">new</span> <span class="ty">RippleMotion</span>(<span class="num">14</span>, <span class="num">1.0f</span>);
+r.<span class="fn">setTileGrid</span>(width, height, tilesX, tilesY);
+r.<span class="fn">trigger</span>(mouseX, mouseY); <span class="cm">// in mousePressed()</span>
+<span class="cm">// FlowField: Perlin vector field</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">FlowFieldMotion</span>(<span class="num">12</span>, <span class="num">1.0f</span>));
+<span class="cm">// Orbital: constellation orbit patterns</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">new</span> <span class="ty">OrbitalMotion</span>(<span class="num">10</span>, <span class="num">1.0f</span>));
+<span class="cm">// Disable</span>
+cfg.<span class="fn">setCellMotion</span>(<span class="kw">null</span>);
+<span class="cm">// ── JSON alternative (v0.2.4) ────────────────</span>
+<span class="cm">// Any style above can be set in config.json:</span>
+<span class="cm">// "cellMotion": { "style": "gravity",</span>
+<span class="cm">//   "radius": 14, "speed": 1.0,</span>
+<span class="cm">//   "gravity": 0.5, "restitution": 0.8 }</span>
+</code></pre>
+          </div>
+        </div>
+
+        <!-- ── GRID STAGES & TIMING ───────────────────────── -->
+        <div class="card">
+          <div class="card-header">Grid Stages &amp; Timing</div>
+          <div class="card-body">
+            <p>Three-stage grid progression</p>
+            <table class="vtop">
+              <tr>
+                <th>Stage</th>
+                <th>Grid Size</th>
+                <th>Trigger</th>
+                <th>Default</th>
+              </tr>
+              <tr>
+                <td>1 Initial</td>
+                <td>initialTilesX × Y</td>
+                <td>0 ms</td>
+                <td>16 × 16</td>
+              </tr>
+              <tr>
+                <td>2 Changed</td>
+                <td>changedTilesX × Y</td>
+                <td>changeTime</td>
+                <td>8 × 8 @ 6 s</td>
+              </tr>
+              <tr>
+                <td>3 Final</td>
+                <td>finalTilesX × Y</td>
+                <td>secondChangeTime</td>
+                <td>4 × 4 @ 12 s</td>
+              </tr>
+            </table>
+
+            <p style="margin-top: 5px">
+              <span class="tag">fadeDuration</span> Cross-fade duration between
+              stages (default 2000 ms)
+            </p>
+            <p>
+              <span class="tag">secondChangeTime</span> Set to <code>0</code> to
+              disable the third stage
+            </p>
+
+            <p style="margin-top: 5px">Reading grid state at runtime</p>
+            <pre><code><span class="ty">Configuration</span> cfg = at.<span class="fn">getConfiguration</span>();
+
+cfg.<span class="fn">getInitialTilesX</span>();   <span class="cm">// stage 1 cols</span>
+cfg.<span class="fn">getInitialTilesY</span>();   <span class="cm">// stage 1 rows</span>
+cfg.<span class="fn">getChangedTilesX</span>();   <span class="cm">// stage 2 cols</span>
+cfg.<span class="fn">getChangedTilesY</span>();   <span class="cm">// stage 2 rows</span>
+cfg.<span class="fn">getFinalTilesX</span>();     <span class="cm">// stage 3 cols</span>
+cfg.<span class="fn">getFinalTilesY</span>();     <span class="cm">// stage 3 rows</span>
+
+cfg.<span class="fn">getChangeTime</span>();      <span class="cm">// ms → stage 2</span>
+cfg.<span class="fn">getSecondChangeTime</span>();<span class="cm">// ms → stage 3</span>
+cfg.<span class="fn">getFadeDuration</span>();    <span class="cm">// crossfade ms</span>
+</code></pre>
+
+            <p style="margin-top: 5px">Determining current stage manually</p>
+            <pre><code><span class="kw">int</span> elapsed = <span class="fn">millis</span>() - startTime;
+<span class="kw">int</span> cols, rows;
+
+<span class="kw">if</span> (elapsed > cfg.<span class="fn">getSecondChangeTime</span>()) {
+  cols = cfg.<span class="fn">getFinalTilesX</span>();
+  rows = cfg.<span class="fn">getFinalTilesY</span>();
+} <span class="kw">else if</span> (elapsed > cfg.<span class="fn">getChangeTime</span>()) {
+  cols = cfg.<span class="fn">getChangedTilesX</span>();
+  rows = cfg.<span class="fn">getChangedTilesY</span>();
+} <span class="kw">else</span> {
+  cols = cfg.<span class="fn">getInitialTilesX</span>();
+  rows = cfg.<span class="fn">getInitialTilesY</span>();
+}
+</code></pre>
+          </div>
+        </div>
+
+        <!-- ── CONFIGURATION GETTERS ──────────────────────── -->
+        <div class="card">
+          <div class="card-header">Configuration Getters</div>
+          <div class="card-body">
+            <table class="vtop">
+              <tr>
+                <th>Method</th>
+                <th>Type</th>
+                <th>Default</th>
+              </tr>
+              <tr>
+                <td>getCanvasWidth()</td>
+                <td>int</td>
+                <td>1080</td>
+              </tr>
+              <tr>
+                <td>getCanvasHeight()</td>
+                <td>int</td>
+                <td>1080</td>
+              </tr>
+              <tr>
+                <td>getAnimationDuration()</td>
+                <td>int</td>
+                <td>18</td>
+              </tr>
+              <tr>
+                <td>getAnimationFPS()</td>
+                <td>int</td>
+                <td>30</td>
+              </tr>
+              <tr>
+                <td>getChangeTime()</td>
+                <td>int</td>
+                <td>6000</td>
+              </tr>
+              <tr>
+                <td>getSecondChangeTime()</td>
+                <td>int</td>
+                <td>12000</td>
+              </tr>
+              <tr>
+                <td>getFadeDuration()</td>
+                <td>int</td>
+                <td>2000</td>
+              </tr>
+              <tr>
+                <td>getCharacter()</td>
+                <td>String</td>
+                <td>"A"</td>
+              </tr>
+              <tr>
+                <td>getTextScale()</td>
+                <td>float</td>
+                <td>0.8</td>
+              </tr>
+              <tr>
+                <td>getWaveSpeed()</td>
+                <td>float</td>
+                <td>1.0</td>
+              </tr>
+              <tr>
+                <td>getWaveAngle()</td>
+                <td>float</td>
+                <td>45.0</td>
+              </tr>
+              <tr>
+                <td>getWaveType()</td>
+                <td>String</td>
+                <td>"SINE"</td>
+              </tr>
+              <tr>
+                <td>getWaveMultiplierMin()</td>
+                <td>float</td>
+                <td>0.0</td>
+              </tr>
+              <tr>
+                <td>getWaveMultiplierMax()</td>
+                <td>float</td>
+                <td>2.0</td>
+              </tr>
+              <tr>
+                <td>getInitialTilesX/Y()</td>
+                <td>int</td>
+                <td>16</td>
+              </tr>
+              <tr>
+                <td>getChangedTilesX/Y()</td>
+                <td>int</td>
+                <td>8</td>
+              </tr>
+              <tr>
+                <td>getFinalTilesX/Y()</td>
+                <td>int</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>getHueMin/Max()</td>
+                <td>float</td>
+                <td>0 / 0</td>
+              </tr>
+              <tr>
+                <td>getSaturationMin/Max()</td>
+                <td>float</td>
+                <td>0 / 0</td>
+              </tr>
+              <tr>
+                <td>getBrightnessMin/Max()</td>
+                <td>float</td>
+                <td>50 / 255</td>
+              </tr>
+              <tr>
+                <td>getWaveAmplitudeMin/Max()</td>
+                <td>float</td>
+                <td>-200 / 200</td>
+              </tr>
+              <tr>
+                <td>getBackgroundRed/Green/Blue()</td>
+                <td>int</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>isSaveFrames()</td>
+                <td>boolean</td>
+                <td>false</td>
+              </tr>
+              <tr>
+                <td>getCellBorderSides()</td>
+                <td>int</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>getCellBorderRed/Green/Blue()</td>
+                <td>int</td>
+                <td>255</td>
+              </tr>
+              <tr>
+                <td>getCellBorderWeight()</td>
+                <td>float</td>
+                <td>1.0</td>
+              </tr>
+              <tr>
+                <td>getCellBorderColorMode()</td>
+                <td>int</td>
+                <td>0 = static, 1 = wave</td>
+              </tr>
+              <tr>
+                <td>getGlyphOutlineStyle()</td>
+                <td>int</td>
+                <td>0=none, 1=solid, 2=dashed, 3=dashedOnly</td>
+              </tr>
+              <tr>
+                <td>getGlyphOutlineRed/Green/Blue()</td>
+                <td>int</td>
+                <td>255</td>
+              </tr>
+              <tr>
+                <td>getGlyphOutlineWeight()</td>
+                <td>float</td>
+                <td>1.5</td>
+              </tr>
+              <tr>
+                <td>getGlyphOutlineDashLength()</td>
+                <td>float</td>
+                <td>8.0 (dashed only)</td>
+              </tr>
+              <tr>
+                <td>getGlyphOutlineGapLength()</td>
+                <td>float</td>
+                <td>4.0 (dashed only)</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 2 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 3  —  Rendering Modes & Export
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >Rendering &amp; Export &nbsp;|&nbsp; Page 3 / 10</span
+        >
+      </div>
+
+      <div class="cols-2">
+        <!-- ── RENDER MODES ───────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Render Modes</div>
+          <div class="card-body">
+            <p>
+              <span class="tag">Auto</span> Default — library clears &amp; draws
+              each frame
+            </p>
+            <pre><code>at.<span class="fn">initialize</span>();
+<span class="cm">// draw() is empty — auto-render handles it</span>
+</code></pre>
+
+            <p style="margin-top: 5px">
+              <span class="tag">Manual</span> You control what goes on the
+              canvas
+            </p>
+            <pre><code>at.<span class="fn">setAutoRender</span>(<span class="num">false</span>);
+at.<span class="fn">initialize</span>();
+
+<span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="fn">background</span>(<span class="num">0</span>);
+  <span class="cm">// … your drawing code …</span>
+  at.<span class="fn">renderAt</span>(<span class="num">0</span>, <span class="num">0</span>, width, height);
+}
+</code></pre>
+
+            <p style="margin-top: 5px">
+              <span class="tag">Multi</span> Several instances side by side
+            </p>
+            <pre><code><span class="ty">AlgorithmicTypography</span> a, b;
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">size</span>(<span class="num">1600</span>, <span class="num">800</span>);
+  a = <span class="kw">new</span> <span class="ty">AlgorithmicTypography</span>(<span class="kw">this</span>);
+  b = <span class="kw">new</span> <span class="ty">AlgorithmicTypography</span>(<span class="kw">this</span>);
+  a.<span class="fn">setAutoRender</span>(<span class="num">false</span>); b.<span class="fn">setAutoRender</span>(<span class="num">false</span>);
+  a.<span class="fn">loadConfiguration</span>(<span class="str">"a.json"</span>); b.<span class="fn">loadConfiguration</span>(<span class="str">"b.json"</span>);
+  a.<span class="fn">initialize</span>(); b.<span class="fn">initialize</span>();
+}
+<span class="kw">void</span> <span class="fn">draw</span>() {
+  a.<span class="fn">renderAt</span>(<span class="num">0</span>,<span class="num">0</span>,width/<span class="num">2</span>,height);
+  b.<span class="fn">renderAt</span>(width/<span class="num">2</span>,<span class="num">0</span>,width/<span class="num">2</span>,height);
+}
+</code></pre>
+          </div>
+        </div>
+
+        <!-- ── EXPORT & SVG ───────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Export &amp; SVG</div>
+          <div class="card-body">
+            <p>Save frames as PNG sequence</p>
+            <pre><code><span class="cm">// Enable in config.json</span>
+<span class="key">"saveFrames"</span>: <span class="num">true</span>
+
+<span class="cm">// Or toggle at runtime</span>
+at.<span class="fn">toggleFrameSaving</span>();
+at.<span class="fn">setFrameSaving</span>(<span class="num">true</span>);
+
+<span class="cm">// Check output directory</span>
+<span class="fn">println</span>(at.<span class="fn">getFramesDirectory</span>());
+</code></pre>
+
+            <p style="margin-top: 5px">
+              <span class="tag">HSB</span> Colours render correctly in PDF &amp;
+              SVG — the library switches <code>colorMode(HSB)</code> before
+              every draw call and restores <code>RGB</code> after. Hue-driven
+              palettes look identical on screen and in export.
+            </p>
+            <p style="margin-top: 5px">Save vector SVG (correct artboard)</p>
+            <pre><code><span class="kw">import</span> processing.svg.*;
+<span class="kw">import</span> algorithmic.typography.render.<span class="ty">VectorExporter</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pixelDensity</span>(<span class="num">1</span>); <span class="cm">// no Retina scale() in SVG</span>
+  <span class="cm">/* ... */</span>
+}
+
+<span class="kw">void</span> <span class="fn">keyPressed</span>() {
+  <span class="kw">if</span> (key == <span class="str">'s'</span>) {
+    <span class="ty">String</span> f = <span class="str">"output.svg"</span>;
+    <span class="ty">PGraphics</span> svg = <span class="fn">createGraphics</span>(
+        width, height, <span class="ty">SVG</span>, f);
+    svg.<span class="fn">beginDraw</span>();
+    svg.<span class="fn">background</span>(<span class="num">0</span>);
+    <span class="fn">renderGrid</span>(svg); <span class="cm">// draw into buffer</span>
+    svg.<span class="fn">endDraw</span>();
+    svg.<span class="fn">dispose</span>();
+    <span class="cm">// fix pt units &amp; viewBox for Affinity /</span>
+    <span class="cm">// Illustrator / Inkscape artboard</span>
+    <span class="ty">VectorExporter</span>.<span class="fn">fixArtboardDimensions</span>(
+        <span class="kw">this</span>, f, width, height);
+    <span class="fn">println</span>(<span class="str">"SVG saved!"</span>);
+  }
+}
+</code></pre>
+
+            <p style="margin-top: 5px">Common keyboard shortcuts</p>
+            <table>
+              <tr>
+                <th>Key</th>
+                <th>Action</th>
+              </tr>
+              <tr>
+                <td>R</td>
+                <td>Restart animation</td>
+              </tr>
+              <tr>
+                <td>S</td>
+                <td>Toggle frame saving / save SVG</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 3 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 4  —  Examples Gallery
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub">Examples Gallery &nbsp;|&nbsp; Page 4 / 10</span>
+      </div>
+
+      <div class="section-title">Examples Gallery — 32 Sketches</div>
+
+      <div class="cols-4">
+        <div class="example-card">
+          <div class="name">AudioReactive</div>
+          <div class="desc">
+            Audio input drives wave parameters in real time.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">BackgroundImage</div>
+          <div class="desc">
+            Typography overlay on a single background photograph.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">BasicGrid</div>
+          <div class="desc">
+            Minimal grid with JSON config — the "hello world" sketch.
+          </div>
+        </div>
+        <div class="example-card inactive">
+          <div class="name">CulturalStyles</div>
+          <div class="desc">
+            Switch between built-in design systems (Swiss, Bauhaus …).
+            <em>Work in progress.</em>
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">CustomFont</div>
+          <div class="desc">Load and render a custom .ttf / .otf font.</div>
+        </div>
+        <div class="example-card">
+          <div class="name">CustomWave</div>
+          <div class="desc">Provide a lambda for a custom wave function.</div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphBoolean</div>
+          <div class="desc">
+            Dual-mode boolean showcase. Mode A (Letter×Letter): 1/2/3 cycle
+            union/intersect/subtract on curated pairs. Mode B (Shape×Letter):
+            geometric shapes composited with a letterform; mode 4 adds a band
+            cutter. TAB switches modes; SPACE cycles pairs/shapes; S saves PNG.
+            (v0.2.5)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphOutline</div>
+          <div class="desc">
+            Config-driven glyph outlines via
+            <code>glyphOutline</code>
+            JSON block. O cycles 4 styles: None → Solid → Dashed → Dashed Only
+            (fill suppressed); left/right arrows cycle 16 test chars; S saves
+            PNG. (v0.2.5)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphDesign</div>
+          <div class="desc">
+            fillWithPoints, distributeAlongOutline, getOuterContour /
+            getInnerContours — geometric glyph analysis (v0.2.2).
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphMorph</div>
+          <div class="desc">
+            Dedicated showcase for <code>interpolateTo()</code>: large central
+            morph, five-thumbnail timeline strip, four styles (Outline / Filled
+            / Dots / Dual), mouse-X scrub (v0.2.3).
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphDynamics</div>
+          <div class="desc">
+            Particle-based physics simulation on glyph outlines.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphPath</div>
+          <div class="desc">
+            11 display modes: filled, points, deformed, contours, tiled grid,
+            interior fill, outer contour, outer+inner, hatch fill, morph, path
+            particle (v0.2.3).
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GlyphWander</div>
+          <div class="desc">
+            Cycle 9 motion modes: None, Perlin, Circular CW/CCW, Lissajous,
+            Spring, Ripple, FlowField, Orbital. Click triggers ripple ring.
+            (Gravity &amp; Magnetic have dedicated standalone examples.)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GridStripWave</div>
+          <div class="desc">
+            Row/column strip-wave displacement via <code>GridStripMotion</code>.
+            1/2/3 cycle ROW/COLUMN/BOTH; W cycles 5 wave types (row+column
+            sync); ↑/↓ amplitude; ←/→ phase step; SPACE pause; R reset. (v0.3.0)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">GravityDynamics</div>
+          <div class="desc">
+            Glyphs fall and bounce with live sliders; SPACE triggers an upward
+            kick impulse.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">LiveControls</div>
+          <div class="desc">
+            Adjust parameters live via GUI sliders, keyboard, and OSC. Includes
+            border weight slider; B cycles sides, V toggles wave-reactive border
+            colour.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">MagneticDynamics</div>
+          <div class="desc">
+            Mouse-driven repel/attract field; SPACE toggles polarity; 3 presets.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">MultiPhoto</div>
+          <div class="desc">
+            Different photograph behind each grid cell with stage tracking.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">MultipleSystems</div>
+          <div class="desc">
+            Run several AlgorithmicTypography instances side by side.
+          </div>
+        </div>
+        <div class="example-card inactive">
+          <div class="name">PerformanceMode</div>
+          <div class="desc">
+            Optimised rendering path for high-resolution grids.
+            <em>Work in progress.</em>
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">ProgrammaticConfig</div>
+          <div class="desc">
+            Build Configuration in code with the Builder API. Randomises border
+            sides and colour; B toggles wave-reactive border mode.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">RandomASCII</div>
+          <div class="desc">
+            Random ASCII characters per cell with full HSB colour (calculateHue
+            / Saturation / ColorCustom). W key cycles all 5 wave types; HUD
+            shows active wave name. (v0.3.0)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">SaveSVG</div>
+          <div class="desc">
+            Export current frame as SVG at correct artboard size.
+            pixelDensity(1) + createGraphics +
+            VectorExporter.fixArtboardDimensions() fixes Affinity Designer /
+            Illustrator 96→72 DPI mismatch. (v0.3.0)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">TextDrivenAnimation</div>
+          <div class="desc">
+            Typography driven by external text file content.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">TextOnPath</div>
+          <div class="desc">
+            Mode 1: text string on outer contour via textOnPath(). Mode 2: 48
+            tangent-oriented ornaments via getTangent(). SPACE/T cycle chars
+            &amp; text, S saves. (v0.2.5)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">TrailEffect</div>
+          <div class="desc">
+            Motion trail / ghosting across all 6 CellMotion types.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">VibeCoding</div>
+          <div class="desc">
+            All 26 vibe keywords across 7 groups; ←/→ cycle, SPACE random
+            compound.
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">WaveAngle</div>
+          <div class="desc">
+            Explore wave propagation angle with JSON config. B key toggles
+            horizontal rule borders (top+bottom sides).
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">CurvatureField</div>
+          <div class="desc">
+            <code>GlyphCurvatureField</code> modulates wave amplitude by
+            letterform curvature. C/c cycle chars; +/− adjust intensity; [/]
+            adjust Gaussian falloff; SPACE toggle outline; S saves. (v0.3.0)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">Counterpoint</div>
+          <div class="desc">
+            <code>CounterpointEngine</code>: outer form and counter-forms on
+            independent waves. C/c cycle chars (O B R P D g e @); 1/2 main
+            speed; 3/4 counter speed; A/a, Z/z adjust angles; S saves. (v0.3.0)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">OpticalRhythm</div>
+          <div class="desc">
+            <code>setRhythmFromFont(char)</code> derives waveSpeed from typeface
+            geometry. ←/→ cycle chars; R toggles auto/manual; [/] manual speed;
+            +/− rhythmScale; live speed bar HUD. (v0.3.0)
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="name">WordMode</div>
+          <div class="desc">
+            <code>setContent("TEXT")</code> fills tiles L→R top→bottom with
+            successive chars. ↑/↓ cycle presets; type a custom word + Return;
+            SPACE toggle word/single mode; H hue preset; S saves. (v0.3.0)
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 4 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 5  —  GlyphExtractor API & Package Structure
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >GlyphExtractor API (v0.2.2–v0.2.3) &amp; Packages &nbsp;|&nbsp; Page
+          5 / 10</span
+        >
+      </div>
+
+      <div class="cols-2">
+        <!-- ── GLYPH EXTRACTOR ────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">GlyphExtractor API (v0.2.2 – v0.2.3)</div>
+          <div class="card-body">
+            <p>Designer-oriented glyph geometry access</p>
+            <pre><code><span class="kw">import</span> <span class="ty">algorithmic.typography.render.GlyphExtractor</span>;
+<span class="kw">import</span> <span class="ty">java.util.List</span>;
+
+<span class="ty">GlyphExtractor</span> g = <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Helvetica"</span>, <span class="num">72</span>);
+g.<span class="fn">setFlatness</span>(<span class="num">0.3</span>); <span class="cm">// curve resolution</span>
+
+<span class="cm">// Fluent GlyphBuilder (v0.2.3)</span>
+<span class="ty">GlyphExtractor</span>.<span class="fn">of</span>(<span class="str">'A'</span>, <span class="num">400</span>)
+  .<span class="fn">fillPoints</span>(<span class="num">500</span>)
+  .<span class="fn">hatch</span>(<span class="num">45</span>, <span class="num">8</span>)
+  .<span class="fn">colourByPosition</span>()
+  .<span class="fn">hueRange</span>(<span class="num">180</span>, <span class="num">270</span>)
+  .<span class="fn">draw</span>(<span class="kw">this</span>, x, y);
+</code></pre>
+            <table class="vtop" style="margin-top: 5px">
+              <colgroup>
+                <col style="width: 44%" />
+                <col style="width: 18%" />
+                <col style="width: 38%" />
+              </colgroup>
+              <tr>
+                <th>Method</th>
+                <th>Returns</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>extractChar(ch, size)</td>
+                <td>PShape</td>
+                <td>filled shape</td>
+              </tr>
+              <tr>
+                <td>extractDeformed(ch, sz, …)</td>
+                <td>PShape</td>
+                <td>wave-distorted</td>
+              </tr>
+              <tr>
+                <td>getContours(ch, size)</td>
+                <td>List&lt;PVector[]&gt;</td>
+                <td>all contours</td>
+              </tr>
+              <tr>
+                <td>getOuterContour(ch, size)</td>
+                <td>PVector[]</td>
+                <td>largest area</td>
+              </tr>
+              <tr>
+                <td>getInnerContours(ch, size)</td>
+                <td>List&lt;PVector[]&gt;</td>
+                <td>counter-forms</td>
+              </tr>
+              <tr>
+                <td>fillWithPoints(ch, size, n)</td>
+                <td>PVector[]</td>
+                <td>interior scatter</td>
+              </tr>
+              <tr>
+                <td>distributeAlongOutline(ch, sz, n)</td>
+                <td>PVector[]</td>
+                <td>arc-length spaced</td>
+              </tr>
+              <tr>
+                <td>getBounds(ch, size)</td>
+                <td>float[4]</td>
+                <td>x,y,w,h</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>fillWithLines(ch, sz, ang, gap)</td>
+                <td>float[][]</td>
+                <td>hatch segments</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>offsetOutline(ch, size, dist)</td>
+                <td>PVector[]</td>
+                <td>inline / outline</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>interpolateTo(c1, c2, sz, t)</td>
+                <td>PVector[]</td>
+                <td>morph at t∈[0,1]</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>getMedialAxis(ch, size, n)</td>
+                <td>PVector[]</td>
+                <td>spine approx.</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>sampleAlongPath(ch, size, t)</td>
+                <td>PVector</td>
+                <td>point at arc t</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>getBoundingContour(chs[], sz, f)</td>
+                <td>PVector[]</td>
+                <td>union outline</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>of(ch, size) → GlyphBuilder</td>
+                <td>GlyphBuilder</td>
+                <td>fluent API</td>
+              </tr>
+              <tr>
+                <td>centerOf(str, sz, cx, cy)</td>
+                <td>PVector</td>
+                <td>word centering offset</td>
+              </tr>
+              <tr>
+                <td>getDashedOutline(str, sz, dash, gap)</td>
+                <td>float[][]</td>
+                <td>word dashed outline</td>
+              </tr>
+            </table>
+            <p style="margin-top: 5px">
+              <span class="tag" style="color: var(--accent)">v0.2.3</span> rows
+              highlighted in accent colour.<br />
+              See <strong>Page 6</strong> for v0.2.5 additions: boolean ops,
+              path utilities &amp; Type DNA.<br />
+              Bottom two rows: v0.2.5 word-support String overloads — pass a
+              word wherever a <code>char</code> was accepted.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── PACKAGE STRUCTURE ──────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Package Structure</div>
+          <div class="card-body">
+            <table class="vtop">
+              <tr>
+                <th>Package</th>
+                <th>Key classes</th>
+              </tr>
+              <tr>
+                <td>algorithmic.typography</td>
+                <td>AlgorithmicTypography, Configuration, HeadlessRenderer</td>
+              </tr>
+              <tr>
+                <td>…typography.core</td>
+                <td>
+                  WaveEngine, WavePresets, CellMotion, all Motion types,
+                  TemporalTrail
+                </td>
+              </tr>
+              <tr>
+                <td>…typography.render</td>
+                <td>
+                  GridRenderer, GlyphExtractor, GlyphBuilder, TypeDNAProfile,
+                  GlyphPhysics, ExportController, VectorExporter
+                </td>
+              </tr>
+              <tr>
+                <td>…typography.audio</td>
+                <td>AudioBridge (FFT, beat detection)</td>
+              </tr>
+              <tr>
+                <td>…typography.style</td>
+                <td>ColorPalette, Serendipity</td>
+              </tr>
+              <tr>
+                <td>…typography.system</td>
+                <td>DesignSystem, VibePreset</td>
+              </tr>
+              <tr>
+                <td>…typography.text</td>
+                <td>RitaBridge (RiTa integration)</td>
+              </tr>
+              <tr>
+                <td>…typography.ui</td>
+                <td>ControlPanel, Slider, ProgressBar, OSCBridge</td>
+              </tr>
+              <tr>
+                <td>…typography.ml</td>
+                <td>AIWaveFunction</td>
+              </tr>
+              <tr>
+                <td>…typography.net</td>
+                <td>WebSocketServer</td>
+              </tr>
+            </table>
+
+            <p class="section-title" style="margin-top: 10px">
+              CellMotion Types
+            </p>
+            <table class="vtop">
+              <tr>
+                <th>Class</th>
+                <th>Since</th>
+                <th>Description</th>
+              </tr>
+              <tr>
+                <td>CircularMotion</td>
+                <td>0.2.1</td>
+                <td>CW / CCW orbital</td>
+              </tr>
+              <tr>
+                <td>PerlinMotion</td>
+                <td>0.2.1</td>
+                <td>noise wandering</td>
+              </tr>
+              <tr>
+                <td>LissajousMotion</td>
+                <td>0.2.1</td>
+                <td>figure-8 / knot</td>
+              </tr>
+              <tr>
+                <td>SpringMotion</td>
+                <td>0.2.1</td>
+                <td>spring-damped chase</td>
+              </tr>
+              <tr>
+                <td>GravityMotion</td>
+                <td>0.2.1</td>
+                <td>fall + bounce + kick()</td>
+              </tr>
+              <tr>
+                <td>MagneticMotion</td>
+                <td>0.2.2</td>
+                <td>mouse repel / attract</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>RippleMotion</td>
+                <td>0.2.3</td>
+                <td>concentric click rings</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>FlowFieldMotion</td>
+                <td>0.2.3</td>
+                <td>Perlin vector field</td>
+              </tr>
+              <tr style="color: var(--accent)">
+                <td>OrbitalMotion</td>
+                <td>0.2.3</td>
+                <td>constellation orbit</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 5 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 6  —  GlyphExtractor additions (v0.2.5): Boolean Ops, Path Utilities & Type DNA
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >GlyphExtractor additions (v0.2.5) — Boolean Ops, Path Utilities &amp;
+          Type DNA &nbsp;|&nbsp; Page 6 / 10</span
+        >
+      </div>
+
+      <div class="cols-3">
+        <!-- ── BOOLEAN AREA OPERATIONS ─────────────────── -->
+        <div class="card">
+          <div class="card-header">Boolean Area Operations (v0.2.5)</div>
+          <div class="card-body">
+            <p>
+              AWT <code>Area</code> boolean algebra on native font outlines.
+              Both <code>PShape</code> (draw with <code>shape()</code>) and
+              <code>PVector[]</code> (physics / custom render) return variants.
+            </p>
+            <pre><code><span class="kw">import</span> <span class="ty">algorithmic.typography.render.*</span>;
+
+<span class="ty">GlyphExtractor</span> g = <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Helvetica"</span>, <span class="num">72</span>);
+
+<span class="cm">// PShape overloads — ready to draw with shape()</span>
+<span class="ty">PShape</span> u = g.<span class="fn">union</span>(<span class="str">'O'</span>, <span class="str">'C'</span>, <span class="num">400</span>);
+<span class="ty">PShape</span> i = g.<span class="fn">intersect</span>(<span class="str">'B'</span>, <span class="str">'E'</span>, <span class="num">400</span>);
+<span class="ty">PShape</span> s = g.<span class="fn">subtract</span>(<span class="str">'A'</span>, <span class="str">'V'</span>, <span class="num">400</span>);
+<span class="fn">shape</span>(u, x, y);
+
+<span class="cm">// PVector[] overloads — for physics / custom draw</span>
+<span class="ty">PVector</span>[] uc = g.<span class="fn">getUnionContour</span>(<span class="str">'O'</span>, <span class="str">'C'</span>, <span class="num">400</span>);
+<span class="ty">PVector</span>[] ic = g.<span class="fn">getIntersectContour</span>(<span class="str">'B'</span>, <span class="str">'E'</span>, <span class="num">400</span>);
+<span class="ty">PVector</span>[] sc = g.<span class="fn">getSubtractContour</span>(<span class="str">'A'</span>, <span class="str">'V'</span>, <span class="num">400</span>);
+
+<span class="cm">// Arc-length-resampled dashed outline</span>
+<span class="kw">float</span>[][] dash = g.<span class="fn">getDashedOutline</span>(<span class="str">'O'</span>, <span class="num">400</span>, <span class="num">10</span>, <span class="num">5</span>);
+<span class="kw">for</span> (<span class="kw">float</span>[] seg : dash)
+  <span class="fn">line</span>(seg[<span class="num">0</span>], seg[<span class="num">1</span>], seg[<span class="num">2</span>], seg[<span class="num">3</span>]);
+</code></pre>
+            <table class="vtop" style="margin-top: 5px">
+              <tr>
+                <th>Method</th>
+                <th>Returns</th>
+                <th>Description</th>
+              </tr>
+              <tr>
+                <td>union(c1,c2,sz)</td>
+                <td>PShape</td>
+                <td>merged outline</td>
+              </tr>
+              <tr>
+                <td>getUnionContour(c1,c2,sz)</td>
+                <td>PVector[]</td>
+                <td>merged contour pts</td>
+              </tr>
+              <tr>
+                <td>intersect(c1,c2,sz)</td>
+                <td>PShape</td>
+                <td>overlap region</td>
+              </tr>
+              <tr>
+                <td>getIntersectContour(c1,c2,sz)</td>
+                <td>PVector[]</td>
+                <td>overlap contour pts</td>
+              </tr>
+              <tr>
+                <td>subtract(c1,c2,sz)</td>
+                <td>PShape</td>
+                <td>c1 minus c2</td>
+              </tr>
+              <tr>
+                <td>getSubtractContour(c1,c2,sz)</td>
+                <td>PVector[]</td>
+                <td>knockout contour</td>
+              </tr>
+              <tr>
+                <td>getDashedOutline(ch,sz,dash,gap)</td>
+                <td>float[][]</td>
+                <td>{x1,y1,x2,y2}/seg; per-contour</td>
+              </tr>
+              <tr>
+                <td>getDashedOutline(str,sz,dash,gap)</td>
+                <td>float[][]</td>
+                <td>word variant; per-contour</td>
+              </tr>
+            </table>
+            <p style="margin-top: 4px">
+              <strong>Config-driven:</strong> add
+              <code>"glyphOutline": {"style":"dashedOnly",&nbsp;…}</code> to
+              <code>config.json</code> — AT renders outlines automatically. Four
+              styles: <code>OUTLINE_NONE</code>, <code>OUTLINE_SOLID</code>,
+              <code>OUTLINE_DASHED</code>,
+              <code>OUTLINE_DASHED_ONLY</code> (fill suppressed). See
+              <span class="tag">GlyphOutline</span>: O cycles all 4; ←/→=char;
+              S=save.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── PATH UTILITIES ───────────────────────────── -->
+        <div class="card">
+          <div class="card-header">Path Utilities (v0.2.5)</div>
+          <div class="card-body">
+            <pre><code><span class="cm">// Unit tangent direction at arc-length t ∈ [0,1]</span>
+<span class="ty">PVector</span> tan = g.<span class="fn">getTangent</span>(<span class="str">'A'</span>, <span class="num">400</span>, <span class="num">0.25f</span>);
+<span class="kw">float</span> angle   = <span class="fn">atan2</span>(tan.y, tan.x);
+
+<span class="cm">// Orient 48 ornaments along an outline</span>
+<span class="ty">PVector</span>[] path = g.<span class="fn">getOuterContour</span>(<span class="str">'O'</span>, <span class="num">600</span>);
+<span class="kw">for</span> (<span class="kw">int</span> k = <span class="num">0</span>; k &lt; <span class="num">48</span>; k++) {
+  <span class="kw">float</span> t   = (<span class="kw">float</span>) k / <span class="num">48</span>;
+  <span class="ty">PVector</span> pos = <span class="cm">/* samplePath(path, t) */</span>;
+  <span class="ty">PVector</span> dir = g.<span class="fn">getTangent</span>(<span class="str">'O'</span>, <span class="num">600</span>, t);
+  <span class="fn">pushMatrix</span>(); <span class="fn">translate</span>(pos.x, pos.y);
+  <span class="fn">rotate</span>(<span class="fn">atan2</span>(dir.y, dir.x));
+  <span class="fn">text</span>(<span class="str">"›"</span>, <span class="num">0</span>, <span class="num">0</span>); <span class="fn">popMatrix</span>();
+}
+
+<span class="cm">// Extra tessellation density for deformation</span>
+<span class="ty">PVector</span>[] dense = g.<span class="fn">subdivide</span>(<span class="str">'O'</span>, <span class="num">400</span>, <span class="num">6</span>);
+
+<span class="cm">// Lay a string along any contour</span>
+<span class="ty">PVector</span>[] outer = g.<span class="fn">getOuterContour</span>(<span class="str">'O'</span>, <span class="num">600</span>);
+g.<span class="fn">textOnPath</span>(<span class="str">"Around the letterform"</span>, outer, <span class="num">24</span>);
+</code></pre>
+            <table class="vtop" style="margin-top: 5px">
+              <tr>
+                <th>Method</th>
+                <th>Returns</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>getTangent(ch, size, t)</td>
+                <td>PVector</td>
+                <td>unit dir at arc t∈[0,1]</td>
+              </tr>
+              <tr>
+                <td>subdivide(ch, size, n)</td>
+                <td>PVector[]</td>
+                <td>n pts per segment</td>
+              </tr>
+              <tr>
+                <td>textOnPath(text, path, sz)</td>
+                <td>PShape</td>
+                <td>glyph group on contour</td>
+              </tr>
+              <tr>
+                <td>textOnPath(text, path, sz, spacing)</td>
+                <td>PShape</td>
+                <td>+ extra px between chars</td>
+              </tr>
+            </table>
+            <p style="margin-top: 5px">
+              See <span class="tag">TextOnPath</span>: mode 1 text on outer
+              contour; mode 2 tangent-oriented ornaments; SPACE cycles chars, T
+              cycles text, S saves.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── TYPE DNA ─────────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">
+            Type DNA — TypeDNAProfile &amp; applyTypeDNA (v0.2.5)
+          </div>
+          <div class="card-body">
+            <p>
+              Font outlines drive the animation. Switch typefaces and the
+              animation changes character automatically.
+            </p>
+            <pre><code><span class="kw">import</span> <span class="ty">algorithmic.typography.render.*</span>;
+
+<span class="ty">GlyphExtractor</span> g =
+  <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Garamond"</span>, <span class="num">600</span>);
+
+<span class="cm">// Individual metrics</span>
+<span class="kw">float</span>   axis   = g.<span class="fn">getStressAxis</span>(<span class="str">'A'</span>, <span class="num">600</span>);  <span class="cm">// °</span>
+<span class="ty">PVector</span> centre = g.<span class="fn">getOpticalCentroid</span>(<span class="str">'A'</span>, <span class="num">600</span>);
+<span class="kw">float</span>   ratio  = g.<span class="fn">getCounterRatio</span>(<span class="str">'O'</span>, <span class="num">600</span>);  <span class="cm">// 0–1</span>
+<span class="kw">float</span>   weight = g.<span class="fn">getStrokeWeight</span>(<span class="str">'A'</span>, <span class="num">600</span>); <span class="cm">// px</span>
+
+<span class="cm">// Aggregate into a reusable profile</span>
+<span class="ty">TypeDNAProfile</span> dna =
+  g.<span class="fn">buildTypeDNAProfile</span>(<span class="str">'A'</span>, <span class="num">600</span>);
+
+<span class="cm">// One-call preset — returns this for chaining</span>
+at.<span class="fn">applyTypeDNA</span>(dna).<span class="fn">initialize</span>();
+
+<span class="cm">// JSON round-trip — save &amp; share presets</span>
+<span class="fn">saveJSONObject</span>(dna.<span class="fn">toJSON</span>(), <span class="str">"garamond.json"</span>);
+<span class="ty">TypeDNAProfile</span> p =
+  <span class="ty">TypeDNAProfile</span>.<span class="fn">fromJSON</span>(
+    <span class="fn">loadJSONObject</span>(<span class="str">"garamond.json"</span>));
+at.<span class="fn">applyTypeDNA</span>(p).<span class="fn">initialize</span>();
+</code></pre>
+            <p style="margin-top: 5px">
+              <code>applyTypeDNA</code> maps the profile:
+            </p>
+            <table class="vtop">
+              <tr>
+                <th>DNA field</th>
+                <th>Config parameter set</th>
+              </tr>
+              <tr>
+                <td>stressAxis</td>
+                <td>waveAngle</td>
+              </tr>
+              <tr>
+                <td>counterRatio</td>
+                <td>waveAmplitudeRange</td>
+              </tr>
+              <tr>
+                <td>strokeWeight</td>
+                <td>brightnessRange</td>
+              </tr>
+            </table>
+            <table class="vtop" style="margin-top: 6px">
+              <tr>
+                <th>Method</th>
+                <th>Returns</th>
+                <th>Use as…</th>
+              </tr>
+              <tr>
+                <td>getStressAxis(ch,sz)</td>
+                <td>float °</td>
+                <td>waveAngle</td>
+              </tr>
+              <tr>
+                <td>getOpticalCentroid(ch,sz)</td>
+                <td>PVector</td>
+                <td>orbit / pivot origin</td>
+              </tr>
+              <tr>
+                <td>getCounterRatio(ch,sz)</td>
+                <td>float 0–1</td>
+                <td>amplitude / breathing</td>
+              </tr>
+              <tr>
+                <td>getStrokeWeight(ch,sz)</td>
+                <td>float px</td>
+                <td>brightness / mass</td>
+              </tr>
+              <tr>
+                <td>buildTypeDNAProfile(ch,sz)</td>
+                <td>TypeDNAProfile</td>
+                <td>full fingerprint</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 6 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 7  —  v0.3.0 — GridStripMotion, PerlinVertexMotion, Presets & AudioBridge
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >v0.3.0 API — Grid Strip Motion, Vertex Motion &amp; Presets
+          &nbsp;|&nbsp; Page 7 / 10</span
+        >
+      </div>
+
+      <div class="cols-2">
+        <!-- ── GRID STRIP MOTION ──────────────────────────── -->
+        <div class="card">
+          <div class="card-header">GridStripMotion (v0.3.0)</div>
+          <div class="card-body">
+            <p>
+              Shifts entire rows or columns as rigid strips driven by a wave.
+              Composes with <code>CellMotion</code> — strip slides + per-glyph
+              orbits work simultaneously.
+            </p>
+            <pre><code><span class="cm">// Via config.json (recommended)</span>
+<span class="cm">// "gridStripMotion": { "axis": "row",</span>
+<span class="cm">//   "amplitude": 0.3, "phaseStep": 0.4 }</span>
+
+<span class="cm">// Or programmatically</span>
+<span class="ty">GridStripMotion</span> strip = <span class="kw">new</span> <span class="ty">GridStripMotion</span>();
+strip.<span class="fn">setAxis</span>(<span class="ty">GridStripMotion</span>.<span class="num">ROW</span>);   <span class="cm">// ROW · COLUMN · BOTH</span>
+strip.<span class="fn">setAmplitude</span>(<span class="num">0.3f</span>);    <span class="cm">// fraction of tile size</span>
+strip.<span class="fn">setPhaseStep</span>(<span class="num">0.4f</span>);    <span class="cm">// radians between strips</span>
+strip.<span class="fn">setRowWaveType</span>(<span class="str">"SINE"</span>); <span class="cm">// per-axis wave override</span>
+strip.<span class="fn">setColumnWaveType</span>(<span class="str">"PERLIN"</span>);
+strip.<span class="fn">setRowSpeed</span>(<span class="num">1.0f</span>);
+strip.<span class="fn">setColumnSpeed</span>(-<span class="num">1.0f</span>); <span class="cm">// negative = reverse</span>
+at.<span class="fn">setGridStripMotion</span>(strip);
+</code></pre>
+            <table class="vtop" style="margin-top: 5px">
+              <tr>
+                <th>Method</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>setAxis(int)</td>
+                <td>ROW=0, COLUMN=1, BOTH=2</td>
+              </tr>
+              <tr>
+                <td>setAmplitude(float)</td>
+                <td>0–1 fraction of tile size</td>
+              </tr>
+              <tr>
+                <td>setPhaseStep(float)</td>
+                <td>radians; more = more cycles visible</td>
+              </tr>
+              <tr>
+                <td>setRowWaveType(String)</td>
+                <td>SINE · SQUARE · TRIANGLE ·</td>
+              </tr>
+              <tr>
+                <td>setColumnWaveType(String)</td>
+                <td>SAWTOOTH · TANGENT · PERLIN</td>
+              </tr>
+              <tr>
+                <td>setRowSpeed(float)</td>
+                <td>negative reverses direction</td>
+              </tr>
+              <tr>
+                <td>setColumnSpeed(float)</td>
+                <td>counter-travel when opposite sign</td>
+              </tr>
+              <tr>
+                <td>setEnabled(boolean)</td>
+                <td>toggle without destroying state</td>
+              </tr>
+              <tr>
+                <td>at.setGridStripMotion(gsm)</td>
+                <td>attach to AlgorithmicTypography</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── PERLIN VERTEX MOTION ──────────────────────── -->
+        <div class="card">
+          <div class="card-header">PerlinVertexMotion (v0.3.0)</div>
+          <div class="card-body">
+            <p>
+              Displaces each glyph outline vertex with independent X/Y Perlin
+              fields. Works on arrays from <code>GlyphExtractor</code>.
+            </p>
+            <pre><code><span class="ty">GlyphExtractor</span> ge = <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Helvetica"</span>, <span class="num">72</span>);
+<span class="ty">PVector</span>[] outline = ge.<span class="fn">getOuterContour</span>(<span class="str">'A'</span>, <span class="num">200</span>);
+
+<span class="ty">PerlinVertexMotion</span> pvm = <span class="kw">new</span> <span class="ty">PerlinVertexMotion</span>(<span class="kw">this</span>);
+pvm.<span class="fn">setAmplitude</span>(<span class="num">6.0f</span>);      <span class="cm">// px displacement</span>
+pvm.<span class="fn">setSpatialScale</span>(<span class="num">0.03f</span>); <span class="cm">// field frequency</span>
+pvm.<span class="fn">setTimeSpeed</span>(<span class="num">0.015f</span>);  <span class="cm">// evolution rate/frame</span>
+
+<span class="cm">// In draw():</span>
+<span class="ty">PVector</span>[] warped = pvm.<span class="fn">deform</span>(outline, <span class="fn">frameCount</span>);
+<span class="fn">beginShape</span>();
+<span class="kw">for</span> (<span class="ty">PVector</span> v : warped) <span class="fn">vertex</span>(v.x, v.y);
+<span class="fn">endShape</span>(<span class="num">CLOSE</span>);
+
+<span class="cm">// Multi-contour shortcut</span>
+<span class="ty">PVector</span>[][] all = ge.<span class="fn">getContours</span>(<span class="str">'B'</span>, <span class="num">200</span>);
+<span class="ty">PVector</span>[][] w   = pvm.<span class="fn">deformContours</span>(all, <span class="fn">frameCount</span>);
+</code></pre>
+            <p style="margin-top: 4px">Preset ranges of note:</p>
+            <table class="vtop">
+              <tr>
+                <th>Feel</th>
+                <th>amplitude</th>
+                <th>spatialScale</th>
+                <th>timeSpeed</th>
+              </tr>
+              <tr>
+                <td>Subtle</td>
+                <td>2.0</td>
+                <td>0.05</td>
+                <td>0.008</td>
+              </tr>
+              <tr>
+                <td>Organic</td>
+                <td>6.0</td>
+                <td>0.03</td>
+                <td>0.015</td>
+              </tr>
+              <tr>
+                <td>Chaotic</td>
+                <td>14.0</td>
+                <td>0.012</td>
+                <td>0.04</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="cols-2" style="margin-top: 4mm">
+        <!-- ── MOTION PRESETS ─────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">
+            MagneticMotion &amp; RippleMotion Named Presets (v0.3.0)
+          </div>
+          <div class="card-body">
+            <p>
+              Replace raw parameter tables with a single
+              <code>setPreset(int)</code> call.
+            </p>
+            <pre><code><span class="cm">// MagneticMotion — 4 intensity levels</span>
+<span class="ty">MagneticMotion</span> mag = <span class="kw">new</span> <span class="ty">MagneticMotion</span>(<span class="kw">this</span>);
+mag.<span class="fn">setPreset</span>(<span class="ty">MagneticMotion</span>.<span class="num">GENTLE</span>);   <span class="cm">// drift away</span>
+mag.<span class="fn">setPreset</span>(<span class="ty">MagneticMotion</span>.<span class="num">MODERATE</span>); <span class="cm">// balanced</span>
+mag.<span class="fn">setPreset</span>(<span class="ty">MagneticMotion</span>.<span class="num">STRONG</span>);   <span class="cm">// forceful</span>
+mag.<span class="fn">setPreset</span>(<span class="ty">MagneticMotion</span>.<span class="num">SNAPPING</span>); <span class="cm">// instant snap</span>
+
+<span class="cm">// Normalised strength (0 = off, 1 = preset max)</span>
+mag.<span class="fn">setStrengthNormalized</span>(<span class="num">0.6f</span>);
+
+<span class="cm">// RippleMotion — 3 intensity levels</span>
+<span class="ty">RippleMotion</span> rip = <span class="kw">new</span> <span class="ty">RippleMotion</span>(<span class="kw">this</span>);
+rip.<span class="fn">setPreset</span>(<span class="ty">RippleMotion</span>.<span class="num">GENTLE</span>);
+rip.<span class="fn">setPreset</span>(<span class="ty">RippleMotion</span>.<span class="num">MODERATE</span>);
+rip.<span class="fn">setPreset</span>(<span class="ty">RippleMotion</span>.<span class="num">STRONG</span>);
+
+<span class="cm">// Normalised speed (0 = frozen, 1 = preset max)</span>
+rip.<span class="fn">setExpandSpeedNormalized</span>(<span class="num">0.5f</span>);
+</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 7 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 8  —  v0.3.0 — AudioBridge Semantic Mapping
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >v0.3.0 API — AudioBridge Semantic Mapping &nbsp;|&nbsp; Page 8 /
+          10</span
+        >
+      </div>
+
+      <div class="cols-2">
+        <!-- ── AUDIO BRIDGE SEMANTIC ──────────────────────── -->
+        <div class="card">
+          <div class="card-header">AudioBridge Semantic Mapping (v0.3.0)</div>
+          <div class="card-body">
+            <p>
+              Three named intensity constants replace manual min/max ranges.
+              Each band has pre-tuned standard ranges.
+            </p>
+            <pre><code><span class="ty">AudioBridge</span> audio = <span class="kw">new</span> <span class="ty">AudioBridge</span>(<span class="kw">this</span>);
+audio.<span class="fn">initialize</span>();
+
+<span class="cm">// Semantic mapping — intensity constants:</span>
+<span class="cm">// SUBTLE (0) · EXPRESSIVE (1) · FULL (2)</span>
+audio.<span class="fn">mapBassTo</span>(
+  config::<span class="fn">setWaveSpeed</span>, <span class="ty">AudioBridge</span>.<span class="num">EXPRESSIVE</span>);
+  <span class="cm">// bass SUBTLE=[0.8,1.5]  EXP=[0.3,3.0]  FULL=[0,6]</span>
+
+audio.<span class="fn">mapMidTo</span>(
+  config::<span class="fn">setSaturationMax</span>, <span class="ty">AudioBridge</span>.<span class="num">SUBTLE</span>);
+  <span class="cm">// mid  SUBTLE=[70,140]   EXP=[30,200]   FULL=[0,255]</span>
+
+audio.<span class="fn">mapTrebleTo</span>(
+  config::<span class="fn">setBrightnessMax</span>, <span class="ty">AudioBridge</span>.<span class="num">FULL</span>);
+  <span class="cm">// treb SUBTLE=[150,220]  EXP=[80,240]   FULL=[50,255]</span>
+
+audio.<span class="fn">mapOverallTo</span>(
+  config::<span class="fn">setWaveMultiplierMax</span>, <span class="ty">AudioBridge</span>.<span class="num">EXPRESSIVE</span>);
+  <span class="cm">// ovrl SUBTLE=[0.5,1.5]  EXP=[0.2,3.0]  FULL=[0,6]</span>
+
+<span class="cm">// In draw():</span>
+audio.<span class="fn">update</span>();
+</code></pre>
+            <p style="margin-top: 5px">
+              Add Minim to <code>build.gradle</code> or drop
+              <code>minim.jar</code> in <code>code/</code> to enable audio.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── AUDIOBRIDGE API REFERENCE ─────────────────── -->
+        <div class="card">
+          <div class="card-header">AudioBridge API Reference (v0.3.0)</div>
+          <div class="card-body">
+            <table class="vtop">
+              <tr>
+                <th>Method</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>new AudioBridge(PApplet)</td>
+                <td>pass <code>this</code></td>
+              </tr>
+              <tr>
+                <td>initialize()</td>
+                <td>start audio engine; call once in setup()</td>
+              </tr>
+              <tr>
+                <td>update()</td>
+                <td>advance FFT — call every draw()</td>
+              </tr>
+              <tr>
+                <td>mapBassTo(fn, int)</td>
+                <td>20–250 Hz; int = SUBTLE/EXPRESSIVE/FULL</td>
+              </tr>
+              <tr>
+                <td>mapMidTo(fn, int)</td>
+                <td>250 Hz – 4 kHz</td>
+              </tr>
+              <tr>
+                <td>mapTrebleTo(fn, int)</td>
+                <td>4 – 16 kHz</td>
+              </tr>
+              <tr>
+                <td>mapOverallTo(fn, int)</td>
+                <td>full-spectrum RMS</td>
+              </tr>
+              <tr>
+                <td>mapBassTo(fn, float, float)</td>
+                <td>custom min/max override</td>
+              </tr>
+              <tr>
+                <td>clearMappings()</td>
+                <td>remove all band → config bindings</td>
+              </tr>
+              <tr>
+                <td>getBass() / getMid()</td>
+                <td>raw 0–1 band energy</td>
+              </tr>
+              <tr>
+                <td>getTreble() / getOverall()</td>
+                <td>raw 0–1 band energy</td>
+              </tr>
+            </table>
+            <p class="section-title" style="margin-top: 6px">
+              Pre-tuned output ranges
+            </p>
+            <table class="vtop">
+              <tr>
+                <th>Constant</th>
+                <th>Bass [speed]</th>
+                <th>Mid [sat]</th>
+                <th>Treble [bri]</th>
+                <th>Overall [mult]</th>
+              </tr>
+              <tr>
+                <td>SUBTLE</td>
+                <td>0.8 – 1.5</td>
+                <td>70 – 140</td>
+                <td>150 – 220</td>
+                <td>0.5 – 1.5</td>
+              </tr>
+              <tr>
+                <td>EXPRESSIVE</td>
+                <td>0.3 – 3.0</td>
+                <td>30 – 200</td>
+                <td>80 – 240</td>
+                <td>0.2 – 3.0</td>
+              </tr>
+              <tr>
+                <td>FULL</td>
+                <td>0 – 6</td>
+                <td>0 – 255</td>
+                <td>50 – 255</td>
+                <td>0 – 6</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 8 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 9  —  v0.3.0 — Typography as Material
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub"
+          >v0.3.0 — Typography as Material &nbsp;|&nbsp; Page 9 / 10</span
+        >
+      </div>
+
+      <div class="cols-2">
+        <!-- ── GLYPH CURVATURE FIELD ─────────────────────── -->
+        <div class="card">
+          <div class="card-header">
+            GlyphCurvatureField &amp; AmplitudeField (v0.3.0)
+          </div>
+          <div class="card-body">
+            <p>
+              Samples letterform outline curvature as a Gaussian scalar field
+              that modulates the <strong>spatial phase spread</strong> of the
+              wave per grid cell. Cells over tight corners and bowls push
+              neighbouring cells into different wave phases — they ripple and
+              flutter independently. Cells over straight stems collapse all
+              nearby cells to the same phase — they pulse together in unison, no
+              ripple.
+            </p>
+            <pre><code><span class="cm">// Build the field from a single character</span>
+<span class="ty">GlyphExtractor</span> ge = <span class="kw">new</span> <span class="ty">GlyphExtractor</span>(<span class="kw">this</span>, <span class="str">"Helvetica"</span>, <span class="num">72</span>);
+<span class="ty">GlyphCurvatureField</span> field =
+    <span class="ty">GlyphCurvatureField</span>.<span class="fn">from</span>(ge, <span class="str">'B'</span>, <span class="num">800f</span>);
+
+<span class="cm">// Optional tuning</span>
+field.<span class="fn">setIntensity</span>(<span class="num">1.0f</span>); <span class="cm">// 0–1 phase spread strength</span>
+field.<span class="fn">setFalloff</span>(<span class="num">0.10f</span>);  <span class="cm">// Gaussian σ — lower = sharper hotspots</span>
+
+<span class="cm">// Attach to the AlgorithmicTypography instance</span>
+at.<span class="fn">setCurvatureField</span>(field);
+
+<span class="cm">// Or attach to WaveEngine directly</span>
+waveEngine.<span class="fn">setAmplitudeField</span>(field);
+
+<span class="cm">// Multi-character version (averages curvature)</span>
+<span class="ty">GlyphCurvatureField</span> multi =
+    <span class="ty">GlyphCurvatureField</span>.<span class="fn">from</span>(ge,
+        <span class="kw">new</span> <span class="ty">char</span>[]{ <span class="str">'B'</span>, <span class="str">'R'</span>, <span class="str">'O'</span> }, <span class="num">800f</span>);
+
+<span class="cm">// Remove</span>
+at.<span class="fn">setCurvatureField</span>(<span class="kw">null</span>);
+</code></pre>
+            <table class="vtop" style="margin-top: 5px">
+              <tr>
+                <th>Method</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>from(ge, char, size)</td>
+                <td>factory — single character</td>
+              </tr>
+              <tr>
+                <td>from(ge, char[], size)</td>
+                <td>factory — averaged over set</td>
+              </tr>
+              <tr>
+                <td>setIntensity(float)</td>
+                <td>0 = no effect, 1 = full field</td>
+              </tr>
+              <tr>
+                <td>setFalloff(float)</td>
+                <td>Gaussian σ in normalised coords</td>
+              </tr>
+              <tr>
+                <td>getSampleCount()</td>
+                <td>number of curvature samples</td>
+              </tr>
+              <tr>
+                <td>sampleAt(nx, ny)</td>
+                <td>raw field value at 0–1 coords</td>
+              </tr>
+              <tr>
+                <td>at.setCurvatureField(f)</td>
+                <td>attach / null to remove</td>
+              </tr>
+              <tr>
+                <td>at.getCurvatureField()</td>
+                <td>returns current field or null</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── COUNTERPOINT ENGINE ───────────────────────── -->
+        <div class="card">
+          <div class="card-header">CounterpointEngine (v0.3.0)</div>
+          <div class="card-body">
+            <p>
+              Two independent <code>WaveEngine</code> instances animate the
+              outer letterform and inner counter-forms separately. Characters
+              with enclosed counter-forms (O, B, P, R, D, g, e, a …) show the
+              strongest effect.
+            </p>
+            <pre><code><span class="cm">// Configure two wave engines independently</span>
+<span class="ty">Configuration</span> mainCfg = <span class="kw">new</span> <span class="ty">Configuration</span>();
+mainCfg.<span class="fn">setWaveSpeed</span>(<span class="num">0.9f</span>).<span class="fn">setWaveAngle</span>(<span class="num">45f</span>)
+       .<span class="fn">setWaveType</span>(<span class="str">"SINE"</span>);
+
+<span class="ty">Configuration</span> cntrCfg = <span class="kw">new</span> <span class="ty">Configuration</span>();
+cntrCfg.<span class="fn">setWaveSpeed</span>(<span class="num">1.7f</span>).<span class="fn">setWaveAngle</span>(<span class="num">135f</span>)
+       .<span class="fn">setWaveType</span>(<span class="str">"TRIANGLE"</span>)
+       .<span class="fn">setHueRange</span>(<span class="num">0</span>, <span class="num">60</span>);    <span class="cm">// warm for holes</span>
+
+<span class="ty">WaveEngine</span> main  = <span class="kw">new</span> <span class="ty">WaveEngine</span>(mainCfg);
+<span class="ty">WaveEngine</span> cntr  = <span class="kw">new</span> <span class="ty">WaveEngine</span>(cntrCfg);
+<span class="ty">CounterpointEngine</span> cp =
+    <span class="kw">new</span> <span class="ty">CounterpointEngine</span>(main, cntr);
+
+at.<span class="fn">setCounterpointEngine</span>(cp);
+
+<span class="cm">// Access wave engines for live tweaks</span>
+cp.<span class="fn">getMainWave</span>().<span class="fn">getConfig</span>().<span class="fn">setWaveSpeed</span>(<span class="num">1.2f</span>);
+cp.<span class="fn">getCounterWave</span>().<span class="fn">getConfig</span>().<span class="fn">setWaveAngle</span>(<span class="num">90f</span>);
+</code></pre>
+            <table class="vtop" style="margin-top: 5px">
+              <tr>
+                <th>Method</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>new CounterpointEngine(m, c)</td>
+                <td>both args non-null required</td>
+              </tr>
+              <tr>
+                <td>getMainWave()</td>
+                <td>outer-form WaveEngine</td>
+              </tr>
+              <tr>
+                <td>getCounterWave()</td>
+                <td>counter-form WaveEngine</td>
+              </tr>
+              <tr>
+                <td>update(frameCount)</td>
+                <td>called automatically by AT</td>
+              </tr>
+              <tr>
+                <td>at.setCounterpointEngine(e)</td>
+                <td>attach / null to remove</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 9 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     PAGE 10  —  Quick Tips, Optical Rhythm Sync & Word Mode
+     ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+      <div class="page-header">
+        <h1>AlgorithmicTypography — Cheat Sheet</h1>
+        <span class="sub">Quick Tips &nbsp;|&nbsp; Page 10 / 10</span>
+      </div>
+
+      <div class="cols-2">
+        <!-- Tips 1–6 -->
+        <div class="card">
+          <div class="card-header">Quick Tips (1–6)</div>
+          <div class="card-body">
+            <table class="vtop">
+              <tr>
+                <th>#</th>
+                <th>Tip</th>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>
+                  Always call <code>initialize()</code> after loading or setting
+                  a configuration.
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>
+                  Use <code>setAutoRender(false)</code> whenever you draw
+                  backgrounds or composite.
+                </td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>
+                  <code>renderAt(x, y, w, h)</code> places the grid anywhere —
+                  split layouts, insets, etc.
+                </td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>
+                  Track your own <code>startTime = millis()</code> — the
+                  library's start time is private.
+                </td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>
+                  Call <code>restart()</code> + reset
+                  <code>startTime</code> together when restarting.
+                </td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>
+                  Set <code>secondChangeTime</code> to <code>0</code> in JSON to
+                  use only two grid stages.
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tips 7–12 -->
+        <div class="card">
+          <div class="card-header">Quick Tips (7–12)</div>
+          <div class="card-body">
+            <table class="vtop">
+              <tr>
+                <th>#</th>
+                <th>Tip</th>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>
+                  Colours are HSB: hue 0–360, saturation 0–255, brightness
+                  0–255.
+                </td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>
+                  Place images and JSON files in the sketch's
+                  <code>data/</code> folder.
+                </td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>
+                  Builder pattern:
+                  <code
+                    >new Configuration.Builder().initialTiles(8,8).build()</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>
+                  Javadoc is in <code>reference/</code> — open
+                  <code>index.html</code> in a browser.
+                </td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>
+                  <code>RippleMotion.trigger(x,y)</code> must be called from
+                  <code>mousePressed()</code>; call
+                  <code>setTileGrid()</code> once in <code>setup()</code>.
+                </td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>
+                  All <code>GlyphExtractor</code> methods have String overloads
+                  — pass a word (e.g. <code>"TYPE"</code>) wherever a single
+                  <code>char</code> was accepted.
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="cols-2" style="margin-top: 4mm">
+        <!-- ── OPTICAL RHYTHM SYNC ───────────────────────── -->
+        <div class="card">
+          <div class="card-header">Optical Rhythm Sync (v0.3.0)</div>
+          <div class="card-body">
+            <p>
+              Derives <code>waveSpeed</code> from the typeface's own geometry —
+              stroke weight and counter ratio — so each letterform breathes at
+              its own natural visual pace.
+            </p>
+            <pre><code><span class="cm">// Automatically set waveSpeed from font geometry</span>
+at.<span class="fn">setRhythmFromFont</span>(<span class="str">'O'</span>); <span class="cm">// large counter → faster pulse</span>
+at.<span class="fn">setRhythmFromFont</span>(<span class="str">'I'</span>); <span class="cm">// no counter → slower pulse</span>
+
+<span class="cm">// Scale the derived frequency up/down</span>
+config.<span class="fn">setRhythmScale</span>(<span class="num">1.5f</span>); <span class="cm">// persist in JSON too</span>
+
+<span class="cm">// Formula (for reference):</span>
+<span class="cm">// freq = (0.5 + counterRatio)</span>
+<span class="cm">//      / (1.0 + strokeWeight / 80.0)</span>
+<span class="cm">//      * rhythmScale</span>
+
+<span class="cm">// Read back the computed speed</span>
+<span class="ty">float</span> spd = config.<span class="fn">getWaveSpeed</span>();
+
+<span class="cm">// config.json — persisted field:</span>
+<span class="cm">// "animation": { "rhythmScale": 1.2 }</span>
+</code></pre>
+            <table class="vtop" style="margin-top: 4px">
+              <tr>
+                <th>Method</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>at.setRhythmFromFont(char)</td>
+                <td>sets config.waveSpeed</td>
+              </tr>
+              <tr>
+                <td>config.setRhythmScale(float)</td>
+                <td>multiplier; ignored if ≤ 0</td>
+              </tr>
+              <tr>
+                <td>config.getRhythmScale()</td>
+                <td>returns current scale</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── WORD / SENTENCE MODE ──────────────────────── -->
+        <div class="card">
+          <div class="card-header">Word / Sentence Mode (v0.3.0)</div>
+          <div class="card-body">
+            <p>
+              Each tile picks its character from a string, left-to-right
+              top-to-bottom, wrapping by string length. Full wave, motion, and
+              physics control is preserved on every character.
+            </p>
+            <pre><code><span class="cm">// Enable word mode</span>
+at.<span class="fn">setContent</span>(<span class="str">"TYPOGRAPHY"</span>);
+<span class="cm">// or via configuration:</span>
+config.<span class="fn">setContent</span>(<span class="str">"THE GRID"</span>);
+
+<span class="cm">// Disable (back to single-char mode)</span>
+at.<span class="fn">setContent</span>(<span class="kw">null</span>);
+config.<span class="fn">setContent</span>(<span class="str">""</span>);
+
+<span class="cm">// config.json — persisted field:</span>
+<span class="cm">// "text": { "character": "A",</span>
+<span class="cm">//           "content": "TYPOGRAPHY" }</span>
+
+<span class="cm">// Live swap in draw() is safe</span>
+<span class="kw">if</span> (<span class="fn">frameCount</span> % <span class="num">120</span> == <span class="num">0</span>) {
+  at.<span class="fn">setContent</span>(nextWord());
+}
+</code></pre>
+            <table class="vtop" style="margin-top: 4px">
+              <tr>
+                <th>Method</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td>at.setContent(String)</td>
+                <td>null/"" = single-char mode</td>
+              </tr>
+              <tr>
+                <td>config.setContent(String)</td>
+                <td>same; JSON: text.content</td>
+              </tr>
+              <tr>
+                <td>config.getContent()</td>
+                <td>returns null when inactive</td>
+              </tr>
+            </table>
+            <p style="margin-top: 5px">
+              Per-character <code>PShape</code> cache is built lazily on the
+              first frame and reused each draw call — no rebuild cost per frame.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        Page 10 / 10 &nbsp;·&nbsp; AlgorithmicTypography v0.3.0 &nbsp;·&nbsp;
+        Processing 4+
+      </div>
+    </div>
+  </body>
+</html>

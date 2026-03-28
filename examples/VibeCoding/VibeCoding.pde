@@ -47,9 +47,9 @@ String[] allVibes;
 String[] allLabels;
 
 int vibeIndex = 0;
-String currentVibe  = "";
+String currentVibe = "";
 String currentLabel = "";
-String compound     = "";   // shown when SPACE was last used
+String compound = "";  // shown when SPACE was last used
 
 void setup() {
   size(1080, 1080);
@@ -101,10 +101,10 @@ void draw() {
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 void applyVibe(int idx) {
-  vibeIndex    = idx;
-  currentVibe  = allVibes[idx];
+  vibeIndex = idx;
+  currentVibe = allVibes[idx];
   currentLabel = allLabels[idx];
-  compound     = "";
+  compound = "";
   VibePreset.apply(at.getConfiguration(), currentVibe);
   println("Vibe: " + currentVibe + " [" + currentLabel + "]");
 }
@@ -113,7 +113,7 @@ void applyCompound() {
   int a = (int)random(allVibes.length);
   int b;
   do { b = (int)random(allVibes.length); } while (b == a);
-  compound    = allVibes[a] + " " + allVibes[b];
+  compound = allVibes[a] + " " + allVibes[b];
   currentVibe = compound;
   VibePreset.apply(at.getConfiguration(), compound);
   println("Compound: " + compound);

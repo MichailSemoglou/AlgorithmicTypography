@@ -28,10 +28,10 @@ import algorithmic.typography.core.GravityMotion;
 import algorithmic.typography.ui.*;
 
 // ── Core objects ──────────────────────────────────────────────────
-AlgorithmicTypography      at;
-ObservableConfiguration    config;
-ControlPanel               wavePanel;    // standard library panel (left)
-GravityMotion              gravity;
+AlgorithmicTypography   at;
+ObservableConfiguration config;
+ControlPanel            wavePanel;  // standard library panel (left)
+GravityMotion           gravity;
 
 // ── Gravity panel sliders ─────────────────────────────────────────
 Slider sldGravity;
@@ -45,16 +45,16 @@ Slider sldJumpStrength;
 Slider[] gravSliders;
 
 // ── Gravity panel layout ──────────────────────────────────────────
-final float GP_X     = 20;        // x offset from RIGHT edge
-final float GP_Y     = 10;
-final float GP_W     = 310;
-final float GP_PAD   = 10;
-final float GP_HDR   = 24;
-final float GP_ROW   = 24;
+final float GP_X   = 20;  // x offset from RIGHT edge
+final float GP_Y   = 10;
+final float GP_W   = 310;
+final float GP_PAD = 10;
+final float GP_HDR = 24;
+final float GP_ROW = 24;
 
 // ── State ─────────────────────────────────────────────────────────
-boolean  panelsVisible = true;
-String   presetName    = "Default";
+boolean panelsVisible = true;
+String presetName = "Default";
 
 // ── Presets ──────────────────────────────────────────────────────
 // Each preset: { gravity, restitution, lateralStrength, airDrag, phaseSpread, radius }
@@ -215,12 +215,12 @@ void applyPreset(int idx) {
   gravity.reset();
 
   // Sync sliders to preset values
-  sldGravity    .setValue(p[0]);
+  sldGravity.setValue(p[0]);
   sldRestitution.setValue(p[1]);
-  sldLateral    .setValue(p[2]);
-  sldAirDrag    .setValue(p[3]);
+  sldLateral.setValue(p[2]);
+  sldAirDrag.setValue(p[3]);
   sldPhaseSpread.setValue(p[4]);
-  sldRadius     .setValue(p[5]);
+  sldRadius.setValue(p[5]);
 
   println("Preset: " + presetName);
 }

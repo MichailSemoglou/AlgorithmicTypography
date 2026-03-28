@@ -1,0 +1,37 @@
+{
+  "canvas": {
+    "width": 1080,
+    "height": 1080
+  },
+  "grid": {
+    "tilesX": 13,
+    "tilesY": 13
+  },
+  "text": {
+    "character": "A",
+    "textScale": 0.88,
+    "content": "TYPOGRAPHY"
+  },
+  "animation": {
+    "fps": 30,
+    "duration": 18,
+    "waveType": "SINE",
+    "waveSpeed": 0.7,
+    "waveAngle": 30.0,
+    "waveMultiplierMin": 0.2,
+    "waveMultiplierMax": 2.8,
+    "waveAmplitudeMin": -280,
+    "waveAmplitudeMax": 280
+  },
+  "color": {
+    "hueMin": 200,
+    "hueMax": 260,
+    "saturationMin": 100,
+    "saturationMax": 220,
+    "brightnessMin": 15,
+    "brightnessMax": 255,
+    "backgroundRed": 6,
+    "backgroundGreen": 6,
+    "backgroundBlue": 18
+  }
+}

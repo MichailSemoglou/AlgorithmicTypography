@@ -33,9 +33,9 @@ OSCBridge osc;
 
 // Border controls
 Slider borderWeightSlider;
-int    borderSideMode  = 0;   // 0=NONE, 1=TOP+BOTTOM, 2=ALL
+int    borderSideMode = 0;  // 0=NONE, 1=TOP+BOTTOM, 2=ALL
 boolean borderWaveMode = false;
-boolean showPanels     = true;
+boolean showPanels = true;
 
 // Layout: ControlPanel is 10,10 : 320 wide, 8 sliders
 // panelHeight = 24 + 10 + 8*(18+6) + 40 = 266  → bottom at y=276

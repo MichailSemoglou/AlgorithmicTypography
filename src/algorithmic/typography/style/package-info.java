@@ -11,7 +11,7 @@
  *   for organic, "happy accident" results
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 1.0.0
  */
 package algorithmic.typography.style;

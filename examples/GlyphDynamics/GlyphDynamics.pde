@@ -8,6 +8,14 @@
  * attraction / repulsion to the mouse and a spring force
  * pulling it back to its home position.
  *
+ * In Filled mode the outer letterform and counter-forms
+ * (enclosed spaces like the bowl of 'B' or hole of 'O')
+ * are painted with distinct colour families:
+ *   Rainbow ON  — outer: warm hues (0°–180°)
+ *                 counter: cool hues (180°–360°)
+ *   Rainbow OFF — outer: white, counter: black (appears
+ *                 as a transparent hole over dark background)
+ *
  * Controls:
  *   1-3      Switch display mode (Points / Lines / Filled)
  *   SPACE    Cycle through characters
@@ -21,15 +29,15 @@ import algorithmic.typography.render.GlyphExtractor;
 import algorithmic.typography.render.GlyphPhysics;
 
 GlyphExtractor glyph;
-GlyphPhysics   physics;
+GlyphPhysics physics;
 
-int     modeIdx    = 0;
-String[] modes     = {"Points", "Lines", "Filled"};
-char[]  chars      = {'A', 'B', 'R', 'W', 'g', '&', '@', '%'};
-int     charIdx    = 0;
-float   strength   = -3.0f;   // negative = repel from cursor
-float   radius     = 200.0f;
-boolean rainbow    = true;
+int      modeIdx  = 0;
+String[] modes    = {"Points", "Lines", "Filled"};
+char[]   chars    = {'A', 'B', 'R', 'W', 'g', '&', '@', '%'};
+int      charIdx  = 0;
+float    strength = -3.0f;  // negative = repel from cursor
+float    radius   = 200.0f;
+boolean  rainbow  = true;
 
 void setup() {
   size(1080, 1080);
@@ -44,6 +52,10 @@ void setup() {
   physics.setDamping(0.88f);
   physics.setPointSize(3);
   physics.setRainbow(rainbow);
+  // In non-rainbow Filled mode, counter-forms default to black (color(0)),
+  // which reads as transparent holes over the black background.
+  // Uncomment to use a custom counter colour instead:
+  // physics.setCounterColor(color(20, 20, 60));
 
   loadChar();
 

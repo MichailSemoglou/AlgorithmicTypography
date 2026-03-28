@@ -1,16 +1,16 @@
 /**
- * GridStripWave — v0.2.6 Feature Example
+ * GridStripWave
  *
  * Demonstrates the new GridStripMotion class introduced in v0.2.6.
  *
  * GridStripMotion shifts every row (or column, or both) by a wave
- * function so the whole grid undulates like a ribbon.  It is distinct
+ * function so the whole grid undulates like a ribbon. It is distinct
  * from CellMotion: where CellMotion moves individual glyphs based on
  * per-cell calculations, GridStripMotion displaces entire rows/columns
  * in unison for a smooth, banner-like sweep.
  *
  * ── Controls ──────────────────────────────────────────────────────────────
- *  1 / 2 / 3   Switch axis mode:  1 = ROW, 2 = COLUMN, 3 = BOTH
+ *  1 / 2 / 3   Switch axis mode: 1 = ROW, 2 = COLUMN, 3 = BOTH
  *  UP / DOWN   Increase / decrease amplitude (range 0 – 1)
  *  LEFT/ RIGHT Decrease / increase phase step (controls wave frequency)
  *  W           Cycle row wave type  (SINE → SQUARE → TRIANGLE → SAWTOOTH)
@@ -22,8 +22,6 @@
  *  the base typography parameters without touching this file.
  * ──────────────────────────────────────────────────────────────────────────
  *
- * @author  Michail Semoglou
- * @version 0.2.6
  */
 
 import algorithmic.typography.*;
@@ -34,14 +32,13 @@ GridStripMotion stripMotion;
 
 // Wave type names for display cycling
 final String[] WAVE_NAMES = {"SINE", "SQUARE", "TRIANGLE", "SAWTOOTH", "TANGENT"};
-int rowWaveIndex  = 0;
-boolean paused    = false;
-int frozenFrame   = 0;
+int rowWaveIndex = 0;
+boolean paused = false;
 
 // Live-tunable parameters
-float amp       = 0.40f;    // GridStripMotion amplitude  (0 – 1 designer range)
-float phaseStep = 0.30f;    // Phase shift per strip
-int   axisMode  = GridStripMotion.ROW;   // ROW | COLUMN | BOTH
+float amp = 0.40f;  // GridStripMotion amplitude  (0 – 1 designer range)
+float phaseStep = 0.30f;  // Phase shift per strip
+int axisMode = GridStripMotion.ROW;  // ROW | COLUMN | BOTH
 
 void setup() {
   size(1080, 1080);
@@ -64,22 +61,12 @@ void setup() {
     .setColumnWaveType("SINE");
 
   at.setGridStripMotion(stripMotion);
-  at.setAutoRender(false);   // we drive the loop manually for pause support
+  at.setAutoRender(false);  // driven manually so pause (noLoop/loop) works correctly
 }
 
 void draw() {
   background(0);
-
-  // Feed a frozen or live frameCount depending on pause state
-  // AlgorithmicTypography uses parent.frameCount internally, so we
-  // simply skip calling render() when paused to freeze the animation.
-  if (!paused) {
-    at.render();
-  } else {
-    // Render at the last frame to keep the display live
-    at.render();
-  }
-
+  at.render();
   drawHUD();
 }
 
@@ -117,14 +104,17 @@ void keyPressed() {
   } else if (key == 'w' || key == 'W') {
     rowWaveIndex = (rowWaveIndex + 1) % WAVE_NAMES.length;
     stripMotion.setRowWaveType(WAVE_NAMES[rowWaveIndex]);
+    stripMotion.setColumnWaveType(WAVE_NAMES[rowWaveIndex]);
 
   } else if (key == ' ') {
     paused = !paused;
+    if (paused) { noLoop(); redraw(); }  // freeze + update HUD once
+    else loop();
 
   } else if (key == 'r' || key == 'R') {
-    amp       = 0.40f;
+    amp = 0.40f;
     phaseStep = 0.30f;
-    axisMode  = GridStripMotion.ROW;
+    axisMode = GridStripMotion.ROW;
     rowWaveIndex = 0;
     stripMotion
       .setAxis(axisMode)

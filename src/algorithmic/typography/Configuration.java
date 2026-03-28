@@ -6,7 +6,7 @@
  * settings.
  *
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 1.0.0
  */
 
@@ -224,6 +224,20 @@ public class Configuration {
   private float glyphOutlineGapLength = 4.0f;
 
   /**
+   * Word / sentence content for multi-character mode.
+   * When non-null, grid cells display successive characters of this string (L→R, top→bottom)
+   * instead of the single {@link #character}. Default: null (single-character mode).
+   */
+  private String content = null;
+
+  /**
+   * Scale factor applied when deriving {@link #waveSpeed} from typeface geometry via
+   * {@link algorithmic.typography.AlgorithmicTypography#setRhythmFromFont(char)}.
+   * Values above 1.0 speed the wave up; values below 1.0 slow it down. Default: 1.0
+   */
+  private float rhythmScale = 1.0f;
+
+  /**
    * Creates a new Configuration with default values.
    */
   public Configuration() {
@@ -346,6 +360,23 @@ public class Configuration {
   /** Returns the gap length in pixels (used when style is OUTLINE_DASHED).
    *  @return gap length in pixels */
   public float getGlyphOutlineGapLength()  { return glyphOutlineGapLength; }
+
+  /**
+   * Returns the word/sentence content string used in multi-character (word) mode,
+   * or {@code null} when the library is in single-character mode.
+   *
+   * @return content string, or null
+   * @since 0.3.0
+   */
+  public String getContent() { return content; }
+
+  /**
+   * Returns the rhythm scale factor applied when deriving wave speed from font geometry.
+   *
+   * @return rhythm scale (always positive)
+   * @since 0.3.0
+   */
+  public float getRhythmScale() { return rhythmScale; }
 
   /** Returns the wave speed multiplier.
    *  @return the wave speed multiplier */
@@ -1162,6 +1193,47 @@ public class Configuration {
   }
 
   /**
+   * Sets the word/sentence content string for multi-character (word) mode.
+   *
+   * <p>When set, grid cells are filled left-to-right, top-to-bottom with successive
+   * characters of {@code content}, wrapping around when the string is exhausted.
+   * Pass {@code null} or an empty string to revert to single-character mode.</p>
+   *
+   * <pre>
+   * config.setContent("TYPOGRAPHY");   // fills the grid with T-Y-P-O-G-R-A-P-H-Y, repeating
+   * config.setContent(null);            // back to single-character mode
+   * </pre>
+   *
+   * @param content the string to display, or null/empty to disable word mode
+   * @return this instance for method chaining
+   * @since 0.3.0
+   */
+  public Configuration setContent(String content) {
+    this.content = (content == null || content.isEmpty()) ? null : content;
+    onChange("content", this.content);
+    return this;
+  }
+
+  /**
+   * Sets the scale factor applied when deriving wave speed from typeface geometry via
+   * {@link algorithmic.typography.AlgorithmicTypography#setRhythmFromFont(char)}.
+   *
+   * <p>Values above {@code 1.0} speed the wave up; values below {@code 1.0} slow it
+   * down. Invalid (non-positive) values are silently ignored.</p>
+   *
+   * @param scale positive scale multiplier
+   * @return this instance for method chaining
+   * @since 0.3.0
+   */
+  public Configuration setRhythmScale(float scale) {
+    if (scale > 0) {
+      this.rhythmScale = scale;
+      onChange("rhythmScale", scale);
+    }
+    return this;
+  }
+
+  /**
    * Loads configuration from a JSON object.
    * 
    * This method parses a JSONObject and applies its values to this
@@ -1214,7 +1286,19 @@ public class Configuration {
       }
       waveMultiplierMin = getFloat(animation, "waveMultiplierMin", waveMultiplierMin, "Wave multiplier min");
       waveMultiplierMax = getFloat(animation, "waveMultiplierMax", waveMultiplierMax, "Wave multiplier max");
-      
+
+      // Word mode content
+      if (animation.hasKey("content")) {
+        String c = animation.getString("content", null);
+        if (c != null && !c.isEmpty()) content = c;
+      }
+
+      // Optical rhythm scale
+      if (animation.hasKey("rhythmScale")) {
+        float rs = animation.getFloat("rhythmScale", 1.0f);
+        if (rs > 0) rhythmScale = rs;
+      }
+
       // Validate wave multiplier range
       if (waveMultiplierMin > waveMultiplierMax) {
         System.err.println("Warning: waveMultiplierMin > waveMultiplierMax, swapping values");
@@ -1459,6 +1543,8 @@ public class Configuration {
     animation.setString("waveType", waveType);
     animation.setFloat("waveMultiplierMin", waveMultiplierMin);
     animation.setFloat("waveMultiplierMax", waveMultiplierMax);
+    if (content != null) animation.setString("content", content);
+    animation.setFloat("rhythmScale", rhythmScale);
     json.setJSONObject("animation", animation);
     
     JSONObject grid = new JSONObject();
@@ -1621,6 +1707,8 @@ public class Configuration {
     copy.cellBorderWeight    = this.cellBorderWeight;
     copy.cellBorderColorMode = this.cellBorderColorMode;
     copy.gridStripMotion     = this.gridStripMotion;
+    copy.content             = this.content;
+    copy.rhythmScale         = this.rhythmScale;
     return copy;
   }
   

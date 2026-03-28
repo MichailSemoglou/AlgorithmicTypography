@@ -36,6 +36,7 @@ Slider speedSlider;
 Slider angleSlider;
 Slider hueMinSlider;
 Slider hueMaxSlider;
+Slider satMinSlider;
 Slider satMaxSlider;
 Slider[] sliders;
 
@@ -86,19 +87,21 @@ void draw() {
 void buildSliders() {
   float tw = panelW - pad * 2 - 140;   // track width
 
-  speedSlider  = mkSlider("Wave Speed",  0.1f, 10, config.getWaveSpeed(),  tw, 1);
-  angleSlider  = mkSlider("Wave Angle",    0, 360, config.getWaveAngle(),  tw, 0).setSuffix("°");
-  hueMinSlider = mkSlider("Hue Min",       0, 360, config.getHueMin(),     tw, 0).setSuffix("°");
-  hueMaxSlider = mkSlider("Hue Max",       0, 360, config.getHueMax(),     tw, 0).setSuffix("°");
-  satMaxSlider = mkSlider("Sat Max",        0, 255, config.getSaturationMax(), tw, 0);
+  speedSlider = mkSlider("Wave Speed", 0.1f, 10, config.getWaveSpeed(), tw, 1);
+  angleSlider = mkSlider("Wave Angle", 0, 360, config.getWaveAngle(), tw, 0).setSuffix("°");
+  hueMinSlider = mkSlider("Hue Min", 0, 360, config.getHueMin(), tw, 0).setSuffix("°");
+  hueMaxSlider = mkSlider("Hue Max", 0, 360, config.getHueMax(), tw, 0).setSuffix("°");
+  satMinSlider = mkSlider("Sat Min", 0, 255, config.getSaturationMin(), tw, 0);
+  satMaxSlider = mkSlider("Sat Max", 0, 255, config.getSaturationMax(), tw, 0);
 
   speedSlider .onChange(v -> config.setWaveSpeed(v));
   angleSlider .onChange(v -> config.setWaveAngle(v));
   hueMinSlider.onChange(v -> config.setHueRange(v, config.getHueMax()));
   hueMaxSlider.onChange(v -> config.setHueRange(config.getHueMin(), v));
+  satMinSlider.onChange(v -> config.setSaturationRange(v, config.getSaturationMax()));
   satMaxSlider.onChange(v -> config.setSaturationRange(config.getSaturationMin(), v));
 
-  sliders = new Slider[] { speedSlider, angleSlider, hueMinSlider, hueMaxSlider, satMaxSlider };
+  sliders = new Slider[] { speedSlider, angleSlider, hueMinSlider, hueMaxSlider, satMinSlider, satMaxSlider };
 
   layoutSliders();
 }
@@ -123,6 +126,7 @@ void drawPanel() {
   angleSlider .setValue(config.getWaveAngle());
   hueMinSlider.setValue(config.getHueMin());
   hueMaxSlider.setValue(config.getHueMax());
+  satMinSlider.setValue(config.getSaturationMin());
   satMaxSlider.setValue(config.getSaturationMax());
 
   float ph = header + pad + sliders.length * (Slider.getRowHeight() + 6) + 40;

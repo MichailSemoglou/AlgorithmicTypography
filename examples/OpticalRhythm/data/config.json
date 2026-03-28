@@ -1,0 +1,39 @@
+{
+  "canvas": {
+    "width": 1080,
+    "height": 1080
+  },
+  "animation": {
+    "fps": 30,
+    "duration": 24,
+    "character": "O",
+    "textScale": 0.85,
+    "waveType": "SINE",
+    "waveSpeed": 0.6,
+    "waveAngle": 60.0,
+    "waveMultiplierMin": 0.8,
+    "waveMultiplierMax": 2.5,
+    "rhythmScale": 1.0
+  },
+  "grid": {
+    "initialTilesX": 12,
+    "initialTilesY": 12,
+    "changedTilesX": 6,
+    "changedTilesY": 6,
+    "finalTilesX": 3,
+    "finalTilesY": 3
+  },
+  "colors": {
+    "hueMin": 170,
+    "hueMax": 260,
+    "saturationMin": 60,
+    "saturationMax": 200,
+    "brightnessMin": 10,
+    "brightnessMax": 255,
+    "waveAmplitudeMin": -260,
+    "waveAmplitudeMax": 260,
+    "backgroundR": 5,
+    "backgroundG": 5,
+    "backgroundB": 12
+  }
+}

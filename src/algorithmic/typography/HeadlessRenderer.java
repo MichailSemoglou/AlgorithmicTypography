@@ -6,7 +6,7 @@
  * Uses offscreen PGraphics for pure software rendering.
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 1.0.0
  */
 

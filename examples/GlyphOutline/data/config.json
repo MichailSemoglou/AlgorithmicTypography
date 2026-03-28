@@ -37,7 +37,7 @@
     "g": 80,
     "b": 0,
     "weight": 3.0,
-    "dashLength": 10.0,
+    "dashLength": 5.0,
     "gapLength": 5.0
   }
 }

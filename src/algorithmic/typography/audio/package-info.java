@@ -11,7 +11,7 @@
  * - Sound library (bundled with Processing 4)
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 1.0.0
  */
 package algorithmic.typography.audio;

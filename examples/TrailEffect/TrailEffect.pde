@@ -23,12 +23,12 @@ import algorithmic.typography.core.SpringMotion;
 import algorithmic.typography.core.GravityMotion;
 import algorithmic.typography.core.MagneticMotion;
 
-Configuration  config;
-WaveEngine     wave;
+Configuration config;
+WaveEngine wave;
 
 // Motion
 CellMotion      motion;
-int             motionIdx = 2;   // 0=CW 1=CCW 2=Perlin 3=Lissajous 4=Spring 5=Gravity 6=Magnetic
+int             motionIdx = 2;  // 0=CW 1=CCW 2=Perlin 3=Lissajous 4=Spring 5=Gravity 6=Magnetic
 String[]        motionNames = {"Clockwise", "Counter-CW", "Perlin", "Lissajous", "Spring", "Gravity", "Magnetic"};
 CircularMotion  cwMotion;
 CircularMotion  ccwMotion;
@@ -38,9 +38,9 @@ SpringMotion    springMotion;
 GravityMotion   gravityMotion;
 MagneticMotion  magneticMotion;
 
-int   tilesX    = 20;
-int   tilesY    = 20;
-int   trailAlpha = 30;          // 0 = infinite trail, 255 = no trail
+int tilesX = 20;
+int tilesY = 20;
+int trailAlpha = 30;  // 0 = infinite trail, 255 = no trail
 
 void setup() {
   size(1080, 1080);
@@ -50,7 +50,7 @@ void setup() {
   config.setGridSize(tilesX, tilesY);
   config.setTextScale(0.55f);
   config.setBrightnessRange(150, 255);
-  config.setHueRange(200, 310);       // cyan → pink
+  config.setHueRange(200, 310);
   config.setSaturationMin(180);
   config.setSaturationMax(255);
   config.setWaveAmplitudeRange(-80, 80);
@@ -59,20 +59,20 @@ void setup() {
   wave = new WaveEngine(config);
 
   // Motion presets
-  cwMotion        = new CircularMotion(12, 1.0f, true);
-  ccwMotion       = new CircularMotion(12, 1.0f, false);
-  perlinMotion    = new PerlinMotion(14, 1.0f);
-  lissajousMotion = new LissajousMotion(12, 1.0f);   // figure-8 default
-  springMotion    = new SpringMotion(12, 1.0f);       // spring-damped
-  gravityMotion   = new GravityMotion(12, 0.18f);     // gravity + bounce
-  magneticMotion  = new MagneticMotion(this);         // mouse-driven
+  cwMotion = new CircularMotion(12, 1.0f, true);
+  ccwMotion = new CircularMotion(12, 1.0f, false);
+  perlinMotion = new PerlinMotion(14, 1.0f);
+  lissajousMotion = new LissajousMotion(12, 1.0f);  // figure-8 default
+  springMotion = new SpringMotion(12, 1.0f);  // spring-damped
+  gravityMotion = new GravityMotion(12, 0.18f);  // gravity + bounce
+  magneticMotion = new MagneticMotion(this);  // mouse-driven
   magneticMotion.setTileGrid(width, height, tilesX, tilesY);
   magneticMotion.setRadius(20);
 
   // Start with Perlin
   motion = perlinMotion;
 
-  background(0);   // clear once at start
+  background(0);  // clear once at start
 
   println("TrailEffect — M=motion  UP/DOWN=trail  +/-=radius");
 }
@@ -143,7 +143,7 @@ void drawHUD() {
 void keyPressed() {
   // Trail opacity (lower = longer trail)
   if (keyCode == DOWN) trailAlpha = max(trailAlpha - 5, 5);
-  if (keyCode == UP)   trailAlpha = min(trailAlpha + 5, 255);
+  if (keyCode == UP) trailAlpha = min(trailAlpha + 5, 255);
 
   // Motion cycling
   if (key == 'm' || key == 'M') {

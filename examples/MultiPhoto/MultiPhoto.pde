@@ -104,7 +104,7 @@ void draw() {
   } else if (hasThird && elapsed > secondChangeTime) {
     // Cross-fading stage 2 → 3
     fromCols = cfg.getChangedTilesX(); fromRows = cfg.getChangedTilesY();
-    toCols   = cfg.getFinalTilesX();   toRows   = cfg.getFinalTilesY();
+    toCols = cfg.getFinalTilesX();   toRows   = cfg.getFinalTilesY();
     t = fadeDuration > 0 ? constrain((float)(elapsed - secondChangeTime) / fadeDuration, 0, 1) : 1;
   } else if (elapsed > changeTime + fadeDuration) {
     // Fully in stage 2
@@ -114,7 +114,7 @@ void draw() {
   } else if (elapsed > changeTime) {
     // Cross-fading stage 1 → 2
     fromCols = cfg.getInitialTilesX(); fromRows = cfg.getInitialTilesY();
-    toCols   = cfg.getChangedTilesX(); toRows   = cfg.getChangedTilesY();
+    toCols = cfg.getChangedTilesX(); toRows = cfg.getChangedTilesY();
     t = fadeDuration > 0 ? constrain((float)(elapsed - changeTime) / fadeDuration, 0, 1) : 1;
   } else {
     // Fully in stage 1
@@ -161,7 +161,7 @@ void drawPhotoGrid(int cols, int rows) {
 
 /** Draws `img` cropped to cover the rectangle (dx, dy, dw, dh). */
 void drawCroppedImage(PImage img, float dx, float dy, float dw, float dh) {
-  float imgAspect  = (float) img.width / img.height;
+  float imgAspect = (float) img.width / img.height;
   float cellAspect = dw / dh;
 
   int sx, sy, sw, sh;

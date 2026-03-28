@@ -35,8 +35,8 @@ void setup() {
   }
 
   // Map audio → parameters (quiet = normal appearance, loud = more intense)
-  audio.mapBassTo(config::setWaveSpeed, 2, 10);         // bass speeds up the wave
-  audio.mapTrebleTo(config::setBrightnessMax, 180, 255); // treble brightens the grid
+  audio.mapBassTo(config::setWaveSpeed, 2, 10);  // bass speeds up the wave
+  audio.mapTrebleTo(config::setBrightnessMax, 180, 255);  // treble brightens the grid
 
   at.setAutoRender(false);  // we call render() manually
   at.initialize();

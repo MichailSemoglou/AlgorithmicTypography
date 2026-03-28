@@ -41,7 +41,7 @@ final int[] OUTLINE_STYLES = {
   Configuration.OUTLINE_DASHED_ONLY
 };
 final String[] OUTLINE_LABELS = { "None", "Solid", "Dashed", "Dashed Only" };
-int outlineIdx = 2;   // default: OUTLINE_DASHED (matches config.json "style":"dashed")
+int outlineIdx = 2;  // default: OUTLINE_DASHED (matches config.json "style":"dashed")
 
 void setup() {
   size(1080, 1080);
@@ -66,8 +66,7 @@ void drawHUD() {
   noStroke();
   textSize(13);
   textAlign(LEFT, BOTTOM);
-  text("'" + chars[charIdx] + "'  Outline: " + OUTLINE_LABELS[outlineIdx],
-       20, height - 40);
+  text("'" + chars[charIdx] + "'  Outline: " + OUTLINE_LABELS[outlineIdx], 20, height - 40);
   text("O=outline mode  \u2190/\u2192=character  S=save", 20, height - 20);
 }
 

@@ -63,12 +63,12 @@ void draw() {
 // ── Mode 1: fillWithPoints ────────────────────────────────────────────────
 void drawInteriorFill(char ch) {
   PVector[] pts = glyph.fillWithPoints(ch, 800, ptCount);
-  PVector   o   = glyph.centerOf(ch, 800, width / 2, height / 2);
+  PVector o = glyph.centerOf(ch, 800, width / 2, height / 2);
 
   noStroke();
   for (int i = 0; i < pts.length; i++) {
     float hue = (map(i, 0, pts.length, 180, 300) + t * 20) % 360;
-    float sz  = 2.5 + sin(t + i * 0.07) * 1.2;
+    float sz = 2.5 + sin(t + i * 0.07) * 1.2;
     fill(hue, 200, 255, 220);
     ellipse(o.x + pts[i].x, o.y + pts[i].y, sz, sz);
   }
@@ -77,13 +77,13 @@ void drawInteriorFill(char ch) {
 // ── Mode 2: distributeAlongOutline ───────────────────────────────────────
 void drawPerimeterDots(char ch) {
   PVector[] pts = glyph.distributeAlongOutline(ch, 800, ptCount);
-  PVector   o   = glyph.centerOf(ch, 800, width / 2, height / 2);
+  PVector o = glyph.centerOf(ch, 800, width / 2, height / 2);
 
   noStroke();
   for (int i = 0; i < pts.length; i++) {
     float phase = (float) i / pts.length;
-    float hue   = (phase * 360 + t * 40) % 360;
-    float sz    = 3 + sin(t * 2 + phase * TWO_PI * 4) * 1.5;
+    float hue = (phase * 360 + t * 40) % 360;
+    float sz = 3 + sin(t * 2 + phase * TWO_PI * 4) * 1.5;
     fill(hue, 220, 255, 230);
     ellipse(o.x + pts[i].x, o.y + pts[i].y, sz, sz);
   }
@@ -91,9 +91,9 @@ void drawPerimeterDots(char ch) {
 
 // ── Mode 3: getOuterContour + getInnerContours ───────────────────────────
 void drawOuterInner(char ch) {
-  PVector[]       outer = glyph.getOuterContour(ch, 800);
+  PVector[] outer = glyph.getOuterContour(ch, 800);
   List<PVector[]> inner = glyph.getInnerContours(ch, 800);
-  PVector         o     = glyph.centerOf(ch, 800, width / 2, height / 2);
+  PVector o = glyph.centerOf(ch, 800, width / 2, height / 2);
 
   strokeWeight(1.5);
   noFill();
@@ -135,10 +135,10 @@ void drawHUD(char ch) {
 
 // ── Controls ──────────────────────────────────────────────────────────────
 void keyPressed() {
-  if      (key == '1')          mode = 1;
-  else if (key == '2')          mode = 2;
-  else if (key == '3')          mode = 3;
-  else if (key == ' ')          charIdx = (charIdx + 1) % chars.length;
+  if (key == '1') mode = 1;
+  else if (key == '2') mode = 2;
+  else if (key == '3') mode = 3;
+  else if (key == ' ') charIdx = (charIdx + 1) % chars.length;
   else if (key == 's' || key == 'S') savePNG = true;
   else if (keyCode == UP)   ptCount = min(ptCount + 100, 2000);
   else if (keyCode == DOWN) ptCount = max(ptCount - 100, 100);

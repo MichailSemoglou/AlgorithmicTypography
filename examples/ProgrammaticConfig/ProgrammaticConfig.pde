@@ -83,12 +83,12 @@ Configuration randomConfig() {
   // Random border: sides, grey tone, and weight
   int[] borderOptions = {
     Configuration.BORDER_NONE,
-    Configuration.BORDER_NONE,                           // 2× weighting toward "none"
+    Configuration.BORDER_NONE, 
     Configuration.BORDER_TOP | Configuration.BORDER_BOTTOM,
     Configuration.BORDER_ALL
   };
-  int   borderSides  = borderOptions[int(random(borderOptions.length))];
-  int   borderGray   = int(random(4)) * 20 + 30;        // 30, 50, 70, or 90
+  int borderSides = borderOptions[int(random(borderOptions.length))];
+  int borderGray = int(random(4)) * 20 + 30; 
   float borderWeight = random(0.5, 2.0);
   c.setCellBorderSides(borderSides);
   c.setCellBorderColor(borderGray);

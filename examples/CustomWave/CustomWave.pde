@@ -41,8 +41,8 @@ void setup() {
 
       // Julia constant orbits through visually rich regions
       float angle = frameCount * fractalOrbitSpeed;
-      float cr = -0.4  + 0.3  * sin(angle);
-      float ci =  0.6  + 0.15 * cos(angle * 1.7);
+      float cr = -0.4 + 0.3 * sin(angle);
+      float ci = 0.6 + 0.15 * cos(angle * 1.7);
 
       // Iterate z = z² + c
       int iter = 0;
@@ -62,13 +62,11 @@ void setup() {
         smooth = 0;
       } else {
         float modulus = sqrt(zr * zr + zi * zi);
-        smooth = (iter + 1 - log(log(modulus)) / log(2))
-                 / fractalMaxIter;
+        smooth = (iter + 1 - log(log(modulus)) / log(2)) / fractalMaxIter;
         smooth = constrain(smooth, 0, 1);
       }
 
-      return map(smooth, 0, 1,
-          cfg.getBrightnessMin(), cfg.getBrightnessMax());
+      return map(smooth, 0, 1, cfg.getBrightnessMin(), cfg.getBrightnessMax());
     }
 
     public String getName() {
@@ -92,8 +90,7 @@ void draw() {
   at.render();
 
   // HUD label
-  String label = (currentWave + 1) + "/" + waveNames.length
-               + "  " + waveNames[currentWave];
+  String label = (currentWave + 1) + "/" + waveNames.length + "  " + waveNames[currentWave];
   fill(255);
   noStroke();
   textAlign(LEFT, CENTER);
@@ -104,14 +101,14 @@ void draw() {
 void selectWave(int index) {
   currentWave = index;
   switch (index) {
-    case 0: at.setWaveFunction(null);                    break;
-    case 1: at.setWaveFunction(WavePresets.sine());      break;
-    case 2: at.setWaveFunction(WavePresets.tangent());   break;
-    case 3: at.setWaveFunction(WavePresets.square());    break;
-    case 4: at.setWaveFunction(WavePresets.triangle());  break;
-    case 5: at.setWaveFunction(WavePresets.sawtooth());  break;
+    case 0: at.setWaveFunction(null);                     break;
+    case 1: at.setWaveFunction(WavePresets.sine());       break;
+    case 2: at.setWaveFunction(WavePresets.tangent());    break;
+    case 3: at.setWaveFunction(WavePresets.square());     break;
+    case 4: at.setWaveFunction(WavePresets.triangle());   break;
+    case 5: at.setWaveFunction(WavePresets.sawtooth());   break;
     case 6: at.setWaveFunction(WavePresets.perlin(this)); break;
-    case 7: at.setWaveFunction(fractalWave);             break;
+    case 7: at.setWaveFunction(fractalWave);              break;
   }
   println("Wave: " + waveNames[currentWave]);
 }

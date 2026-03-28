@@ -6,7 +6,7 @@
  * wave functions and provides normalized output values.
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  */
 
 package algorithmic.typography.core;
@@ -28,6 +28,7 @@ public class WaveEngine {
   
   private final Configuration config;
   private WaveFunction customWaveFunction = null;
+  private AmplitudeField amplitudeField = null;
   
   // Pre-calculated values for performance
   private float waveMultiplier;
@@ -141,7 +142,11 @@ public class WaveEngine {
   
   /**
    * Calculates brightness using a custom wave function if set, or the default.
-   * 
+   *
+   * <p>When an {@link AmplitudeField} is attached, the per-cell amplitude is
+   * blended with the field's sampled value before the brightness formula runs,
+   * shaping the wave pattern to match the letterform's curvature signature.</p>
+   *
    * @param frameCount the current frame number
    * @param x the x grid coordinate
    * @param y the y grid coordinate
@@ -150,13 +155,38 @@ public class WaveEngine {
    * @return brightness value
    */
   public float calculateColorCustom(int frameCount, int x, int y, float tilesX, float tilesY) {
+    if (amplitudeField != null) {
+      // When a curvature field is attached, fieldValue controls how many wave cycles
+      // spread across this cell's region:
+      //   fieldValue ≈ 1  (high curvature — bowl, junction, apex)
+      //     → full spatial phase spread → rich ripple, cells clearly at different phases
+      //   fieldValue ≈ 0  (low curvature — straight stem, flat stroke)
+      //     → near-zero spatial spread → all cells in this zone pulse in unison, no wave
+      // This makes the difference between ON and OFF immediately legible.
+      float fnx = (tilesX > 1) ? (float) x / (tilesX - 1) : 0.5f;
+      float fny = (tilesY > 1) ? (float) y / (tilesY - 1) : 0.5f;
+      float fieldValue = amplitudeField.sampleAt(fnx, fny) * amplitudeField.getIntensity();
+
+      float normX = x / tilesX;
+      float normY = y / tilesY;
+      float angleRad = PApplet.radians(config.getWaveAngle());
+      float dx = PApplet.cos(angleRad);
+      float dy = PApplet.sin(angleRad);
+      // Same temporal term as WavePresets.computePhase; spatial amplitude scaled by field.
+      float phase = frameCount * config.getWaveSpeed() * 0.05f
+                  + (normX * dx + normY * dy) * PApplet.TWO_PI * 3f * fieldValue;
+      float brightness = PApplet.map(PApplet.sin(phase), -1, 1,
+          config.getBrightnessMin(), config.getBrightnessMax());
+      return PApplet.constrain(brightness, config.getBrightnessMin(), config.getBrightnessMax());
+    }
     if (customWaveFunction != null) {
       float normalizedX = x / tilesX;
       float normalizedY = y / tilesY;
       float time = frameCount / (float)(config.getAnimationFPS() * config.getAnimationDuration());
       return customWaveFunction.calculate(frameCount, normalizedX, normalizedY, time, config);
     }
-    return calculateColor(frameCount, x, y, calculateAmplitude(x, y));
+    float amplitude = calculateAmplitude(x, y);
+    return calculateColor(frameCount, x, y, amplitude);
   }
   
   /**
@@ -215,6 +245,41 @@ public class WaveEngine {
     return PApplet.constrain(value, hMin, hMax);
   }
   
+  /**
+   * Returns the Configuration this engine was built with.
+   *
+   * <p>Used by {@link algorithmic.typography.core.CounterpointEngine} to read each
+   * engine's own waveSpeed during the joint update step.</p>
+   *
+   * @return the configuration (never null)
+   */
+  public Configuration getConfig() {
+    return config;
+  }
+
+  /**
+   * Attaches an {@link AmplitudeField} that spatially modulates per-cell amplitude.
+   *
+   * <p>Passing {@code null} detaches any previously set field and restores the
+   * default tangent-based amplitude calculation.</p>
+   *
+   * @param field the field implementation, or null to clear
+   * @return this engine (fluent API)
+   */
+  public WaveEngine setAmplitudeField(AmplitudeField field) {
+    this.amplitudeField = field;
+    return this;
+  }
+
+  /**
+   * Returns the currently attached {@link AmplitudeField}, or {@code null} if none.
+   *
+   * @return amplitude field or null
+   */
+  public AmplitudeField getAmplitudeField() {
+    return amplitudeField;
+  }
+
   /**
    * Sets a custom wave function for color calculations.
    * 

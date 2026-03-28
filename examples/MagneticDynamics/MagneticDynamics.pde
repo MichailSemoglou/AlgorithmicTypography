@@ -26,10 +26,10 @@ import algorithmic.typography.core.MagneticMotion;
 import algorithmic.typography.ui.*;
 
 // ── Core objects ──────────────────────────────────────────────────
-AlgorithmicTypography      at;
-ObservableConfiguration    config;
-ControlPanel               wavePanel;   // standard library panel (left)
-MagneticMotion             magnetic;
+AlgorithmicTypography at;
+ObservableConfiguration config;
+ControlPanel wavePanel;  // standard library panel (left)
+MagneticMotion magnetic;
 
 // ── Magnetic panel sliders ────────────────────────────────────────
 Slider sldStrength;
@@ -40,16 +40,16 @@ Slider sldRadius;
 Slider[] magSliders;
 
 // ── Magnetic panel layout ─────────────────────────────────────────
-final float MP_X   = 20;       // x offset from RIGHT edge
-final float MP_Y   = 10;
-final float MP_W   = 310;
+final float MP_X = 20;  // x offset from RIGHT edge
+final float MP_Y = 10;
+final float MP_W = 310;
 final float MP_PAD = 10;
 final float MP_HDR = 24;
 final float MP_ROW = 24;
 
 // ── State ─────────────────────────────────────────────────────────
 boolean panelsVisible = true;
-String  presetName    = "Repel";
+String presetName = "Repel";
 
 // ── Presets ───────────────────────────────────────────────────────
 // Each preset: { strength, falloff, smoothing, radius, attract (0=repel 1=attract) }
@@ -102,16 +102,16 @@ void setup() {
   // ── Magnetic panel (right) ────────────────────────────────────
   float tw = MP_W - MP_PAD * 2 - 140;
 
-  sldStrength  = new Slider("Strength",  100,  4000, p[0], tw).setDecimals(0);
-  sldFalloff   = new Slider("Falloff",    10,   300, p[1], tw).setDecimals(0).setSuffix(" px");
+  sldStrength = new Slider("Strength", 100, 4000, p[0], tw).setDecimals(0);
+  sldFalloff = new Slider("Falloff", 10, 300, p[1], tw).setDecimals(0).setSuffix(" px");
   sldSmoothing = new Slider("Smoothing", 0.01f, 0.5f, p[2], tw).setDecimals(3);
-  sldRadius    = new Slider("Radius",     4,    40,   p[3], tw).setDecimals(1).setSuffix(" px");
+  sldRadius = new Slider("Radius", 4, 40, p[3], tw).setDecimals(1).setSuffix(" px");
 
   // Live callbacks — each updates magnetic without resetting cell positions
-  sldStrength .onChange(v -> magnetic.setStrength(v));
-  sldFalloff  .onChange(v -> magnetic.setFalloff(v));
+  sldStrength.onChange(v -> magnetic.setStrength(v));
+  sldFalloff.onChange(v -> magnetic.setFalloff(v));
   sldSmoothing.onChange(v -> magnetic.setSmoothing(v));
-  sldRadius   .onChange(v -> magnetic.setRadius(v));
+  sldRadius.onChange(v -> magnetic.setRadius(v));
 
   magSliders = new Slider[] { sldStrength, sldFalloff, sldSmoothing, sldRadius };
 

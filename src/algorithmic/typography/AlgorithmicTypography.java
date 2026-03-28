@@ -6,7 +6,7 @@
  * explore parametric typography systems with configurable parameters.
  *
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 1.0.0
  */
 
@@ -32,6 +32,11 @@ import algorithmic.typography.system.DesignSystem;
 import algorithmic.typography.system.VibePreset;
 import algorithmic.typography.render.TypeDNAProfile;
 import algorithmic.typography.render.GlyphExtractor;
+import algorithmic.typography.render.GlyphCurvatureField;
+import algorithmic.typography.core.AmplitudeField;
+import algorithmic.typography.core.CounterpointEngine;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * The main class for the Algorithmic Typography library.
@@ -89,7 +94,7 @@ import algorithmic.typography.render.GlyphExtractor;
  * </pre>
  * 
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @see Configuration
  * @see WaveEngine
  */
@@ -106,6 +111,9 @@ public class AlgorithmicTypography {
 
   // Lazily instantiated for glyph outline rendering (null when unused)
   private GlyphExtractor glyphExtractor;
+
+  // Optional counterpoint engine for independent outer-form / counter-form animation
+  private CounterpointEngine counterpointEngine = null;
   
   // Animation state
   private int startTime;
@@ -119,6 +127,11 @@ public class AlgorithmicTypography {
   // Auto-render mode
   private boolean autoRender = true;
   private boolean preRegistered = false;
+
+  // Tracks PApplets that have already had frameRate set, to avoid JOGL
+  // FPSAnimator timeout warnings when multiple instances share one PApplet.
+  private static final java.util.WeakHashMap<PApplet, Boolean> frameRateInitialized =
+      new java.util.WeakHashMap<>();
   
   // Frame export
   private String framesSubdir;
@@ -324,7 +337,10 @@ public class AlgorithmicTypography {
    * @return this instance for method chaining
    */
   public AlgorithmicTypography initialize() {
-    parent.frameRate(config.getAnimationFPS());
+    if (!frameRateInitialized.containsKey(parent)) {
+      parent.frameRate(config.getAnimationFPS());
+      frameRateInitialized.put(parent, Boolean.TRUE);
+    }
     startTime = parent.millis();
     frameCounter = 0;
 
@@ -367,7 +383,8 @@ public class AlgorithmicTypography {
     
     // Update wave engine once per frame (before any grid drawing)
     waveEngine.update(parent.frameCount, config.getWaveSpeed());
-    
+    if (counterpointEngine != null) counterpointEngine.update(parent.frameCount);
+
     int elapsedTime = parent.millis() - startTime;
     int changeTime = config.getChangeTime();
     int secondChangeTime = config.getSecondChangeTime();
@@ -456,7 +473,8 @@ public class AlgorithmicTypography {
     
     // Update wave engine once per frame
     waveEngine.update(parent.frameCount, config.getWaveSpeed());
-    
+    if (counterpointEngine != null) counterpointEngine.update(parent.frameCount);
+
     int elapsedTime = parent.millis() - startTime;
     int changeTime = config.getChangeTime();
     int secondChangeTime = config.getSecondChangeTime();
@@ -536,15 +554,23 @@ public class AlgorithmicTypography {
     int   outlineStyle  = config.getGlyphOutlineStyle();
     float[][] outlineSegs = null;
     PShape outlineFillShape = null;
-    if (outlineStyle != Configuration.OUTLINE_NONE) {
+    if (outlineStyle != Configuration.OUTLINE_NONE || counterpointEngine != null) {
       if (glyphExtractor == null) {
         glyphExtractor = new GlyphExtractor(parent, "Helvetica", 72);
         glyphExtractor.setFlatness(0.3f);
       }
     }
-    // Use PShape whenever extractor is available so font/centering stays consistent
-    // when cycling between None/Solid/Dashed at runtime.
-    if (glyphExtractor != null && !ch.isEmpty()) {
+    // Word / sentence mode detection
+    String wordContent = config.getContent();
+    boolean wordMode = wordContent != null && !wordContent.isEmpty();
+    HashMap<Character, PShape>    wordShapeCache  = wordMode ? new HashMap<>() : null;
+    HashMap<Character, float[][]> wordDashedCache = (wordMode
+        && (outlineStyle == Configuration.OUTLINE_DASHED
+            || outlineStyle == Configuration.OUTLINE_DASHED_ONLY))
+        ? new HashMap<>() : null;
+
+    // Pre-build shape for single-character mode only
+    if (!wordMode && glyphExtractor != null && !ch.isEmpty()) {
       outlineFillShape = ch.length() == 1
           ? glyphExtractor.extractChar(ch.charAt(0), textSize)
           : glyphExtractor.extractString(ch, textSize);
@@ -558,12 +584,51 @@ public class AlgorithmicTypography {
                 config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength());
       }
     }
-    
+
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
-        float h = waveEngine.calculateHue(parent.frameCount, x, y, tilesX, tilesY);
-        float s = waveEngine.calculateSaturation(parent.frameCount, x, y, tilesX, tilesY);
-        float b = waveEngine.calculateColorCustom(parent.frameCount, x, y, tilesX, tilesY);
+
+        // Per-cell character (word mode) or single shared character
+        String cellCh = wordMode
+            ? String.valueOf(wordContent.charAt((x + y * (int)tilesX) % wordContent.length()))
+            : ch;
+        char cellChar = cellCh.charAt(0);
+
+        // Resolve per-cell PShape / dashed-segment data (cached per character)
+        PShape    cellFillShape;
+        float[][] cellOutlineSegs;
+        if (wordMode && glyphExtractor != null) {
+          if (!wordShapeCache.containsKey(cellChar)) {
+            PShape ps = glyphExtractor.extractChar(cellChar, textSize);
+            ps.disableStyle();
+            wordShapeCache.put(cellChar, ps);
+          }
+          cellFillShape = wordShapeCache.get(cellChar);
+          if (wordDashedCache != null) {
+            if (!wordDashedCache.containsKey(cellChar)) {
+              wordDashedCache.put(cellChar, glyphExtractor.getDashedOutline(
+                  cellChar, textSize,
+                  config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength()));
+            }
+            cellOutlineSegs = wordDashedCache.get(cellChar);
+          } else {
+            cellOutlineSegs = null;
+          }
+        } else {
+          cellFillShape   = outlineFillShape;
+          cellOutlineSegs = outlineSegs;
+        }
+
+        // HSB colour from main wave (or CounterpointEngine main wave)
+        float h = (counterpointEngine != null)
+            ? counterpointEngine.getMainHue(parent.frameCount, x, y, tilesX, tilesY)
+            : waveEngine.calculateHue(parent.frameCount, x, y, tilesX, tilesY);
+        float s = (counterpointEngine != null)
+            ? counterpointEngine.getMainSaturation(parent.frameCount, x, y, tilesX, tilesY)
+            : waveEngine.calculateSaturation(parent.frameCount, x, y, tilesX, tilesY);
+        float b = (counterpointEngine != null)
+            ? counterpointEngine.getMainBrightness(parent.frameCount, x, y, tilesX, tilesY)
+            : waveEngine.calculateColorCustom(parent.frameCount, x, y, tilesX, tilesY);
         parent.fill(h, s, b, clampedAlpha);
         float cx = x * tileW + tileW / 2;
         float cy = y * tileH + tileH / 2;
@@ -577,20 +642,42 @@ public class AlgorithmicTypography {
           cx += off.x;
           cy += off.y;
         }
-        if (outlineFillShape != null && outlineStyle != Configuration.OUTLINE_DASHED_ONLY) {
+        if (cellFillShape != null && outlineStyle != Configuration.OUTLINE_DASHED_ONLY) {
           // Render fill as shape — same Helvetica font and centerOf() centering as the outline
-          PVector fillOrigin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+          PVector fillOrigin = glyphExtractor.centerOf(cellCh, textSize, cx, cy);
           parent.noStroke();
           parent.pushMatrix();
           parent.translate(fillOrigin.x, fillOrigin.y);
-          parent.shape(outlineFillShape, 0, 0);
+          parent.shape(cellFillShape, 0, 0);
           parent.popMatrix();
-        } else if (outlineFillShape == null) {
-          parent.text(ch, cx, cy);
+        } else if (cellFillShape == null) {
+          parent.text(cellCh, cx, cy);
+        }
+
+        // CounterpointEngine: paint inner counter-form regions with the counter wave
+        if (counterpointEngine != null && glyphExtractor != null) {
+          List<PVector[]> innerContours = glyphExtractor.getInnerContours(cellChar, textSize);
+          if (innerContours != null && !innerContours.isEmpty()) {
+            float cH = counterpointEngine.getCounterHue(parent.frameCount, x, y, tilesX, tilesY);
+            float cS = counterpointEngine.getCounterSaturation(parent.frameCount, x, y, tilesX, tilesY);
+            float cB = counterpointEngine.getCounterBrightness(parent.frameCount, x, y, tilesX, tilesY);
+            parent.colorMode(PApplet.HSB, 360, 255, 255, 255);
+            parent.fill(cH, cS, cB, clampedAlpha);
+            parent.noStroke();
+            PVector cpOrigin = glyphExtractor.centerOf(cellCh, textSize, cx, cy);
+            parent.pushMatrix();
+            parent.translate(cpOrigin.x, cpOrigin.y);
+            for (PVector[] contour : innerContours) {
+              parent.beginShape();
+              for (PVector pt : contour) { parent.vertex(pt.x, pt.y); }
+              parent.endShape(PApplet.CLOSE);
+            }
+            parent.popMatrix();
+          }
         }
 
         // Glyph outline overlay
-        if (outlineStyle != Configuration.OUTLINE_NONE && !ch.isEmpty()) {
+        if (outlineStyle != Configuration.OUTLINE_NONE && !cellCh.isEmpty()) {
           parent.colorMode(PApplet.RGB, 255);
           parent.stroke(config.getGlyphOutlineRed(),
                         config.getGlyphOutlineGreen(),
@@ -598,14 +685,14 @@ public class AlgorithmicTypography {
           parent.strokeWeight(config.getGlyphOutlineWeight());
           parent.noFill();
           if (outlineStyle == Configuration.OUTLINE_SOLID) {
-            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+            PVector origin = glyphExtractor.centerOf(cellCh, textSize, cx, cy);
             parent.pushMatrix();
             parent.translate(origin.x, origin.y);
-            parent.shape(outlineFillShape, 0, 0);
+            parent.shape(cellFillShape, 0, 0);
             parent.popMatrix();
-          } else if (outlineSegs != null) {
-            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
-            for (float[] seg : outlineSegs) {
+          } else if (cellOutlineSegs != null) {
+            PVector origin = glyphExtractor.centerOf(cellCh, textSize, cx, cy);
+            for (float[] seg : cellOutlineSegs) {
               parent.line(origin.x + seg[0], origin.y + seg[1],
                           origin.x + seg[2], origin.y + seg[3]);
             }
@@ -678,15 +765,23 @@ public class AlgorithmicTypography {
     int   outlineStyle  = config.getGlyphOutlineStyle();
     float[][] outlineSegs = null;
     PShape outlineFillShape = null;
-    if (outlineStyle != Configuration.OUTLINE_NONE) {
+    if (outlineStyle != Configuration.OUTLINE_NONE || counterpointEngine != null) {
       if (glyphExtractor == null) {
         glyphExtractor = new GlyphExtractor(parent, "Helvetica", 72);
         glyphExtractor.setFlatness(0.3f);
       }
     }
-    // Use PShape whenever extractor is available so font/centering stays consistent
-    // when cycling between None/Solid/Dashed at runtime.
-    if (glyphExtractor != null && !ch.isEmpty()) {
+    // Word / sentence mode detection
+    String wordContent2 = config.getContent();
+    boolean wordMode2 = wordContent2 != null && !wordContent2.isEmpty();
+    HashMap<Character, PShape>    wordShapeCache2  = wordMode2 ? new HashMap<>() : null;
+    HashMap<Character, float[][]> wordDashedCache2 = (wordMode2
+        && (outlineStyle == Configuration.OUTLINE_DASHED
+            || outlineStyle == Configuration.OUTLINE_DASHED_ONLY))
+        ? new HashMap<>() : null;
+
+    // Pre-build shape for single-character mode only
+    if (!wordMode2 && glyphExtractor != null && !ch.isEmpty()) {
       outlineFillShape = ch.length() == 1
           ? glyphExtractor.extractChar(ch.charAt(0), textSize)
           : glyphExtractor.extractString(ch, textSize);
@@ -700,12 +795,51 @@ public class AlgorithmicTypography {
                 config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength());
       }
     }
-    
+
     for (int x = 0; x < tilesX; x++) {
       for (int y = 0; y < tilesY; y++) {
-        float hue = waveEngine.calculateHue(parent.frameCount, x, y, tilesX, tilesY);
-        float sat = waveEngine.calculateSaturation(parent.frameCount, x, y, tilesX, tilesY);
-        float bri = waveEngine.calculateColorCustom(parent.frameCount, x, y, tilesX, tilesY);
+
+        // Per-cell character (word mode) or single shared character
+        String cellCh2 = wordMode2
+            ? String.valueOf(wordContent2.charAt((x + y * (int)tilesX) % wordContent2.length()))
+            : ch;
+        char cellChar2 = cellCh2.charAt(0);
+
+        // Resolve per-cell PShape / dashed-segment data (cached per character)
+        PShape    cellFillShape2;
+        float[][] cellOutlineSegs2;
+        if (wordMode2 && glyphExtractor != null) {
+          if (!wordShapeCache2.containsKey(cellChar2)) {
+            PShape ps = glyphExtractor.extractChar(cellChar2, textSize);
+            ps.disableStyle();
+            wordShapeCache2.put(cellChar2, ps);
+          }
+          cellFillShape2 = wordShapeCache2.get(cellChar2);
+          if (wordDashedCache2 != null) {
+            if (!wordDashedCache2.containsKey(cellChar2)) {
+              wordDashedCache2.put(cellChar2, glyphExtractor.getDashedOutline(
+                  cellChar2, textSize,
+                  config.getGlyphOutlineDashLength(), config.getGlyphOutlineGapLength()));
+            }
+            cellOutlineSegs2 = wordDashedCache2.get(cellChar2);
+          } else {
+            cellOutlineSegs2 = null;
+          }
+        } else {
+          cellFillShape2   = outlineFillShape;
+          cellOutlineSegs2 = outlineSegs;
+        }
+
+        // HSB colour from main wave (or CounterpointEngine main wave)
+        float hue = (counterpointEngine != null)
+            ? counterpointEngine.getMainHue(parent.frameCount, x, y, tilesX, tilesY)
+            : waveEngine.calculateHue(parent.frameCount, x, y, tilesX, tilesY);
+        float sat = (counterpointEngine != null)
+            ? counterpointEngine.getMainSaturation(parent.frameCount, x, y, tilesX, tilesY)
+            : waveEngine.calculateSaturation(parent.frameCount, x, y, tilesX, tilesY);
+        float bri = (counterpointEngine != null)
+            ? counterpointEngine.getMainBrightness(parent.frameCount, x, y, tilesX, tilesY)
+            : waveEngine.calculateColorCustom(parent.frameCount, x, y, tilesX, tilesY);
         parent.fill(hue, sat, bri, clampedAlpha);
         float cx = ox + x * tileW + tileW / 2;
         float cy = oy + y * tileH + tileH / 2;
@@ -719,20 +853,42 @@ public class AlgorithmicTypography {
           cx += off.x;
           cy += off.y;
         }
-        if (outlineFillShape != null && outlineStyle != Configuration.OUTLINE_DASHED_ONLY) {
+        if (cellFillShape2 != null && outlineStyle != Configuration.OUTLINE_DASHED_ONLY) {
           // Render fill as shape — same Helvetica font and centerOf() centering as the outline
-          PVector fillOrigin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+          PVector fillOrigin = glyphExtractor.centerOf(cellCh2, textSize, cx, cy);
           parent.noStroke();
           parent.pushMatrix();
           parent.translate(fillOrigin.x, fillOrigin.y);
-          parent.shape(outlineFillShape, 0, 0);
+          parent.shape(cellFillShape2, 0, 0);
           parent.popMatrix();
-        } else if (outlineFillShape == null) {
-          parent.text(ch, cx, cy);
+        } else if (cellFillShape2 == null) {
+          parent.text(cellCh2, cx, cy);
+        }
+
+        // CounterpointEngine: paint inner counter-form regions with the counter wave
+        if (counterpointEngine != null && glyphExtractor != null) {
+          List<PVector[]> innerContours2 = glyphExtractor.getInnerContours(cellChar2, textSize);
+          if (innerContours2 != null && !innerContours2.isEmpty()) {
+            float cH2 = counterpointEngine.getCounterHue(parent.frameCount, x, y, tilesX, tilesY);
+            float cS2 = counterpointEngine.getCounterSaturation(parent.frameCount, x, y, tilesX, tilesY);
+            float cB2 = counterpointEngine.getCounterBrightness(parent.frameCount, x, y, tilesX, tilesY);
+            parent.colorMode(PApplet.HSB, 360, 255, 255, 255);
+            parent.fill(cH2, cS2, cB2, clampedAlpha);
+            parent.noStroke();
+            PVector cpOrigin2 = glyphExtractor.centerOf(cellCh2, textSize, cx, cy);
+            parent.pushMatrix();
+            parent.translate(cpOrigin2.x, cpOrigin2.y);
+            for (PVector[] contour2 : innerContours2) {
+              parent.beginShape();
+              for (PVector pt2 : contour2) { parent.vertex(pt2.x, pt2.y); }
+              parent.endShape(PApplet.CLOSE);
+            }
+            parent.popMatrix();
+          }
         }
 
         // Glyph outline overlay
-        if (outlineStyle != Configuration.OUTLINE_NONE && !ch.isEmpty()) {
+        if (outlineStyle != Configuration.OUTLINE_NONE && !cellCh2.isEmpty()) {
           parent.colorMode(PApplet.RGB, 255);
           parent.stroke(config.getGlyphOutlineRed(),
                         config.getGlyphOutlineGreen(),
@@ -740,14 +896,14 @@ public class AlgorithmicTypography {
           parent.strokeWeight(config.getGlyphOutlineWeight());
           parent.noFill();
           if (outlineStyle == Configuration.OUTLINE_SOLID) {
-            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
+            PVector origin = glyphExtractor.centerOf(cellCh2, textSize, cx, cy);
             parent.pushMatrix();
             parent.translate(origin.x, origin.y);
-            parent.shape(outlineFillShape, 0, 0);
+            parent.shape(cellFillShape2, 0, 0);
             parent.popMatrix();
-          } else if (outlineSegs != null) {
-            PVector origin = glyphExtractor.centerOf(ch, textSize, cx, cy);
-            for (float[] seg : outlineSegs) {
+          } else if (cellOutlineSegs2 != null) {
+            PVector origin = glyphExtractor.centerOf(cellCh2, textSize, cx, cy);
+            for (float[] seg : cellOutlineSegs2) {
               parent.line(origin.x + seg[0], origin.y + seg[1],
                           origin.x + seg[2], origin.y + seg[3]);
             }
@@ -1171,6 +1327,139 @@ public class AlgorithmicTypography {
     parent.println("TypeDNA applied: angle=" + profile.getStressAxis() + "° "
         + "counterRatio=" + String.format("%.3f", profile.getCounterRatio()) + " "
         + "strokeWeight=" + String.format("%.1f", profile.getStrokeWeight()) + "px");
+    return this;
+  }
+
+  /**
+   * Sets the {@link CounterpointEngine} that animates outer letterform regions and
+   * inner counter-form regions on independent wave systems, creating visual counterpoint
+   * between positive and negative typographic space.
+   *
+   * <p>Pass {@code null} to disable counterpoint and revert to single-wave rendering.</p>
+   *
+   * <pre>
+   * Configuration mainCfg    = new Configuration().setWaveSpeed(1.0f).setWaveAngle(45);
+   * Configuration counterCfg = new Configuration().setWaveSpeed(1.8f).setWaveAngle(135);
+   * at.setCounterpointEngine(new CounterpointEngine(
+   *     new WaveEngine(mainCfg), new WaveEngine(counterCfg)));
+   * </pre>
+   *
+   * @param engine the CounterpointEngine, or null to disable
+   * @return this instance for method chaining
+   * @since 0.3.0
+   */
+  public AlgorithmicTypography setCounterpointEngine(CounterpointEngine engine) {
+    this.counterpointEngine = engine;
+    return this;
+  }
+
+  /**
+   * Returns the currently active {@link CounterpointEngine}, or {@code null} if none is set.
+   *
+   * @return the CounterpointEngine, or null
+   * @since 0.3.0
+   */
+  public CounterpointEngine getCounterpointEngine() {
+    return counterpointEngine;
+  }
+
+  /**
+   * Attaches a {@link GlyphCurvatureField} to the wave engine, causing per-cell wave
+   * amplitude to be spatially modulated by the letterform's curvature signature.
+   *
+   * <p>Pass {@code null} to detach any previously set field and restore the default
+   * tangent-based amplitude calculation.</p>
+   *
+   * <pre>
+   * GlyphCurvatureField field = GlyphCurvatureField.from(ge, 'R', 800);
+   * field.setIntensity(0.8f).setFalloff(0.1f);
+   * at.setCurvatureField(field);
+   * </pre>
+   *
+   * @param field the curvature field, or null to clear
+   * @return this instance for method chaining
+   * @since 0.3.0
+   */
+  public AlgorithmicTypography setCurvatureField(GlyphCurvatureField field) {
+    waveEngine.setAmplitudeField(field);
+    return this;
+  }
+
+  /**
+   * Returns the currently attached {@link GlyphCurvatureField}, or {@code null} if none
+   * (or if the amplitude field is a different {@link AmplitudeField} implementation).
+   *
+   * @return the GlyphCurvatureField, or null
+   * @since 0.3.0
+   */
+  public GlyphCurvatureField getCurvatureField() {
+    AmplitudeField af = waveEngine.getAmplitudeField();
+    return (af instanceof GlyphCurvatureField) ? (GlyphCurvatureField) af : null;
+  }
+
+  /**
+   * Sets the word/sentence content string for multi-character (word) mode.
+   *
+   * <p>Convenience proxy for {@link Configuration#setContent(String)}.  When set, each
+   * grid cell displays a successive character from {@code content} (L→R, top→bottom),
+   * wrapping when the string is exhausted.  Pass {@code null} to revert to single-character
+   * mode.</p>
+   *
+   * <pre>
+   * at.setContent("TYPOGRAPHY");   // fills the grid with T Y P O G R A P H Y, repeating
+   * at.setContent(null);            // back to single-character mode
+   * </pre>
+   *
+   * @param content the text to fill into grid cells, or null to disable word mode
+   * @return this instance for method chaining
+   * @since 0.3.0
+   */
+  public AlgorithmicTypography setContent(String content) {
+    config.setContent(content);
+    return this;
+  }
+
+  /**
+   * Derives the animation wave speed from the typeface geometry of a specific character
+   * (Optical Rhythm Sync).
+   *
+   * <p>Uses the character's stroke weight and counter ratio — as measured by
+   * {@link GlyphExtractor} — to compute a wave frequency that resonates with the
+   * letterform's own optical rhythm.  A scaling factor from
+   * {@link Configuration#getRhythmScale()} lets designers fine-tune the result.</p>
+   *
+   * <pre>
+   * // Tempo locked to the geometry of the capital O
+   * at.setRhythmFromFont('O');
+   *
+   * // Half-tempo variant
+   * at.getConfiguration().setRhythmScale(0.5f);
+   * at.setRhythmFromFont('O');
+   * </pre>
+   *
+   * @param c the character whose geometry drives the wave speed
+   * @return this instance for method chaining
+   * @since 0.3.0
+   */
+  public AlgorithmicTypography setRhythmFromFont(char c) {
+    if (glyphExtractor == null) {
+      glyphExtractor = new GlyphExtractor(parent, "Helvetica", 72);
+      glyphExtractor.setFlatness(0.3f);
+    }
+    float sw = glyphExtractor.getStrokeWeight(c, 600f);
+    float cr = glyphExtractor.getCounterRatio(c, 600f);
+    // Derive wave frequency from font geometry:
+    //   wider counters (high cr)  → faster wave  (open forms oscillate quicker)
+    //   heavier strokes (high sw) → slower wave  (dense forms are more stable)
+    // Formula yields 0.25–0.55 deg/frame at rhythmScale=1, producing visible
+    // animation periods of 11–21 s at 30 fps within an 18-second sketch.
+    float freq = (0.5f + cr) / (1.0f + sw / 80.0f);
+    float speed = freq * config.getRhythmScale();
+    config.setWaveSpeed(speed);
+    parent.println("RhythmFromFont: char='" + c + "'  strokeWeight="
+        + String.format("%.1f", sw) + "  counterRatio="
+        + String.format("%.3f", cr) + "  → waveSpeed="
+        + String.format("%.4f", speed));
     return this;
   }
 

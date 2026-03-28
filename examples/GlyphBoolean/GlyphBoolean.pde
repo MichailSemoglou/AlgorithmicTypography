@@ -74,7 +74,7 @@ void draw() {
   t += 0.012;
 
   if (glyphMode) drawLetterLetterMode();
-  else           drawShapeLetterMode();
+  else drawShapeLetterMode();
 
   drawHUD();
 
@@ -99,7 +99,7 @@ void drawLetterLetterMode() {
   float minY = min(bA[1], bB[1]);
   float maxX = max(bA[0] + bA[2], bB[0] + bB[2]);
   float maxY = max(bA[1] + bA[3], bB[1] + bB[3]);
-  float ox = width  / 2 - (minX + maxX) / 2;
+  float ox = width / 2 - (minX + maxX) / 2;
   float oy = height / 2 - (minY + maxY) / 2;
 
   // Ghost inputs — both letters overlap at the same origin (as the boolean op does)
@@ -115,7 +115,7 @@ void drawLetterLetterMode() {
 
   // Boolean result
   float hue = (frameCount * 0.25 + 180) % 360;
-  float bri  = 200 + sin(t) * 40;
+  float bri = 200 + sin(t) * 40;
   noStroke();
   fill(hue, 190, (int)bri, 230);
 
@@ -137,7 +137,7 @@ void drawLetterLetterMode() {
 // ══════════════════════════════════════════════════════════════
 
 void drawShapeLetterMode() {
-  char ch  = letters[letterIdx];
+  char ch = letters[letterIdx];
   float[] b = glyph.getBounds(ch, FONT_SIZE);
 
   float gl = b[0], gt = b[1], gw = b[2], gh = b[3];
@@ -173,7 +173,7 @@ void drawShapeLetterMode() {
 
   // Boolean result
   float hue = (frameCount * 0.25 + 30) % 360;
-  float bri  = 200 + sin(t) * 40;
+  float bri = 200 + sin(t) * 40;
   noStroke();
   fill(hue, 190, (int)bri, 230);
 
@@ -198,8 +198,7 @@ Area buildOuter(int idx, float gl, float gt, float gw, float gh, float gcx, floa
       return glyph.rectArea(gl - pad, gt - pad, gw + pad * 2, gh + pad * 2);
     case 2: { // Rounded rectangle
       float arc = min(gw, gh) * 0.32f;
-      return glyph.roundedRectArea(gl - pad, gt - pad,
-                                   gw + pad * 2, gh + pad * 2, arc, arc);
+      return glyph.roundedRectArea(gl - pad, gt - pad, gw + pad * 2, gh + pad * 2, arc, arc);
     }
     default: { // Circle: circumradius × 1.30
       float r = (float) Math.sqrt(gw * gw / 4.0 + gh * gh / 4.0) * 1.30f;
@@ -211,8 +210,7 @@ Area buildOuter(int idx, float gl, float gt, float gw, float gh, float gcx, floa
 // Horizontal-band cutter (mode 4): spans the full glyph width at 45 % of height,
 // centred vertically — always intersects the opaque strokes of every letter.
 // Shaped as ellipse / rounded-rect / rect to match the active shape family.
-Area buildCutter(int idx, float gl, float gw, float gh,
-                 float gcx, float gcy) {
+Area buildCutter(int idx, float gl, float gw, float gh, float gcx, float gcy) {
   float pad = min(gw, gh) * 0.12f;
   float bw  = gw + pad * 2;
   float bh  = gh * 0.45f;

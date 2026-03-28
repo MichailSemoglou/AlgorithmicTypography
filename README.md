@@ -4,13 +4,13 @@
 
 [![Processing](https://img.shields.io/badge/Processing-4.x-blue)](https://processing.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.2.6-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
+[![Version](https://img.shields.io/badge/Version-0.3.0-orange)](https://github.com/MichailSemoglou/AlgorithmicTypography/releases)
 
 ![AlgorithmicTypography showcase](docs/showcase.gif)
 ![AlgorithmicTypography showcase_2](docs/showcase_2.gif)
 
 > [!NOTE]
-> **Version 0.2.6** introduces **Grid Strip Motion & Parameter Legibility**. `GridStripMotion` shifts entire rows and/or columns by a configurable wave function (SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT, PERLIN) so the whole grid undulates like a ribbon — a grid-level effect distinct from per-cell `CellMotion`. `PerlinVertexMotion` deforms per-vertex arrays with independent X/Y Perlin fields for noise-driven glyph outline sculpting. `MagneticMotion` and `RippleMotion` gain named intensity presets (`GENTLE`, `MODERATE`, `STRONG`, `SNAPPING` / `STRONG`) with `setPreset(int)` and normalised 0–1 overloads so designers no longer need to memorise raw parameter tables. `AudioBridge` gains `SUBTLE`, `EXPRESSIVE`, `FULL` semantic constants and matching `mapBassTo(setter, intensity)` / `mapMidTo` / `mapTrebleTo` / `mapOverallTo` overloads with pre-tuned standard ranges per band. All strip-motion configuration is supported in `config.json` via the `"gridStripMotion"` block and in the `Configuration.Builder`. A new **`GridStripWave`** example demonstrates all axis modes and wave types interactively. Built on v0.2.5, which brought boolean letterform operations, path-based text layout, Type DNA, config-driven glyph outline rendering, and single-word character support. This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
+> **Version 0.3.0** introduces **Typography as Material** — four new capabilities that treat the letterform itself as the source of animation intelligence. `GlyphCurvatureField` samples letterform outline curvature as a Gaussian scalar field that modulates the spatial phase spread of the wave per grid cell: cells over tight corners and bowls push neighbouring cells into different wave phases so they ripple independently; cells over straight stems lock all nearby cells to the same phase so they pulse together in unison. `CounterpointEngine` drives the outer letterform and inner counter-forms (the enclosed white spaces of O, B, P, R, etc.) on two completely independent wave systems, making positive and negative space animate in deliberate visual dialogue. `setRhythmFromFont(char)` derives wave speed from typeface geometry — stem weight and counter-ratio — so heavy, dense letterforms pulse slowly while open, airy ones pulse faster; the animation tempo is the font's own reading rhythm made visible. Word / sentence mode (`setContent("TEXT")`) fills the entire tile grid left-to-right, top-to-bottom with successive characters from any string, each retaining full wave, motion, and physics control. Built on v0.2.6, which introduced `GridStripMotion`, `PerlinVertexMotion`, and semantic parameter presets. This project follows [Semantic Versioning](https://semver.org/); the `0.x` series reflects active development. If you encounter a bug or have ideas, please [open an issue](https://github.com/MichailSemoglou/AlgorithmicTypography/issues) or join the [GitHub Discussions](https://github.com/MichailSemoglou/AlgorithmicTypography/discussions).
 
 ## Overview
 
@@ -26,7 +26,7 @@ What makes this library distinctive is that it was designed from the ground up w
 
 **For newcomers,** it is one of the most accessible entry points into generative typography in the Processing ecosystem. A working sketch requires just four lines of code; a JSON file handles the rest. From there, the API grows with you — every new concept (physics, audio, custom waves) builds on the same foundation rather than requiring a fresh start.
 
-**As an alternative to Geomerative,** AlgorithmicTypography covers every core use case Geomerative is known for — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, letterform morphing, boolean area operations, and text-on-path layout — without requiring an external dependency, and in several areas it goes further. Geomerative parses font files directly through its own SVG/font engine; AlgorithmicTypography goes through Java2D's own `FlatteningPathIterator` on the raw AWT font outline, which means outer vs. inner contour separation is determined by contour area (deterministic and font-agnostic) rather than winding order, and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods express design intent directly, with no glyph-bounds arithmetic or matrix boilerplate at the sketch level. The v0.2.5 **Type DNA** system — stress axis, optical centroid, counter ratio, stroke weight, and the `buildTypeDNAProfile` / `applyTypeDNA` pipeline — has no equivalent in Geomerative or any other Processing typography library: it extracts typographic intelligence from the font's own outlines and maps it directly to animation parameters. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in, making it a substantially more complete toolkit for animated and interactive typographic work.
+**As an alternative to Geomerative,** AlgorithmicTypography covers every core use case Geomerative is known for — outline extraction, contour separation, interior point distribution, arc-length-spaced perimeter sampling, hatch fill, outline offsetting, letterform morphing, boolean area operations, and text-on-path layout — without requiring an external dependency, and in several areas it goes further. Geomerative parses font files directly through its own SVG/font engine; AlgorithmicTypography goes through Java2D's own `FlatteningPathIterator` on the raw AWT font outline, which means outer vs. inner contour separation is determined by contour area (deterministic and font-agnostic) rather than winding order, and arc-length resampling is calculated geometrically rather than parametrically so points are spaced evenly whether a stroke is a tight curve or a long straight stem. The `centerOf`, `drawAt`, and `morphShape` methods express design intent directly, with no glyph-bounds arithmetic or matrix boilerplate at the sketch level. The v0.2.5 **Type DNA** system — stress axis, optical centroid, counter ratio, stroke weight, and the `buildTypeDNAProfile` / `applyTypeDNA` pipeline — has no equivalent in Geomerative or any other Processing typography library: it extracts typographic intelligence from the font's own outlines and maps it directly to animation parameters. v0.3.0 deepens this further: `GlyphCurvatureField` projects per-point outline curvature as a Gaussian scalar field that modulates the spatial phase spread of the wave cell-by-cell — cells over tight corners and bowls are pushed into different wave phases and ripple independently, while cells over straight stems lock to the same phase and pulse in unison — without any sketch-level calculation; `CounterpointEngine` drives the outer letterform and inner counter-forms on two independent wave systems, making positive and negative space animate in deliberate dialogue; and `setRhythmFromFont(char)` derives wave speed directly from stem weight and counter ratio so the animation tempo emerges from the typeface's own reading rhythm. No other Processing typography library treats the letterform as the source of animation intelligence in this way. Beyond glyph geometry, per-vertex physics, cell-level motion engines, audio reactivity, and live UI controls are all built in, making it a substantially more complete toolkit for animated and interactive typographic work.
 
 The long-term goal is to make AlgorithmicTypography the definitive library for generative typography in Processing. Each release delivers both integration — consolidating tools that previously required multiple libraries or significant boilerplate — and genuinely new capabilities that do not exist elsewhere in the Processing ecosystem. That work is well underway.
 
@@ -45,6 +45,10 @@ The long-term goal is to make AlgorithmicTypography the definitive library for g
 - **Glyph physics** — Treat glyph vertices as particles with mouse attraction/repulsion
 - **Cell motion** — Ten built-in movement strategies per glyph: Circular (CW/CCW), Perlin noise, Lissajous figure-8/knot, Spring-damped, Gravity + bounce (with `kick()`), Mouse-magnetic (repel/attract, with named presets `GENTLE`/`MODERATE`/`STRONG`/`SNAPPING` and `setPreset(int)`), Ripple (click-triggered concentric rings, with named presets `GENTLE`/`MODERATE`/`STRONG` and `setPreset(int)`), FlowField (spatially coherent Perlin vector field), and Orbital (constellation orbit patterns) — all configurable via code _or_ the `"cellMotion"` JSON block
 - **Perlin vertex deformation** — `PerlinVertexMotion` applies independent X/Y Perlin noise fields to any `PVector[]` vertex array (glyph outlines, custom geometry) for noise-driven organic sculpting; `deform(PVector[], int)` returns a non-destructive new array; `deformContours(PVector[][], int)` processes a full contour batch in one call
+- **Glyph curvature field** — `GlyphCurvatureField.from(extractor, char, size)` builds a Gaussian scalar field from letterform outline curvature that modulates the spatial phase spread of the wave per grid cell — high-curvature zones (bowls, junctions) cause neighbouring cells to ripple independently; low-curvature zones (straight stems) synchronise cells into a uniform pulse; attach via `at.setCurvatureField(field)` or `waveEngine.setAmplitudeField(field)`; configurable intensity (0–1) and falloff (σ)
+- **Counterpoint engine** — `CounterpointEngine(mainWave, counterWave)` animates the outer letterform and inner counter-forms on independent wave rhythms; attach via `at.setCounterpointEngine(engine)`; counter wave drives a second colour fill rendered over the inner contours
+- **Optical rhythm sync** — `at.setRhythmFromFont(char)` derives `waveSpeed` directly from the typeface's own geometry: it measures the stem weight and counter-form ratio of the given letterform, then maps those values to an animation frequency — so an open, airy 'O' pulses faster than a heavy, dense 'I', for the exact same reason they look different on the page. `config.setRhythmScale(float)` scales the result; JSON-persisted as `animation.rhythmScale`
+- **Word / sentence mode** — `at.setContent("TEXT")` or `config.setContent("TEXT")` fills tiles L→R, top→bottom with successive characters from any string (wraps); setting `null` or `""` restores single-character mode; JSON-persisted as `text.content`
 - **Trail effects** — Semi-transparent overlay trails with temporal displacement
 - **Audio reactivity** — Map bass, mid, treble, and beat detection to animation parameters; semantic intensity constants `SUBTLE`, `EXPRESSIVE`, `FULL` with pre-tuned per-band ranges via `mapBassTo(setter, intensity)`, `mapMidTo`, `mapTrebleTo`, `mapOverallTo` overloads
 - **Cultural design presets** — Parameter sets inspired by Swiss, Bauhaus, Chinese Ink, Arabic Kufi, Japanese Minimal, and related typographic traditions (see [editorial note](#editorial-note))
@@ -138,7 +142,9 @@ algorithmic.typography
 │   ├── GlyphExtractor             Glyph outline extraction (vertices, contours, boolean ops, Type DNA)
 │   ├── GlyphBuilder               Fluent chainable builder for common glyph-extraction patterns
 │   ├── GlyphPhysics               Particle-based physics for glyph vertices
-│   └── TypeDNAProfile             Typographic fingerprint data class (serialisable to JSON)
+│   ├── TypeDNAProfile             Typographic fingerprint data class (serialisable to JSON)
+│   ├── GlyphCurvatureField        Gaussian amplitude-modulation field built from letterform outline curvature (v0.3.0)
+│   └── CounterpointEngine         Independent wave systems for outer letterform and inner counter-forms (v0.3.0)
 │
 ├── audio/
 │   └── AudioBridge                Real-time FFT, beat detection, parameter mapping
@@ -405,11 +411,11 @@ Demonstrates RiTa integration. Words are generated from Markov chains and gramma
 
 ### RandomASCII
 
-Fills the grid with random printable ASCII characters with periodic reshuffling.
+Fills the grid with random printable ASCII characters with periodic reshuffling. Each cell is coloured with full HSB values computed via `calculateHue`, `calculateSaturation`, and `calculateColorCustom` — the same per-cell calculations used by the main grid renderer, applied here to random ASCII characters. Press `W` to cycle the active wave type (SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT); the HUD shows the current wave name.
 
 ### SaveSVG
 
-Exports the current frame as an SVG vector graphic with full HSB colour preservation.
+Exports the current frame as an SVG vector graphic with full HSB colour preservation and correct artboard dimensions in Affinity Designer, Adobe Illustrator, and Inkscape. Three changes make this work: `pixelDensity(1)` in `setup()` prevents Processing's Retina renderer from writing a `scale(2,2)` transform into the SVG root; `createGraphics(width, height, SVG, filename)` writes the grid into an offscreen SVG buffer (keeping the HUD out of the file); `VectorExporter.fixArtboardDimensions(this, filename, width, height)` post-processes the file to replace unitless `width`/`height` attributes with `pt` units and inject a `viewBox`, which bypasses the 96→72 DPI conversion that Affinity Designer applies to unitless or `px`-attributed SVGs. Press `S` to save.
 
 ### BackgroundImage
 
@@ -469,13 +475,17 @@ Two-mode sketch demonstrating the v0.2.5 path utilities. Mode 1 flows a full tex
 
 A full showcase for `MagneticMotion`. Live sliders for Strength, Falloff, Smoothing, and Radius. Three presets (Repel / Attract / Rubber Band); `SPACE` to switch between repel and attract modes.
 
+### OpticalRhythm
+
+The definitive showcase for `setRhythmFromFont(char)`. A wave-driven glyph grid animates at a speed derived entirely from the chosen letterform's geometry — no manual parameter tuning. Press ← / → to cycle through a curated set of twelve characters ('O', 'G', 'B', 'a', 'g', 'e', 'm', 'H', 'I', '1', 'S', 'R') and watch the wave tempo shift immediately. Open, airy letters like 'O' pulse noticeably faster than dense, narrow ones like 'I'. Use + / − to scale the rhythm up or down while preserving the relative differences between letters. All visual parameters are loaded from `data/config.json`.
+
 ### GridStripWave
 
-Interactive showcase for `GridStripMotion`, the v0.2.6 grid-level strip displacement engine. Unlike `CellMotion` (which moves individual glyphs), `GridStripMotion` shifts entire rows and/or columns in unison — the whole grid undulates like a ribbon or banner. Three axis modes: `1`/`2`/`3` switch between ROW, COLUMN, and BOTH. `UP`/`DOWN` adjust amplitude (0–1); `LEFT`/`RIGHT` adjust phase step (wave frequency); `W` cycles through all five row wave types (SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT); `SPACE` pauses the animation; `R` resets to defaults. Loads `data/config.json` for the base typography parameters.
+Interactive showcase for `GridStripMotion`, the v0.2.6 grid-level strip displacement engine. Unlike `CellMotion` (which moves individual glyphs), `GridStripMotion` shifts entire rows and/or columns in unison — the whole grid undulates like a ribbon or banner. Three axis modes: `1`/`2`/`3` switch between ROW, COLUMN, and BOTH. `UP`/`DOWN` adjust amplitude (0–1); `LEFT`/`RIGHT` adjust phase step (wave frequency); `W` cycles through all five wave types (SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT), updating both the row and column axes together so the change is visible regardless of which axis mode is active; `SPACE` pauses the animation; `R` resets to defaults. Loads `data/config.json` for the base typography parameters.
 
 ## Documentation
 
-An eight-page printable cheat sheet is available in:
+A ten-page printable cheat sheet is available in:
 
 - **Online:** [qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html](https://qide.studio/libraries/processing/algorithmictypography/cheat-sheet.html)
 - **PDF:** [`docs/CHEAT_SHEET.pdf`](docs/CHEAT_SHEET.pdf)
@@ -534,48 +544,114 @@ List<PVector[]> mc = glyph.interpolateContours('A', 'B', 400, 0.5);  // raw cont
 
 // config-driven glyph outline rendering (no sketch code required)
 config.setGlyphOutlineStyle(Configuration.OUTLINE_DASHED);
-config.setGlyphOutlineColor(255, 80, 0);       // RGB stroke colour
+config.setGlyphOutlineColor(255, 80, 0);  // RGB stroke colour
 config.setGlyphOutlineWeight(2.0f);
-config.setGlyphOutlineDash(10.0f, 5.0f);       // dash length, gap length
+config.setGlyphOutlineDash(10.0f, 5.0f);  // dash length, gap length
 // or via Builder:
 Configuration cfg = new Configuration.Builder()
   .glyphOutlineDashed(255, 80, 0, 2.0f, 10.0f, 5.0f)
   .build();
 
 // v0.2.5 — boolean area operations
-PShape merged   = glyph.union('O', 'C', 600);          // merge two letterforms
-PShape overlap  = glyph.intersect('O', 'C', 600);       // shared region only
-PShape knockout = glyph.subtract('O', 'C', 600);        // cut C out of O
-PVector[] uPts  = glyph.getUnionContour('O', 'C', 600); // PVector[] overloads
-PVector[] iPts  = glyph.getIntersectContour('O', 'C', 600);
-PVector[] sPts  = glyph.getSubtractContour('O', 'C', 600);
+PShape merged = glyph.union('O', 'C', 600);  // merge two letterforms
+PShape overlap = glyph.intersect('O', 'C', 600);  // shared region only
+PShape knockout = glyph.subtract('O', 'C', 600);  // cut C out of O
+PVector[] uPts = glyph.getUnionContour('O', 'C', 600);  // PVector[] overloads
+PVector[] iPts = glyph.getIntersectContour('O', 'C', 600);
+PVector[] sPts = glyph.getSubtractContour('O', 'C', 600);
 
 // v0.2.5 — path utilities
-PVector tan        = glyph.getTangent('O', 600, 0.25);          // unit tangent at t=0.25
-float[][] dashes   = glyph.getDashedOutline('A', 600, 12, 6);   // {x1,y1,x2,y2} pairs, 12 px dash / 6 px gap
-PVector[] dense    = glyph.subdivide('A', 600, 1200);            // at least 1200 vertices
-PVector[] path     = glyph.getOuterContour('O', 600);
-PShape onPath      = glyph.textOnPath("DESIGN", path, 36);       // string laid along the contour
+PVector tan = glyph.getTangent('O', 600, 0.25);  // unit tangent at t=0.25
+float[][] dashes = glyph.getDashedOutline('A', 600, 12, 6);  // {x1,y1,x2,y2} pairs, 12 px dash / 6 px gap
+PVector[] dense = glyph.subdivide('A', 600, 1200);  // at least 1200 vertices
+PVector[] path = glyph.getOuterContour('O', 600);
+PShape onPath = glyph.textOnPath("DESIGN", path, 36);  // string laid along the contour
 
 // v0.2.5 — word support (String overloads accept full words anywhere a char was accepted)
-PVector wo         = glyph.centerOf("TYPE", 400, width/2, height/2);  // centre a full word
-float[][] wd       = glyph.getDashedOutline("TYPE", 400, 12, 6);       // dashed outline for a word
+PVector wo = glyph.centerOf("TYPE", 400, width/2, height/2);  // centre a full word
+float[][] wd = glyph.getDashedOutline("TYPE", 400, 12, 6);  // dashed outline for a word
 // config.json: set "character" to "TYPE" (or any word) — no sketch code change required
 
 // v0.2.5 — Type DNA
-float stress    = glyph.getStressAxis('A', 600);         // dominant stroke angle, degrees [0,180)
+float stress = glyph.getStressAxis('A', 600);  // dominant stroke angle, degrees [0,180)
 PVector centroid = glyph.getOpticalCentroid('O', 600);  // ink-weighted perceptual centre
-float counter   = glyph.getCounterRatio('O', 600);      // counter area / bbox area (≈0 for I, >0.1 for O)
-float sw        = glyph.getStrokeWeight('H', 600);      // estimated stroke width in px
+float counter = glyph.getCounterRatio('O', 600);  // counter area / bbox area (≈0 for I, >0.1 for O)
+float sw = glyph.getStrokeWeight('H', 600);  // estimated stroke width in px
 
 TypeDNAProfile profile = glyph.buildTypeDNAProfile(
-    new char[]{'A','O','H','n','e'}, 600);              // full-font fingerprint
-processing.data.JSONObject json = profile.toJSON();     // serialise
-TypeDNAProfile restored = TypeDNAProfile.fromJSON(json); // deserialise
+    new char[]{'A','O','H','n','e'}, 600);  // full-font fingerprint
+processing.data.JSONObject json = profile.toJSON();  // serialise
+TypeDNAProfile restored = TypeDNAProfile.fromJSON(json);  // deserialise
 
 // Apply profile as a one-call animation preset:
 at.applyTypeDNA(profile);  // sets waveAngle, waveAmplitudeRange, brightnessRange
+
+// v0.3.0 — Typography as Material
+GlyphCurvatureField field = GlyphCurvatureField.from(glyph, 'A', 400);
+field.setIntensity(0.8f);  // modulation depth (0–1); higher = more dramatic amplitude variation
+field.setFalloff(0.10f);  // Gaussian σ in normalised [0,1] coords; lower = sharper hotspots
+at.setCurvatureField(field);  // or waveEngine.setAmplitudeField(field)
+
+// Counterpoint: outer letterform and counter-forms on independent wave systems
+WaveEngine mainWave = new WaveEngine(config);
+WaveEngine counterWave = new WaveEngine(counterConfig);
+CounterpointEngine cp = new CounterpointEngine(mainWave, counterWave);
+at.setCounterpointEngine(cp);  // counter wave renders as a second colour fill over inner contours
+
+// Optical rhythm: derive waveSpeed from the font's own geometry
+at.setRhythmFromFont('A');  // stem weight + counter ratio → waveSpeed
+config.setRhythmScale(1.2f);  // scale the derived speed up or down
+// See the standalone section below for a full explanation.
+
+// Word / sentence mode: fill the tile grid with successive characters from a string
+at.setContent("DESIGN");  // fills tiles L→R, top→bottom; wraps at end of string
+at.setContent(null);  // restores single-character mode
+// or via config:
+config.setContent("TYPOGRAPHY");
+// or via config.json: add "text": { "content": "HELLO" }
 ```
+
+### Optical Rhythm
+
+`setRhythmFromFont(char)` is the most typographically intimate feature in the library. It derives wave speed directly from the letterform's own geometry — no manual tuning required.
+
+The algorithm calls `GlyphExtractor` invisibly and measures two properties of the chosen character at 600 px:
+
+- **Stroke weight** — the average half-distance from the medial axis to the outline contour, doubled. Heavy stems produce a large value; thin modern faces produce a small one.
+- **Counter ratio** — the area of enclosed white space (the interior of 'O', 'B', 'P', 'R', etc.) divided by the bounding-box area. Characters like 'I' and 'l' have no counters (ratio ≈ 0); 'O' and '0' have large ones.
+
+Those two values feed a single formula:
+
+```
+waveSpeed = (0.5 + counterRatio) / (1.0 + strokeWeight / 80.0) × rhythmScale
+```
+
+This means:
+
+- Wide, open counters → faster wave (airy letters breathe quickly)
+- Heavy, dense strokes → slower wave (dark letters pulse with weight)
+- The animation tempo is literally the font's _reading rhythm_ made visible
+
+The result spans roughly 0.25–0.55 deg/frame at `rhythmScale = 1.0`, producing animation periods of 11–21 seconds at 30 fps — a perceptually meaningful spread. The difference between cycling through 'I', 'H', 'O', and 'B' is immediately obvious to the eye.
+
+```java
+// Basic usage
+at.setRhythmFromFont('O');  // fast: open counter, moderate stroke
+at.setRhythmFromFont('I');  // slow: no counter, thin stroke
+at.setRhythmFromFont('B');  // medium-fast: two counters, heavy stem
+
+// Scale the result without re-extracting geometry
+config.setRhythmScale(0.5f);  // half tempo
+config.setRhythmScale(2.0f);  // double tempo
+
+// Re-apply after changing the scale
+at.setRhythmFromFont('O');
+
+// Read back the computed speed
+float speed = config.getWaveSpeed();
+```
+
+See the **OpticalRhythm** example for a live interactive demonstration — cycle through a curated character set with ← / → and watch the wave tempo shift to match each letterform's optical personality.
 
 ### Glyph Physics
 
@@ -611,67 +687,67 @@ LissajousMotion knot = new LissajousMotion(10, 10, 1.0, 3, 2);
 
 // Spring-damped: glyphs chase a sinusoidally drifting target
 SpringMotion spring = new SpringMotion(12, 1.0);
-spring.setStiffness(0.35f);   // spring pull strength
-spring.setDamping(0.12f);     // energy loss per frame
+spring.setStiffness(0.35f);  // spring pull strength
+spring.setDamping(0.12f);  // energy loss per frame
 
 // Gravity + bounce: glyphs fall and bounce inside their cells
 GravityMotion gravity = new GravityMotion(12, 0.18f);
-gravity.setRestitution(0.72f); // energy retained per bounce
-gravity.kick(10.0f);           // upward impulse — re-energise settled glyphs
+gravity.setRestitution(0.72f);  // energy retained per bounce
+gravity.kick(10.0f);  // upward impulse — re-energise settled glyphs
 
 // Magnetic: glyphs repel or attract toward the mouse cursor
-MagneticMotion magnetic = new MagneticMotion(this); // pass sketch reference
-magnetic.setTileGrid(width, height, tilesX, tilesY); // call once in setup()
-magnetic.setStrength(1800);   // field intensity
-magnetic.setFalloff(80);      // half-force distance in pixels
-magnetic.setAttract(false);   // false = repel, true = attract
-magnetic.togglePolarity();    // flip attract ↔ repel at runtime
+MagneticMotion magnetic = new MagneticMotion(this);  // pass sketch reference
+magnetic.setTileGrid(width, height, tilesX, tilesY);  // call once in setup()
+magnetic.setStrength(1800);  // field intensity
+magnetic.setFalloff(80);  // half-force distance in pixels
+magnetic.setAttract(false);  // false = repel, true = attract
+magnetic.togglePolarity();  // flip attract ↔ repel at runtime
 
 // Ripple: click-triggered concentric displacement rings
 RippleMotion ripple = new RippleMotion(14, 1.0);
 ripple.setTileGrid(width, height, tilesX, tilesY); // call once in setup()
-ripple.trigger(mouseX, mouseY);                    // call from mousePressed()
-ripple.setExpandSpeed(3.5);    // px per frame the ring expands
-ripple.setWaveWidth(60);       // radial width of each ring
-ripple.setDecayRate(0.015);    // amplitude loss per frame
+ripple.trigger(mouseX, mouseY);  // call from mousePressed()
+ripple.setExpandSpeed(3.5);  // px per frame the ring expands
+ripple.setWaveWidth(60);  // radial width of each ring
+ripple.setDecayRate(0.015);  // amplitude loss per frame
 
 // FlowField: spatially coherent Perlin-noise vector field
 FlowFieldMotion flow = new FlowFieldMotion(12, 1.0);
-flow.setFieldScale(0.003);     // spatial frequency of the noise field
+flow.setFieldScale(0.003);  // spatial frequency of the noise field
 flow.setEvolutionRate(0.008);  // how fast the field evolves over time
-flow.setSeedOffset(42.0);      // seed for field isolation
+flow.setSeedOffset(42.0);  // seed for field isolation
 
 // Orbital: glyphs orbit neighbour-derived anchors
 OrbitalMotion orbital = new OrbitalMotion(10, 1.0);
-orbital.setWobble(0.3);        // radial wobble magnitude (0 = perfect circle)
+orbital.setWobble(0.3);  // radial wobble magnitude (0 = perfect circle)
 
 // Grid Strip Motion: displace entire rows/columns by a wave function (v0.2.6)
 // Unlike CellMotion (per-glyph), GridStripMotion operates at the grid level.
 GridStripMotion strip = new GridStripMotion();
-strip.setAxis(GridStripMotion.BOTH)   // ROW | COLUMN | BOTH
-     .setAmplitude(0.4f)              // designer-friendly 0–1 range
-     .setPhaseStep(0.3f)              // phase shift between consecutive strips
+strip.setAxis(GridStripMotion.BOTH)  // ROW | COLUMN | BOTH
+     .setAmplitude(0.4f)  // designer-friendly 0–1 range
+     .setPhaseStep(0.3f)  // phase shift between consecutive strips
      .setRowSpeed(1.0f)
      .setColumnSpeed(0.8f)
-     .setRowWaveType("SINE")          // SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT
+     .setRowWaveType("SINE")  // SINE, SQUARE, TRIANGLE, SAWTOOTH, TANGENT
      .setColumnWaveType("TRIANGLE");
-at.setGridStripMotion(strip);         // pass to the main library instance
+at.setGridStripMotion(strip);  // pass to the main library instance
 // or via config.json: add a "gridStripMotion" block
 // or via Builder: new Configuration.Builder().gridStripMotion(strip).build()
 
 // Perlin Vertex Motion: deform glyph outline vertices with noise (v0.2.6)
 PerlinVertexMotion pvm = new PerlinVertexMotion();
-pvm.setAmplitude(6.0f);       // pixel displacement magnitude
+pvm.setAmplitude(6.0f);  // pixel displacement magnitude
 pvm.setSpatialScale(0.018f);  // noise field spatial frequency
-pvm.setTimeSpeed(0.6f);       // temporal evolution rate
-pvm.setSeed(42.0f);           // isolate field from other noise calls
+pvm.setTimeSpeed(0.6f);  // temporal evolution rate
+pvm.setSeed(42.0f);  // isolate field from other noise calls
 
-PVector[] outline    = glyph.getOuterContour('A', 400);
-PVector[] deformed   = pvm.deform(outline, frameCount);   // non-destructive
+PVector[] outline = glyph.getOuterContour('A', 400);
+PVector[] deformed = pvm.deform(outline, frameCount);  // non-destructive
 
 List<PVector[]> contours = glyph.getContours('A', 400);
-PVector[][] all          = contours.toArray(new PVector[0][]);
-PVector[][] deformedAll  = pvm.deformContours(all, frameCount);
+PVector[][] all = contours.toArray(new PVector[0][]);
+PVector[][] deformedAll = pvm.deformContours(all, frameCount);
 
 // Apply any CellMotion via config (works with VibePreset pipeline too)
 config.setCellMotion(spring);
@@ -697,20 +773,45 @@ audio.update();
 
 ```java
 VibePreset vibe = new VibePreset(config);
-vibe.apply("calm meditation");    // gentle, muted
-vibe.apply("techno rave energy"); // neon HSB, fast
-vibe.apply("ocean waves");        // 90° angle, flowing
+vibe.apply("calm meditation");  // gentle, muted
+vibe.apply("techno rave energy");  // neon HSB, fast
+vibe.apply("ocean waves");  // 90° angle, flowing
 ```
 
 ### Vector Export
 
+The recommended SVG export pattern uses `createGraphics` so the artboard dimensions are embedded correctly and opens at the right size in Affinity Designer, Illustrator, and Inkscape:
+
 ```java
 import processing.svg.*;
+import algorithmic.typography.render.VectorExporter;
 
-beginRecord(SVG, "frame.svg");
-// draw your grid...
-endRecord();
+void setup() {
+  pixelDensity(1);  // prevent Retina scale(2,2) transform in SVG output
+  // ...
+}
+
+void draw() {
+  // your normal draw code ...
+
+  if (saveSVG) {
+    String filename = "output.svg";
+    PGraphics svg = createGraphics(width, height, SVG, filename);
+    svg.beginDraw();
+    svg.background(0);
+    at.renderAt(0, 0, width, height);  // or draw directly into svg if needed
+    svg.endDraw();
+    svg.dispose();
+    // Correct artboard size for Affinity Designer / Illustrator / Inkscape:
+    // Processing writes unitless width/height; fixArtboardDimensions replaces
+    // them with pt units to bypass the 96→72 DPI conversion.
+    VectorExporter.fixArtboardDimensions(this, filename, width, height);
+    saveSVG = false;
+  }
+}
 ```
+
+If you need to render library output directly into an SVG PGraphics buffer, implement a `renderGrid(PGraphics pg)` method in your sketch and call it inside the `svg.beginDraw()` / `svg.endDraw()` block. See the `SaveSVG` example for a complete working implementation.
 
 ## Output
 

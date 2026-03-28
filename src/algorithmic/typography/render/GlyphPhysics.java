@@ -28,7 +28,7 @@
  * </pre>
  *
  * @author Michail Semoglou
- * @version 0.2.6
+ * @version 0.3.0
  * @since 1.0.0
  */
 
@@ -67,6 +67,10 @@ public class GlyphPhysics {
   private float pointSize = 3.0f;
   private int   fillColor;
   private boolean useHSB = false;
+
+  // ── Counter-form colour (for Filled mode) ────────────────────
+  private boolean[] contourIsInner;   // true = hole / counter-form
+  private int       counterColor = 0; // default: black
 
   // ── Contour structure (for shape/line rendering) ─────────────
   private List<int[]> contourRanges;  // [startIdx, length] per contour
@@ -108,6 +112,9 @@ public class GlyphPhysics {
     float[] b = extractor.getBounds(ch, fontSize);
     offsetX = parent.width  / 2f - b[0] - b[2] / 2f;
     offsetY = parent.height / 2f - b[1] - b[3] / 2f;
+    // Classify inner/outer on raw font geometry (same strategy as
+    // GlyphExtractor.getInnerContours: all-but-largest-area = inner).
+    contourIsInner = classifyContours(raw);
     loadContours(redistributeContours(raw, DEFAULT_DISTRIBUTE_PTS));
   }
 
@@ -122,6 +129,7 @@ public class GlyphPhysics {
     float[] b = extractor.getBounds(text, fontSize);
     offsetX = parent.width  / 2f - b[0] - b[2] / 2f;
     offsetY = parent.height / 2f - b[1] - b[3] / 2f;
+    contourIsInner = classifyContours(raw);
     loadContours(redistributeContours(raw, DEFAULT_DISTRIBUTE_PTS));
   }
 
@@ -166,6 +174,8 @@ public class GlyphPhysics {
     vel  = new PVector[count];
     acc  = new PVector[count];
     contourRanges = new ArrayList<>();
+    // contourIsInner is already set from raw font geometry in setChar()/setText()
+    // before this method is called.
 
     int idx = 0;
     for (PVector[] c : contours) {
@@ -178,6 +188,27 @@ public class GlyphPhysics {
         idx++;
       }
     }
+  }
+
+  /**
+   * Classifies raw (un-resampled) font contours as outer boundary or
+   * counter-form (hole) using winding direction — the same convention that
+   * {@code GlyphExtractor.shapeToProcessing()} relies on after AWT {@code Area}
+   * normalisation:
+   * <ul>
+   *   <li>CCW traversal (negative signed area in y-down screen coords) = outer</li>
+   *   <li>CW traversal (positive signed area) = counter-form / hole</li>
+   * </ul>
+   * This correctly handles glyphs with multiple separate outer forms such as
+   * '%' (slash + two rings), '&', '@', etc. — where a simple largest-area
+   * rule would mis-classify the smaller outer forms as holes.
+   */
+  private boolean[] classifyContours(List<PVector[]> contours) {
+    boolean[] result = new boolean[contours.size()];
+    for (int ci = 0; ci < contours.size(); ci++) {
+      result[ci] = signedArea(contours.get(ci)) > 0; // CW = hole/counter-form
+    }
+    return result;
   }
 
   // ───────────────────────────────────────────────────────────────
@@ -211,6 +242,15 @@ public class GlyphPhysics {
 
   /** Enable rainbow HSB colouring based on particle index. */
   public void setRainbow(boolean on) { this.useHSB = on; }
+
+  /**
+   * Set the fill colour for counter-form contours in Filled mode (non-rainbow).
+   * Defaults to black ({@code color(0)}), which renders counters as transparent
+   * holes when drawn over a black background.
+   *
+   * @param c the colour (use Processing's {@code color(r, g, b)})
+   */
+  public void setCounterColor(int c) { this.counterColor = c; }
 
   // ───────────────────────────────────────────────────────────────
   //  Attractors
@@ -365,29 +405,72 @@ public class GlyphPhysics {
 
   /**
    * Draws particles as filled contour shapes.
+   *
+   * <p>Outer letterform contours and counter-form (hole) contours are coloured
+   * independently:</p>
+   * <ul>
+   *   <li><b>Rainbow mode</b> — outer contours draw from the warm end of the
+   *       spectrum (hues 0°–180°); counter-forms draw from the cool end
+   *       (180°–360°), so stems and enclosed spaces are always visually
+   *       distinct.</li>
+   *   <li><b>Flat mode</b> — outer contours use {@link #setColor(int) fillColor};
+   *       counter-forms use {@link #setCounterColor(int) counterColor} (default
+   *       black, which reads as a transparent hole over a black background).</li>
+   * </ul>
    */
   public void displayFilled() {
     if (pos == null || contourRanges == null) return;
     parent.noStroke();
 
+    // Pre-count outer and inner contours for proportional rainbow hue spread.
+    int outerCount = 0, innerCount = 0;
+    if (contourIsInner != null) {
+      for (boolean b : contourIsInner) { if (b) innerCount++; else outerCount++; }
+    } else {
+      outerCount = contourRanges.size();
+    }
+
     if (useHSB) parent.colorMode(PApplet.HSB, 360, 255, 255);
 
-    for (int c = 0; c < contourRanges.size(); c++) {
-      int start = contourRanges.get(c)[0];
-      int len   = contourRanges.get(c)[1];
+    // Two-pass rendering: outers first, then inners painted on top.
+    // This guarantees counter-form colours are always visible regardless of
+    // the order the font's path iterator emits sub-paths.
+    for (int pass = 0; pass < 2; pass++) {
+      boolean paintInners = (pass == 1);
+      int passIdx = 0; // colour index within this pass
 
-      if (useHSB) {
-        float hue = PApplet.map(c, 0, contourRanges.size(), 0, 360);
-        parent.fill(hue, 200, 255);
-      } else {
-        parent.fill(fillColor);
-      }
+      for (int c = 0; c < contourRanges.size(); c++) {
+        boolean inner = contourIsInner != null && contourIsInner[c];
+        if (inner != paintInners) continue; // handle in the other pass
 
-      parent.beginShape();
-      for (int i = start; i < start + len; i++) {
-        parent.vertex(pos[i].x, pos[i].y);
+        int start = contourRanges.get(c)[0];
+        int len   = contourRanges.get(c)[1];
+
+        if (useHSB) {
+          if (inner) {
+            // Cool half of the spectrum: cyan → blue → magenta
+            float hue = innerCount > 1
+                ? PApplet.map(passIdx, 0, innerCount, 180, 360)
+                : 210f;
+            parent.fill(hue % 360, 200, 220);
+          } else {
+            // Warm half: red → orange → yellow → green → cyan
+            float hue = outerCount > 1
+                ? PApplet.map(passIdx, 0, outerCount, 0, 180)
+                : 30f;
+            parent.fill(hue, 220, 255);
+          }
+        } else {
+          parent.fill(inner ? counterColor : fillColor);
+        }
+
+        parent.beginShape();
+        for (int i = start; i < start + len; i++) {
+          parent.vertex(pos[i].x, pos[i].y);
+        }
+        parent.endShape(PApplet.CLOSE);
+        passIdx++;
       }
-      parent.endShape(PApplet.CLOSE);
     }
 
     if (useHSB) parent.colorMode(PApplet.RGB, 255);
@@ -413,4 +496,23 @@ public class GlyphPhysics {
 
   /** Current velocities (live reference). */
   public PVector[] getVelocities() { return vel; }
+
+  // ───────────────────────────────────────────────────────────────
+  //  Internal helpers
+  // ───────────────────────────────────────────────────────────────
+
+  /**
+   * Shoelace signed area in y-down screen coordinates.
+   * Positive = CW traversal = counter-form / hole.
+   * Negative or zero = CCW traversal = outer boundary.
+   */
+  private float signedArea(PVector[] pts) {
+    double sum = 0;
+    int n = pts.length;
+    for (int i = 0; i < n; i++) {
+      PVector a = pts[i], b = pts[(i + 1) % n];
+      sum += (double) a.x * b.y - (double) b.x * a.y;
+    }
+    return (float) (sum * 0.5);
+  }
 }

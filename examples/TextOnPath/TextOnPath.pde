@@ -27,10 +27,10 @@
  *            rotate continuously around the outline.
  *
  * Controls:
- *   1 / 2     Switch display mode
- *   SPACE     Cycle base character (the letterform used as path)
- *   T         Cycle the text string that wraps around the letter
- *   S         Save PNG
+ *   1 / 2   Switch display mode
+ *   SPACE   Cycle base character (the letterform used as path)
+ *   T       Cycle the text string that wraps around the letter
+ *   S       Save PNG
  */
 
 import algorithmic.typography.render.GlyphExtractor;
@@ -52,29 +52,29 @@ String[] texts = {
 };
 int textIdx = 0;
 
-int mode    = 1;
+int mode = 1;
 boolean savePNG = false;
 
 // Large base character — the outline of this becomes the path
-static final float BASE_SIZE  = 760;
+static final float BASE_SIZE = 760;
 // Size of the characters placed along the path
-static final float PATH_FONT  = 22;
+static final float PATH_FONT = 22;
 // Size of ornaments in mode 2
-static final float ORNAMENT   = 14;
+static final float ORNAMENT = 14;
 
 // ── Letter-spacing slider (mode 1 only) ────────────────────
 float pathSpacing = 0;  // extra px per character; 0 = natural advance
 Slider sldSpacing;
 
 // Animation
-float t      = 0;
+float t = 0;
 float orbitT = 0;
 
 void setup() {
   size(1080, 1080);
   colorMode(HSB, 360, 255, 255);
   glyph = new GlyphExtractor(this, "Helvetica", 72);
-  glyph.setFlatness(0.25);   // finer outline → smoother path sampling
+  glyph.setFlatness(0.25);  // finer outline → smoother path sampling
 
   // Spacing slider: -10 px (tight) → +40 px (loose), default 0
   sldSpacing = new Slider("Spacing", -10, 40, 0, 180)
@@ -88,13 +88,13 @@ void setup() {
 
 void draw() {
   background(15);
-  t      += 0.008;
-  orbitT  = (orbitT + 0.0025) % 1.0;  // 0→1 loop for ornament position
+  t += 0.008;
+  orbitT = (orbitT + 0.0025) % 1.0;  // 0→1 loop for ornament position
 
   char base = bases[baseIdx];
   float[] bounds = glyph.getBounds(base, BASE_SIZE);
-  float originX  = width  / 2 - bounds[0] - bounds[2] / 2;
-  float originY  = height / 2 - bounds[1] - bounds[3] / 2;
+  float originX = width  / 2 - bounds[0] - bounds[2] / 2;
+  float originY = height / 2 - bounds[1] - bounds[3] / 2;
 
   // ── Ghost base letter ──────────────────────────────────────
   PShape ghost = glyph.extractChar(base, BASE_SIZE);
@@ -150,11 +150,11 @@ void drawTextOnPath(char base) {
     ch.disableStyle();
 
     // Characters near the current "highlight" position glow brighter
-    float norm  = (float) i / max(n - 1, 1);
-    float glow  = abs(sin(t * 1.5 - norm * PI * 2));
-    float hue   = (baseHue + i * 3.2 + 20) % 360;
-    float brt   = 140 + glow * 115;
-    float sat   = 160 + glow * 80;
+    float norm = (float) i / max(n - 1, 1);
+    float glow = abs(sin(t * 1.5 - norm * PI * 2));
+    float hue = (baseHue + i * 3.2 + 20) % 360;
+    float brt = 140 + glow * 115;
+    float sat = 160 + glow * 80;
 
     noStroke();
     fill(hue, (int) constrain(sat, 0, 255), (int) constrain(brt, 0, 255), 220);
@@ -200,9 +200,9 @@ void drawOrnamentsOnPath(char base, float bSize, float ox, float oy) {
 
     // Colour: wave along the orbit
     float wave = sin(tParam * TWO_PI * 3 + t * 2);
-    float hue  = (baseHue + i * 4.5 + wave * 30) % 360;
-    float brt  = 170 + wave * 70;
-    float alpha= 160 + sin(tParam * TWO_PI + t) * 60;
+    float hue = (baseHue + i * 4.5 + wave * 30) % 360;
+    float brt = 170 + wave * 70;
+    float alpha = 160 + sin(tParam * TWO_PI + t) * 60;
 
     stroke(hue, 210, (int) constrain(brt, 80, 255), (int) constrain(alpha, 80, 255));
     strokeWeight(1.5);

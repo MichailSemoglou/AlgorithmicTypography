@@ -35,7 +35,7 @@ import algorithmic.typography.core.FlowFieldMotion;
 import algorithmic.typography.core.OrbitalMotion;
 
 AlgorithmicTypography at;
-Configuration        config;
+Configuration config;
 
 // Motion instances (reused across keypresses so radius/speed edits stick)
 PerlinMotion    perlin       = new PerlinMotion(12, 1.0);
@@ -47,7 +47,7 @@ RippleMotion    ripple       = new RippleMotion(200, 80, 0.975f);
 FlowFieldMotion flowField    = new FlowFieldMotion(12, 0.007f, 0.005f);
 OrbitalMotion   orbital      = new OrbitalMotion(12, 0.6f);
 
-int      motionIdx = 1;   // start on Perlin
+int motionIdx = 1;  // start on Perlin
 String[] motionLabels = {
   "None", "Perlin", "Circular CW", "Circular CCW", "Lissajous",
   "Spring", "Ripple", "FlowField", "Orbital"
